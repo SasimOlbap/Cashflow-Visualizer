@@ -2,8 +2,7 @@
 export function fmt(v) { return v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)); }
 export function pct(v, total) { return total === 0 ? "0.0%" : ((v / total) * 100).toFixed(1) + "%"; }
 
-let _uid = 1;
-export const uid = () => String(_uid++);
+export const uid = () => String(Date.now() + Math.random()).replace(".", "");
 
 // ── initial data ───────────────────────────────────────────────────────────
 export const INIT_INCOME = [
