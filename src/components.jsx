@@ -1,4 +1,4 @@
-import { fmt } from "./constants";
+// ── subcomponents ──────────────────────────────────────────────────────────
 
 // ── LinkPath ──────────────────────────────────────────────────────────────
 export function LinkPath({ link, color, onHover, hovered }) {
