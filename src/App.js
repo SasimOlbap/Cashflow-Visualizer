@@ -18,7 +18,7 @@ export default function CashFlow() {
   useEffect(() => {
     const obs = new ResizeObserver(entries => {
       const w = entries[0].contentRect.width;
-      setSvgW(w); setSvgH(Math.max(320, w * 0.53));
+      setSvgW(w); setSvgH(Math.max(320, w * 0.54));
     });
     if (svgRef.current) obs.observe(svgRef.current);
     return () => obs.disconnect();
@@ -120,7 +120,7 @@ export default function CashFlow() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
-              <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Monthly Cash Flow</h1>
+              <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
             </div>
             <button onClick={() => setDarkMode(d => !d)} style={{
               background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 20,
