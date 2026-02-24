@@ -169,23 +169,23 @@ function LinkPath({ link, color, onHover, hovered }) {
   );
 }
 
-function ItemRow({ item, accent, onLabel, onValue, onRemove }) {
+function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
       <div style={{ width: 3, height: 34, borderRadius: 2, background: accent, flexShrink: 0 }} />
       <input value={item.label} onChange={e => onLabel(e.target.value)}
-        style={{ flex: 1, minWidth: 0, background: "#0a0916", border: "1px solid #2a2840",
-          borderRadius: 6, color: "#d4d4f7", fontSize: 15, padding: "4px 7px", outline: "none" }} />
+        style={{ flex: 1, minWidth: 0, background: T.bgInput, border: `1px solid ${T.borderInput}`,
+          borderRadius: 6, color: T.textNode, fontSize: 15, padding: "4px 7px", outline: "none" }} />
       <div style={{ position: "relative", flexShrink: 0 }}>
-        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: "#6b6b8a", fontSize: 15, pointerEvents: "none" }}>$</span>
+        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 15, pointerEvents: "none" }}>$</span>
         <input type="number" min="0" value={item.value} onChange={e => onValue(e.target.value)}
-          style={{ width: 86, background: "#0a0916", border: "1px solid #2a2840",
-            borderRadius: 6, color: "#a78bfa", fontSize: 15, padding: "4px 6px 4px 18px", outline: "none" }} />
+          style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`,
+            borderRadius: 6, color: T.textVal, fontSize: 15, padding: "4px 6px 4px 18px", outline: "none" }} />
       </div>
       <button onClick={onRemove}
-        style={{ background: "none", border: "none", color: "#3d3d5c", cursor: "pointer", fontSize: 19, padding: "0 2px", lineHeight: 1 }}
+        style={{ background: "none", border: "none", color: T.textFaint, cursor: "pointer", fontSize: 19, padding: "0 2px", lineHeight: 1 }}
         onMouseEnter={e => (e.currentTarget.style.color = "#ff6b6b")}
-        onMouseLeave={e => (e.currentTarget.style.color = "#3d3d5c")}>×</button>
+        onMouseLeave={e => (e.currentTarget.style.color = T.textFaint)}>×</button>
     </div>
   );
 }
@@ -203,6 +203,46 @@ export default function CashFlow() {
   const [neLabel, setNeLabel]   = useState("");
   const [neCat,   setNeCat]     = useState("Living");
   const [colOffsets, setColOffsets] = useState([0, 0, 0, 0, 0]);
+  const [darkMode, setDarkMode] = useState(true);
+
+  // Theme tokens
+  const T = darkMode ? {
+    bg:         "#0f0e17",
+    bgCard:     "#16152a",
+    bgInput:    "#0a0916",
+    border:     "#2d2b4e",
+    borderInput:"#2a2840",
+    text:       "#fffffe",
+    textMuted:  "#a9a9b3",
+    textDim:    "#6b6b8a",
+    textFaint:  "#3d3d5c",
+    textNode:   "#d4d4f7",
+    textVal:    "#a78bfa",
+    textSub:    "#4b4b6a",
+    accent:     "#a78bfa",
+    accentHead: "#6b6b8a",
+    btnBg:      "#2d2b4e",
+    btnText:    "#c4b5fd",
+    selText:    "#a78bfa",
+  } : {
+    bg:         "#f0f0f8",
+    bgCard:     "#ffffff",
+    bgInput:    "#f8f8ff",
+    border:     "#d0cee8",
+    borderInput:"#ccc8e8",
+    text:       "#1a1830",
+    textMuted:  "#555570",
+    textDim:    "#7070a0",
+    textFaint:  "#aaaacc",
+    textNode:   "#2a2850",
+    textVal:    "#5b46c1",
+    textSub:    "#8888aa",
+    accent:     "#6d5ce0",
+    accentHead: "#7070a0",
+    btnBg:      "#e0ddf5",
+    btnText:    "#5b46c1",
+    selText:    "#5b46c1",
+  };
   const dragRef = useRef(null);
 
   useEffect(() => {
@@ -287,45 +327,58 @@ export default function CashFlow() {
   };
 
   const colStyle = {
-    background: "#16152a", borderRadius: 14, padding: "16px 14px",
-    border: "1px solid #2d2b4e", display: "flex", flexDirection: "column", gap: 0,
+    background: T.bgCard, borderRadius: 14, padding: "16px 14px",
+    border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 0, transition: "background 0.3s",
   };
   const inpSt = {
-    flex: 1, minWidth: 0, background: "#0a0916", border: "1px solid #2a2840",
-    borderRadius: 6, color: "#d4d4f7", fontSize: 15, padding: "5px 7px", outline: "none",
+    flex: 1, minWidth: 0, background: T.bgInput, border: `1px solid ${T.borderInput}`,
+    borderRadius: 6, color: T.textNode, fontSize: 15, padding: "5px 7px", outline: "none",
   };
   const selSt = {
-    background: "#0a0916", border: "1px solid #2a2840", borderRadius: 6,
-    color: "#a78bfa", fontSize: 15, padding: "5px 7px", outline: "none",
+    background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6,
+    color: T.selText, fontSize: 15, padding: "5px 7px", outline: "none",
   };
   const btnSt = {
-    background: "#2d2b4e", border: "none", borderRadius: 6, color: "#c4b5fd",
+    background: T.btnBg, border: "none", borderRadius: 6, color: T.btnText,
     fontSize: 15, padding: "5px 10px", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
   };
   const subHead = label => (
-    <div style={{ fontSize: 13, letterSpacing: "0.13em", textTransform: "uppercase", color: "#4b4b6a", margin: "10px 0 5px" }}>
+    <div style={{ fontSize: 13, letterSpacing: "0.13em", textTransform: "uppercase", color: T.textSub, margin: "10px 0 5px" }}>
       {label}
     </div>
   );
   const colHead = (label, total, color) => (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-      <span style={{ fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b6b8a" }}>{label}</span>
+      <span style={{ fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: T.accentHead }}>{label}</span>
       <span style={{ fontSize: 19, fontWeight: 700, color }}>${Number(total).toLocaleString()}</span>
     </div>
   );
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: "#0f0e17", minHeight: "100vh", padding: "24px 18px", color: "#fffffe", boxSizing: "border-box" }}>
+    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: T.bg, minHeight: "100vh", padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "#a78bfa", marginBottom: 4 }}>Financial Overview</div>
-          <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Monthly Cash Flow</h1>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
+              <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Monthly Cash Flow</h1>
+            </div>
+            {/* Dark/Light toggle */}
+            <button onClick={() => setDarkMode(d => !d)} style={{
+              background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 20,
+              padding: "6px 14px", cursor: "pointer", color: T.btnText,
+              fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
+              transition: "all 0.2s", flexShrink: 0, marginTop: 4,
+            }}>
+              {darkMode ? "☀️ Light" : "🌙 Dark"}
+            </button>
+          </div>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "baseline" }}>
-            <span style={{ fontSize: 16, color: "#a9a9b3" }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-            <span style={{ fontSize: 16, color: "#a9a9b3" }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
-            <span style={{ fontSize: 16, color: "#a9a9b3" }}>
+            <span style={{ fontSize: 16, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+            <span style={{ fontSize: 16, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+            <span style={{ fontSize: 16, color: T.textMuted }}>
               {surplus >= 0
                 ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
                 : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>
@@ -336,7 +389,7 @@ export default function CashFlow() {
 
         {/* Sankey */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div ref={svgRef} style={{ background: "#16152a", borderRadius: 14, padding: "12px 8px", border: "1px solid #2d2b4e" }}>
+          <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s" }}>
             <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
               {links.map(l => (
                 <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
@@ -364,9 +417,9 @@ export default function CashFlow() {
                       onMouseDown={e => startDrag(n.col, e)}
                       onTouchStart={e => startDrag(n.col, e)}
                     />
-                    <text x={lx} y={my - 6} textAnchor={anchor} fill="#d4d4f7" fontSize={fs} fontWeight={600}>{n.label}</text>
-                    <text x={lx} y={my + 5} textAnchor={anchor} fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : "#a78bfa"} fontSize={Math.max(7, fs - 1)}>{fmt(n.value)}</text>
-                    <text x={lx} y={my + 15} textAnchor={anchor} fill="#6b6b8a" fontSize={Math.max(6, fs - 2)}>{pct(n.value, grand)}</text>
+                    <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
+                    <text x={lx} y={my + 5} textAnchor={anchor} fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : T.textVal} fontSize={Math.max(7, fs - 1)}>{fmt(n.value)}</text>
+                    <text x={lx} y={my + 15} textAnchor={anchor} fill={T.textDim} fontSize={Math.max(6, fs - 2)}>{pct(n.value, grand)}</text>
                   </g>
                 );
               })}
@@ -375,18 +428,18 @@ export default function CashFlow() {
 
           {/* Tooltip */}
           <div style={{
-            background: "#16152a", borderRadius: 10, height: 46,
-            padding: "8px 14px", border: "1px solid #2d2b4e", fontSize: 14, color: "#d4d4f7",
-            display: "flex", alignItems: "center",
+            background: T.bgCard, borderRadius: 10, height: 46,
+            padding: "8px 14px", border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
+            display: "flex", alignItems: "center", transition: "background 0.3s",
           }}>
             {hovLink ? (
               <span>
-                <span style={{ color: "#6b6b8a", textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
                 <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
-                <span style={{ color: "#6b6b8a" }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+                <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
               </span>
             ) : (
-              <span style={{ color: "#3d3d5c" }}>Hover over an Item to see details</span>
+              <span style={{ color: T.textFaint }}>Hover over an Item to see details</span>
             )}
           </div>
         </div>
@@ -400,12 +453,12 @@ export default function CashFlow() {
             {subHead("Active")}
             {income.filter(i => i.type === "active").map(item => (
               <ItemRow key={item.id} item={item} accent="#818cf8"
-                onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
+                onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} T={T} />
             ))}
             {subHead("Passive")}
             {income.filter(i => i.type === "passive").map(item => (
               <ItemRow key={item.id} item={item} accent="#a78bfa"
-                onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
+                onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} T={T} />
             ))}
             <div style={{ display: "flex", gap: 5, marginTop: 12, flexWrap: "wrap" }}>
               <input placeholder="New item…" value={niLabel} onChange={e => setNiLabel(e.target.value)}
@@ -428,7 +481,7 @@ export default function CashFlow() {
                   {subHead(cat)}
                   {items.map(item => (
                     <ItemRow key={item.id} item={item} accent={CAT_COLORS[cat]}
-                      onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} />
+                      onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} T={T} />
                   ))}
                 </div>
               );
