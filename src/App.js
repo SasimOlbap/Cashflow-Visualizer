@@ -225,7 +225,7 @@ export default function CashFlow() {
     dragRef.current = { col, startX: clientX, startOffset: colOffsets[col] };
   };
 
-  const { nodes, links, nodeWidth, grand, catSums, totalExp, surplus } = buildLayout(income, expenses, svgW, svgH);
+  const { nodes, links, nodeWidth, grand, totalExp, surplus } = buildLayout(income, expenses, svgW, svgH);
 
   nodes.forEach(n => { n.x += colOffsets[n.col] || 0; });
   const nodeMapD = {};
@@ -238,7 +238,7 @@ export default function CashFlow() {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__deficit_src" || link.source === "__deficit_agg" || link.target === "__deficit_agg" || link.target === "__total" && link.source === "__deficit_agg") return "#f87171";
+    if (link.source === "__deficit_src" || link.source === "__deficit_agg" || link.target === "__deficit_agg" || (link.target === "__total" && link.source === "__deficit_agg")) return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.source === "__surplus" || link.target === "__surplus" || link.target === "__surplus_leaf") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
