@@ -21,8 +21,10 @@ export function useDrag(svgRef, svgW) {
       const raw     = dragRef.current.startOffset + dx * scale;
       if (!isFinite(raw)) return;
       const col     = dragRef.current.col;
-      const limit   = (col === 0 || col === 4) ? svgW * 0.04 : svgW * 0.10;
-      const clamped = Math.max(-limit, Math.min(limit, raw));
+      // Each column has asymmetric limits based on which direction makes sense
+      const limitL  = (col === 0) ? 0 : svgW * 0.10;  // col 0 can't go left
+      const limitR  = (col === 4) ? 0 : svgW * 0.10;  // col 4 can't go right
+      const clamped = Math.max(-limitL, Math.min(limitR, raw));
       setColOffsets(prev => {
         const next = [...prev];
         next[dragRef.current.col] = clamped;
