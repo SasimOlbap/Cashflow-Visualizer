@@ -54,8 +54,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const nodeMap   = {};
   nodes.forEach(n => { n.col = colMap[n.group]; n.w = colWidths[n.col]; nodeMap[n.id] = n; });
 
-  const labelPad  = Math.max(60, Math.min(120, width * 0.12));
-  const inner     = width - labelPad * 2;
+  const safeW = isFinite(width)  && width  > 0 ? width  : 600;
+  const safeH = isFinite(height) && height > 0 ? height : 400;
+  const safeOffsets = (colOffsets || []).map(o => isFinite(o) ? o : 0);
+
+  const labelPad  = Math.max(60, Math.min(120, safeW * 0.12));
+  const inner     = safeW - labelPad * 2;
   const baseColX  = [
     labelPad - 0.03 * inner,
     labelPad + 0.25 * inner,
@@ -63,7 +67,10 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     labelPad + 0.75 * inner,
     labelPad + 1.00 * inner,
   ];
-  const actualColX = baseColX.map((x, i) => x + (colOffsets[i] || 0));
+  const actualColX = baseColX.map((x, i) => {
+    const v = x + (safeOffsets[i] || 0);
+    return isFinite(v) ? v : x;
+  });
   nodes.forEach(n => { n.x = actualColX[n.col]; });
 
   const centerX      = actualColX[2];
@@ -72,7 +79,9 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const getHeightScale = ci => {
     if (ci === 2) return 0.80;
     const maxDist = ci < 2 ? maxDistLeft : maxDistRight;
-    return 0.80 + 0.20 * (Math.abs(actualColX[ci] - centerX) / maxDist);
+    if (!maxDist || !isFinite(maxDist)) return 0.80;
+    const scale = 0.80 + 0.20 * (Math.abs(actualColX[ci] - centerX) / maxDist);
+    return isFinite(scale) ? Math.min(scale, 1.0) : 0.80;
   };
 
   const buckets = [[], [], [], [], []];
@@ -81,11 +90,15 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   buckets.forEach((col, ci) => {
     const tot = col.reduce((s, n) => s + n.value, 0);
     if (!tot) return;
-    const avail = height * getHeightScale(ci) - gap * Math.max(0, col.length - 1);
+    const avail = Math.max(10, safeH * getHeightScale(ci) - gap * Math.max(0, col.length - 1));
     let y = 0;
-    col.forEach(n => { n.h = Math.max(4, (n.value / tot) * avail); n.y = y; y += n.h + gap; });
-    const off = (height - (y - gap)) / 2;
-    col.forEach(n => { n.y += off; });
+    col.forEach(n => {
+      n.h = Math.max(4, (n.value / tot) * avail);
+      if (!isFinite(n.h)) n.h = 4;
+      n.y = y; y += n.h + gap;
+    });
+    const off = (safeH - (y - gap)) / 2;
+    col.forEach(n => { n.y += isFinite(off) ? off : 0; });
   });
 
   const srcOff = {}, tgtOff = {};
