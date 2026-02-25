@@ -141,7 +141,11 @@ function CashFlow() {
   };
 
   // ── layout ────────────────────────────────────────────────────────────────
-  const { nodes, links, nodeWidth, grand, totalExp, surplus } = buildLayout(income, expenses, svgW, svgH, colOffsets);
+  let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
+  try {
+    layoutResult = buildLayout(income, expenses, svgW, svgH, colOffsets);
+  } catch {}
+  const { nodes, links, nodeWidth, grand, totalExp, surplus } = layoutResult;
 
   const nodeMapD = {};
   nodes.forEach(n => { nodeMapD[n.id] = n; });

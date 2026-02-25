@@ -21,7 +21,7 @@ export function useDrag(svgRef, svgW) {
       const raw     = dragRef.current.startOffset + dx * scale;
       if (!isFinite(raw)) return;
       const col     = dragRef.current.col;
-      const limit   = (col === 0 || col === 4) ? svgW * 0.05 : svgW * 0.15;
+      const limit   = (col === 0 || col === 4) ? svgW * 0.04 : svgW * 0.10;
       const clamped = Math.max(-limit, Math.min(limit, raw));
       setColOffsets(prev => {
         const next = [...prev];
