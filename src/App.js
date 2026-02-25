@@ -35,15 +35,21 @@ const fmtMonth = key => {
   return new Date(Number(y), Number(m) - 1, 1)
     .toLocaleString("default", { month: "long", year: "numeric" });
 };
-const today  = new Date();
-const initKey = toKey(today.getFullYear(), today.getMonth() + 1);
+const today   = new Date();
+const initKey = toKey(today.getFullYear(), 1);
+
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 const loadMonths = () => {
   try {
     const s = localStorage.getItem("cf_months");
     if (s) return JSON.parse(s);
   } catch {}
-  return { [initKey]: { income: INIT_INCOME, expenses: INIT_EXPENSES } };
+  const empty = { income: [], expenses: [] };
+  const result = {};
+  for (let i = 1; i <= 12; i++) result[toKey(today.getFullYear(), i)] = empty;
+  result[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
+  return result;
 };
 
 export default function App() {
@@ -236,33 +242,66 @@ function CashFlow() {
           </div>
         </div>
 
-        {/* Sankey */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s" }}>
-            <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-              {links.map(l => (
-                <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
-              ))}
-              {nodes.map(n => (
-                <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                  GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
-              ))}
-            </svg>
+        {/* Sankey + Month Sidebar */}
+        <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s" }}>
+              <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
+                {links.map(l => (
+                  <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
+                ))}
+                {nodes.map(n => (
+                  <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
+                    GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
+                ))}
+              </svg>
+            </div>
+
+            {/* Tooltip */}
+            <div style={{ background: T.bgCard, borderRadius: 10, height: 46, padding: "8px 14px",
+              border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
+              display: "flex", alignItems: "center", transition: "background 0.3s" }}>
+              {hovLink ? (
+                <span>
+                  <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                  <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                  <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+                </span>
+              ) : (
+                <span style={{ color: T.textFaint }}>Hover over an Item to see details</span>
+              )}
+            </div>
           </div>
 
-          {/* Tooltip */}
-          <div style={{ background: T.bgCard, borderRadius: 10, height: 46, padding: "8px 14px",
-            border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
-            display: "flex", alignItems: "center", transition: "background 0.3s" }}>
-            {hovLink ? (
-              <span>
-                <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
-                <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
-                <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
-              </span>
-            ) : (
-              <span style={{ color: T.textFaint }}>Hover over an Item to see details</span>
-            )}
+          {/* Month sidebar */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, width: 52,
+            background: T.bgCard, borderRadius: 14, padding: "10px 6px",
+            border: `1px solid ${T.border}`, transition: "background 0.3s" }}>
+            {MONTH_NAMES.map((name, i) => {
+              const key = toKey(today.getFullYear(), i + 1);
+              const isSelected = key === curKey;
+              const hasData = !!(months[key]?.income?.length || months[key]?.expenses?.length);
+              return (
+                <button key={key} onClick={() => {
+                  if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } }));
+                  setCurKey(key);
+                }} style={{
+                  background: isSelected ? T.bgCard : "transparent",
+                  border: isSelected ? `1px solid ${T.border}` : "1px solid transparent",
+                  borderRadius: 8,
+                  color: isSelected ? "#c4b5fd" : hasData ? T.text : T.textFaint,
+                  fontSize: 13,
+                  fontWeight: isSelected ? 700 : 400,
+                  padding: "6px 4px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  opacity: isSelected ? 1 : hasData ? 0.8 : 0.35,
+                  transition: "all 0.15s",
+                }}>
+                  {name}
+                </button>
+              );
+            })}
           </div>
         </div>
 
