@@ -13,7 +13,7 @@ export const INIT_INCOME = [
 ];
 
 export const INIT_EXPENSES = [
-  { id: uid(), label: "Federal Tax",             value: 494, category: "Payroll"    },
+  { id: uid(), label: "Federal Tax",              value: 494, category: "Payroll"    },
   { id: uid(), label: "Public Welfare",           value: 677, category: "Payroll"    },
   { id: uid(), label: "Utilities & Bills",        value: 758, category: "Living"     },
   { id: uid(), label: "Groceries",                value: 933, category: "Living"     },

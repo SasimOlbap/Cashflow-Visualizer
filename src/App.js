@@ -126,7 +126,57 @@ function CashFlow() {
     setNeLabel("");
   };
 
-  // ── layout ────────────────────────────────────────────────────────────────
+  // ── save / import / share ─────────────────────────────────────────────────
+  const importRef = useRef(null);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleSave = () => {
+    const data = JSON.stringify(months, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = `cashflow-${today.getFullYear()}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const handleImport = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        setMonths(parsed);
+      } catch { alert("Invalid file format."); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handleShare = () => {
+    try {
+      const encoded = btoa(encodeURIComponent(JSON.stringify(months[curKey])));
+      const url = `${window.location.origin}${window.location.pathname}?month=${curKey}&data=${encoded}`;
+      navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {}
+  };
+
+  // Load shared data from URL on mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const data = params.get("data");
+      const month = params.get("month");
+      if (data && month) {
+        const parsed = JSON.parse(decodeURIComponent(atob(data)));
+        setMonths(p => ({ ...p, [month]: parsed }));
+        setCurKey(month);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    } catch {}
+  }, []);
   let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
   try {
     layoutResult = buildLayout(income, expenses, svgW, svgH, colOffsets);
@@ -181,31 +231,45 @@ function CashFlow() {
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
+        <div style={{ marginBottom: 6 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <div>
-              <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
-              <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "baseline" }}>
-                <span style={{ fontSize: 16, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-                <span style={{ fontSize: 16, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
-                <span style={{ fontSize: 16, color: T.textMuted }}>
-                  {surplus >= 0
-                    ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                    : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>
-                  }
-                </span>
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+              <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
+              <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 20 }}>
-              <button onClick={() => setDarkMode(d => !d)} style={{
-                background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 20,
-                padding: "6px 14px", cursor: "pointer", color: T.btnText,
-                fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
-                transition: "all 0.2s", flexShrink: 0,
-              }}>
-                {darkMode ? "☀️ Light" : "🌙 Dark"}
-              </button>
+              <div style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
+                <input ref={importRef} type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
+                <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
+                  {[
+                    { label: "↓ Save",   onClick: handleSave },
+                    { label: "↑ Import", onClick: () => importRef.current?.click() },
+                    { label: "⊕ Share",  onClick: handleShare, active: shareCopied },
+                  ].map((btn, i) => (
+                    <button key={i} onClick={btn.onClick} style={{
+                      background: btn.active ? "#16a34a" : T.bgCard,
+                      border: "none",
+                      borderLeft: i > 0 ? `1px solid ${T.border}` : "none",
+                      color: btn.active ? "#fff" : T.text,
+                      fontSize: 13, fontWeight: 500,
+                      padding: "6px 14px",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      transition: "background 0.2s",
+                    }}>
+                      {btn.active ? "✓ Copied!" : btn.label}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setDarkMode(d => !d)} style={{
+                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
+                  fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
+                  transition: "all 0.2s", flexShrink: 0,
+                }}>
+                  {darkMode ? "☀️ Light" : "🌙 Dark"}
+                </button>
+              </div>
               <button onClick={copyFromPrev} style={{
                 background: "#7c3aed", border: "none", borderRadius: 20,
                 padding: "6px 14px", cursor: "pointer", color: "#fff",
@@ -236,16 +300,27 @@ function CashFlow() {
             {/* Tooltip */}
             <div style={{ background: T.bgCard, borderRadius: 10, height: 46, padding: "8px 14px",
               border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
-              display: "flex", alignItems: "center", transition: "background 0.3s" }}>
-              {hovLink ? (
-                <span>
-                  <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
-                  <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
-                  <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+              display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.3s" }}>
+              <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
+                <span style={{ fontSize: 14, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 14, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 14, color: T.textMuted }}>
+                  {surplus >= 0
+                    ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                    : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                 </span>
-              ) : (
-                <span style={{ color: T.textFaint }}>Hover over an Item to see details</span>
-              )}
+              </div>
+              <div>
+                {hovLink ? (
+                  <span>
+                    <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                    <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                    <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+                  </span>
+                ) : (
+                  <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
+                )}
+              </div>
             </div>
           </div>
 
