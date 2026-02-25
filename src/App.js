@@ -182,12 +182,22 @@ function CashFlow() {
 
         {/* Header */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
-              <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: T.accent, marginBottom: 4 }}>Financial Overview</div>
               <h1 style={{ fontSize: "clamp(22px,3vw,34px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
+              <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "baseline" }}>
+                <span style={{ fontSize: 16, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 16, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 16, color: T.textMuted }}>
+                  {surplus >= 0
+                    ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                    : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>
+                  }
+                </span>
+              </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginTop: 4 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
               <button onClick={() => setDarkMode(d => !d)} style={{
                 background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 20,
                 padding: "6px 14px", cursor: "pointer", color: T.btnText,
@@ -197,27 +207,13 @@ function CashFlow() {
                 {darkMode ? "☀️ Light" : "🌙 Dark"}
               </button>
               <button onClick={copyFromPrev} style={{
-                  background: "#7c3aed", border: "none", borderRadius: 20,
-                  padding: "6px 14px", cursor: "pointer", color: "#fff",
-                  fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                  visibility: (isEmpty && hasPrev) ? "visible" : "hidden",
-                }}>
-                  Copy from previous month
-                </button>
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-            <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "baseline" }}>
-              <span style={{ fontSize: 16, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-              <span style={{ fontSize: 16, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
-              <span style={{ fontSize: 16, color: T.textMuted }}>
-                {surplus >= 0
-                  ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                  : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>
-                }
-              </span>
+                background: "#7c3aed", border: "none", borderRadius: 20,
+                padding: "6px 14px", cursor: "pointer", color: "#fff",
+                fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
+                visibility: (isEmpty && hasPrev) ? "visible" : "hidden",
+              }}>
+                Copy from previous month
+              </button>
             </div>
           </div>
         </div>
