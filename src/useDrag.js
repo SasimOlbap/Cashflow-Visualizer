@@ -31,7 +31,10 @@ export function useDrag(svgRef, svgW) {
         return next;
       });
     };
-    const onUp = () => { dragRef.current = null; };
+    const onUp = () => { 
+      dragRef.current = null;
+      setColOffsets([0, 0, 0, 0, 0]);
+    };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup",   onUp);
     window.addEventListener("touchmove", onMove);
