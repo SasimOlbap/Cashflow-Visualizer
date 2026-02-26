@@ -162,17 +162,32 @@ function CashFlow({ session }) {
   useEffect(() => {
     const loadFromCloud = async () => {
       const year = today.getFullYear();
+
+      // Clear localStorage first so previous user's data doesn't leak
+      try { localStorage.removeItem("cf_months"); } catch {}
+
       const { data, error } = await supabase
         .from("cashflow")
         .select("*")
         .eq("user_id", session.user.id)
         .eq("year", year);
-      if (error || !data?.length) return;
-      const cloudMonths = {};
-      data.forEach(row => {
-        cloudMonths[toKey(year, row.month)] = { income: row.income, expenses: row.expenses };
-      });
-      setMonths(prev => ({ ...prev, ...cloudMonths }));
+
+      if (error) return;
+
+      // Start with clean empty months
+      const empty = { income: [], expenses: [] };
+      const freshMonths = {};
+      for (let i = 1; i <= 12; i++) freshMonths[toKey(year, i)] = empty;
+      freshMonths[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
+
+      // Overlay with cloud data if any exists
+      if (data?.length) {
+        data.forEach(row => {
+          freshMonths[toKey(year, row.month)] = { income: row.income, expenses: row.expenses };
+        });
+      }
+
+      setMonths(freshMonths);
     };
     loadFromCloud();
   }, [session.user.id]);
