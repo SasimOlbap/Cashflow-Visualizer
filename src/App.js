@@ -3,6 +3,7 @@ import { buildLayout } from "./buildLayout";
 import { LinkPath, ItemRow, SankeyNode } from "./components";
 import { useDrag } from "./useDrag";
 import { darkTheme, lightTheme } from "./theme";
+import { supabase } from "./supabase";
 import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
@@ -48,10 +49,90 @@ const loadMonths = () => {
 };
 
 export default function App() {
-  return <ErrorBoundary><CashFlow /></ErrorBoundary>;
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (authLoading) return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0f0f1a" }}>
+      <div style={{ color: "#c4b5fd", fontSize: 18 }}>Loading...</div>
+    </div>
+  );
+
+  return (
+    <ErrorBoundary>
+      {session ? <CashFlow session={session} /> : <AuthScreen />}
+    </ErrorBoundary>
+  );
 }
 
-function CashFlow() {
+// ── auth screen ───────────────────────────────────────────────────────────────
+function AuthScreen() {
+  const [email,    setEmail]    = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin,  setIsLogin]  = useState(true);
+  const [error,    setError]    = useState("");
+  const [loading,  setLoading]  = useState(false);
+
+  const handleSubmit = async () => {
+    setError(""); setLoading(true);
+    try {
+      const { error } = isLogin
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({ email, password });
+      if (error) setError(error.message);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0f0f1a", fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
+        <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Sign in to your account" : "Create a new account"}</p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <input
+            type="email" placeholder="Email" value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
+          />
+          <input
+            type="password" placeholder="Password" value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
+          />
+          {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
+          <button onClick={handleSubmit} disabled={loading} style={{
+            background: "#7c3aed", border: "none", borderRadius: 8, color: "#fff",
+            fontSize: 15, fontWeight: 600, padding: "11px", cursor: "pointer", marginTop: 4,
+          }}>
+            {loading ? "..." : isLogin ? "Sign In" : "Sign Up"}
+          </button>
+          <button onClick={() => { setIsLogin(l => !l); setError(""); }} style={{
+            background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4,
+          }}>
+            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CashFlow({ session }) {
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
@@ -76,7 +157,44 @@ function CashFlow() {
   const [neLabel,   setNeLabel]   = useState("");
   const [neCat,     setNeCat]     = useState("Living");
 
-  // Auto-save months to localStorage
+  // ── cloud sync ────────────────────────────────────────────────────────────
+  // Load all months from Supabase on mount
+  useEffect(() => {
+    const loadFromCloud = async () => {
+      const year = today.getFullYear();
+      const { data, error } = await supabase
+        .from("cashflow")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .eq("year", year);
+      if (error || !data?.length) return;
+      const cloudMonths = {};
+      data.forEach(row => {
+        cloudMonths[toKey(year, row.month)] = { income: row.income, expenses: row.expenses };
+      });
+      setMonths(prev => ({ ...prev, ...cloudMonths }));
+    };
+    loadFromCloud();
+  }, [session.user.id]);
+
+  // Save current month to Supabase whenever it changes
+  useEffect(() => {
+    const saveToCloud = async () => {
+      const [y, m] = curKey.split("-").map(Number);
+      const cur = months[curKey];
+      if (!cur) return;
+      await supabase.from("cashflow").upsert({
+        user_id: session.user.id,
+        year: y, month: m,
+        income: cur.income,
+        expenses: cur.expenses,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,year,month" });
+    };
+    saveToCloud();
+  }, [months, curKey, session.user.id]);
+
+  // Auto-save to localStorage as fallback
   useEffect(() => {
     try { localStorage.setItem("cf_months", JSON.stringify(months)); } catch {}
   }, [months]);
@@ -261,6 +379,13 @@ function CashFlow() {
                     </button>
                   ))}
                 </div>
+                <button onClick={() => supabase.auth.signOut()} style={{
+                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
+                  fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
+                }}>
+                  Sign Out
+                </button>
                 <button onClick={() => setDarkMode(d => !d)} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
