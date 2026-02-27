@@ -359,8 +359,12 @@ function CashFlow({ session }) {
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: T.bg, minHeight: "100vh",
-      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s" }}>
+    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
+        ? `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.12) 0%, transparent 50%), ${T.bg}`
+        : `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), ${T.bg}`, minHeight: "100vh",
+      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s", position: "relative" }}>
+      <div style={{ position: "fixed", inset: 0, backgroundImage: darkMode ? "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)" : "linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* Header */}
@@ -465,9 +469,10 @@ function CashFlow({ session }) {
           </div>
 
           {/* Month sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, width: 52,
+          <div style={{ display: "flex", flexDirection: "column", width: 52,
             background: T.bgCard, borderRadius: 14, padding: "10px 6px",
-            border: `1px solid ${T.border}`, transition: "background 0.3s" }}>
+            border: `1px solid ${T.border}`, transition: "background 0.3s",
+            justifyContent: "flex-start", gap: 0 }}>
             {MONTH_NAMES.map((name, i) => {
               const key = toKey(today.getFullYear(), i + 1);
               const isSelected = key === curKey;
@@ -546,6 +551,7 @@ function CashFlow({ session }) {
           </div>
 
         </div>
+      </div>
       </div>
     </div>
   );

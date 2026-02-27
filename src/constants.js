@@ -13,14 +13,14 @@ export const INIT_INCOME = [
 ];
 
 export const INIT_EXPENSES = [
-  { id: uid(), label: "Federal Tax",              value: 494, category: "Payroll"    },
+  { id: uid(), label: "Federal Tax",             value: 494, category: "Payroll"    },
   { id: uid(), label: "Public Welfare",           value: 677, category: "Payroll"    },
   { id: uid(), label: "Utilities & Bills",        value: 758, category: "Living"     },
   { id: uid(), label: "Groceries",                value: 933, category: "Living"     },
   { id: uid(), label: "Personal Hygiene",         value: 649, category: "Living"     },
   { id: uid(), label: "Commuting",                value: 825, category: "Living"     },
-  { id: uid(), label: "Retirement Savings",       value: 536, category: "Long-Term"  },
-  { id: uid(), label: "Investment Contributions", value: 392, category: "Long-Term"  },
+  { id: uid(), label: "Retirement Fund",       value: 536, category: "Long-Term"  },
+  { id: uid(), label: "Investment Account", value: 392, category: "Long-Term"  },
   { id: uid(), label: "Real Estate Fund",         value: 287, category: "Long-Term"  },
   { id: uid(), label: "Flexible Spending",        value: 409, category: "Flexible"   },
 ];
