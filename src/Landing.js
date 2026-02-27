@@ -56,6 +56,9 @@ export default function Landing({ onGetStarted }) {
             {["Features", "Pricing"].map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", textDecoration: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{l}</a>
             ))}
+            <button onClick={onGetStarted} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#9ca3af" }}>
+              Log In
+            </button>
             <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
               Get Started Free
             </button>
