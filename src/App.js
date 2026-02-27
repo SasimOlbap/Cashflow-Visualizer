@@ -58,6 +58,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState("login");
   const [checkEmail, setCheckEmail] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const isNewSignup = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -66,8 +67,9 @@ export default function App() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (event === "SIGNED_IN" && session?.user?.email_confirmed_at) {
+      if (event === "SIGNED_IN" && isNewSignup.current) {
         setShowWelcome(true);
+        isNewSignup.current = false;
       }
     });
     return () => subscription.unsubscribe();
@@ -82,12 +84,12 @@ export default function App() {
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
   if (session) return <ErrorBoundary><CashFlow session={session} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
-  if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} /></ErrorBoundary>;
+  if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} />;
 }
 
 // ── auth screen ───────────────────────────────────────────────────────────────
-function AuthScreen({ onCheckEmail, mode }) {
+function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [isLogin,  setIsLogin]  = useState(mode !== "signup");
@@ -103,7 +105,7 @@ function AuthScreen({ onCheckEmail, mode }) {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) setError(error.message);
-        else onCheckEmail(email);
+        else { onNewSignup(); onCheckEmail(email); }
       }
     } catch (e) { setError(e.message); }
     setLoading(false);
