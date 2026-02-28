@@ -61,10 +61,21 @@ export default function App() {
   const isNewSignup = useRef(false);
 
   useEffect(() => {
+    // Detect if user arrived via email verification link
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    const isEmailVerification = hash.includes("access_token") || params.get("type") === "signup";
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session && isEmailVerification) {
+        setShowWelcome(true);
+        // Clean up URL
+        window.history.replaceState({}, "", window.location.pathname);
+      }
       setAuthLoading(false);
     });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (event === "SIGNED_IN" && isNewSignup.current) {
