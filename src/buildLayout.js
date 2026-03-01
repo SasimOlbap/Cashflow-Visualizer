@@ -49,8 +49,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (surplus > 0) addLink("__surplus", "__surplus_leaf", surplus);
 
   const colMap    = { source: 0, agg: 1, total: 2, category: 3, leaf: 4 };
-  const colWidths = [20, 14, 10, 14, 20];
-  const nodeWidth = 14;
+  const colWidths = [20, 20, 20, 20, 20];
+  const nodeWidth = 20;
   const nodeMap   = {};
   nodes.forEach(n => { n.col = colMap[n.group]; n.w = colWidths[n.col]; nodeMap[n.id] = n; });
 
@@ -58,14 +58,14 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const safeH = isFinite(height) && height > 0 ? height : 400;
   const safeOffsets = (colOffsets || []).map(o => isFinite(o) ? o : 0);
 
-  const labelPad  = Math.max(60, Math.min(120, safeW * 0.12));
+  const labelPad  = Math.max(30, Math.min(60, safeW * 0.06));
   const inner     = safeW - labelPad * 2;
   const baseColX  = [
     labelPad - 0.03 * inner,
     labelPad + 0.25 * inner,
     labelPad + 0.50 * inner,
     labelPad + 0.75 * inner,
-    labelPad + 1.00 * inner,
+    labelPad + 1.02 * inner,
   ];
   const actualColX = baseColX.map((x, i) => {
     const v = x + (safeOffsets[i] || 0);

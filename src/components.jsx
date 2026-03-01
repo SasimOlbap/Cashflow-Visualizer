@@ -43,11 +43,11 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
   const isDeficit = n.id === "__deficit_src" || n.id === "__deficit_agg";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
   const nw  = n.w || nodeWidth;
-  const right  = n.col >= 3;
+  const right  = n.col <= 1 || n.col === 3;
   const lx     = right ? n.x + nw + 6 : n.x - 6;
   const anchor = right ? "start" : "end";
   const my = n.y + n.h / 2;
-  const fs = Math.min(11, Math.max(7, n.h * 0.26));
+  const fs = Math.min(14, Math.max(9, n.h * 0.30));
   return (
     <g key={n.id}>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
@@ -57,8 +57,8 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
         style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
-      <text x={lx} y={my + 5}  textAnchor={anchor} fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : T.textVal} fontSize={Math.max(7, fs - 1)}>{fmt(n.value)}</text>
-      <text x={lx} y={my + 15} textAnchor={anchor} fill={T.textDim} fontSize={Math.max(6, fs - 2)}>{pct(n.value, grand)}</text>
+      <text x={lx} y={my + 7}  textAnchor={anchor} fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : T.textVal} fontSize={Math.max(9, fs - 1)}>{fmt(n.value)}</text>
+      <text x={lx} y={my + 18} textAnchor={anchor} fill={T.textDim} fontSize={Math.max(8, fs - 2)}>{pct(n.value, grand)}</text>
     </g>
   );
 }

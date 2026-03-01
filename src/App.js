@@ -387,7 +387,7 @@ function CashFlow({ session }) {
     if (link.source === "__surplus" || link.target === "__surplus" || link.target === "__surplus_leaf")
       return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
-    return idx >= 0 ? LINK_RIGHT[idx] : "#c4b5fd";
+    return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
   };
 
   const hovLink = hovered ? links.find(l => l.source + "-" + l.target === hovered) : null;
@@ -420,7 +420,7 @@ function CashFlow({ session }) {
       padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s", position: "relative" }}>
       <div style={{ position: "fixed", inset: 0, backgroundImage: darkMode ? "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)" : "linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "relative", zIndex: 1 }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1600, margin: "0 auto" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 10 }}>

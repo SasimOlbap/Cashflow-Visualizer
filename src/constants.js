@@ -35,21 +35,21 @@ export const CAT_LABELS = {
 };
 
 export const CAT_COLORS = {
-  Payroll: "#fde68a",
-  Living: "#fbcfe8",
-  "Long-Term": "#bfdbfe",
-  Flexible: "#d9f99d",
+  Payroll: "#ef9a9a",
+  Living: "#f48fb1",
+  "Long-Term": "#ce93d8",
+  Flexible: "#ff8a65",
 };
 
 export const GROUP_COLORS = {
-  source: "#a78bfa",
-  agg: "#818cf8",
-  total: "#6366f1",
-  category: "#c4b5fd",
-  leaf: "#d8b4fe",
-  surplus: "#86efac",
+  source: "#b39ddb",
+  agg: "#9575cd",
+  total: "#6a0dad",
+  category: "#e57373",
+  leaf: "#f48fb1",
+  surplus: "#66bb6a",
   deficit: "#f87171",
 };
 
-export const LINK_LEFT  = ["#c4b5fd", "#a78bfa"];
-export const LINK_RIGHT = ["#fde68a", "#fbcfe8", "#bfdbfe", "#d9f99d"];
+export const LINK_LEFT  = ["#b39ddb", "#9575cd"];
+export const LINK_RIGHT = ["#ef9a9a", "#f48fb1", "#ce93d8", "#ff8a65"];
