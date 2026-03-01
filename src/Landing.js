@@ -8,7 +8,7 @@ const features = [
 const pricing = [
   {
     name: "Free", price: "$0", period: "forever", highlight: false, cta: "Get Started Free", comingSoon: false,
-    features: ["Full Sankey diagram editor", "12 months of data", "Save & Import via JSON", "Share via URL", "Dark / Light mode"],
+    features: ["Full Sankey diagram editor", "12 months of data", "Back-up & Restore your Data", "Share via URL", "Dark / Light mode"],
   },
   {
     name: "Pro", price: "$7", period: "per month", highlight: true, cta: "Coming Soon", comingSoon: true,
@@ -25,7 +25,7 @@ export default function Landing({ onGetStarted, onLogin }) {
     <div style={{ fontFamily: "'Georgia', serif", background: "#fafaf8", color: "#1a1a1a", minHeight: "100vh" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .cta-btn { transition: opacity 0.2s, transform 0.15s; }
         .sec-btn:hover { background: rgba(255,255,255,0.12) !important; }
@@ -48,7 +48,7 @@ export default function Landing({ onGetStarted, onLogin }) {
       {/* Nav */}
       <nav className="hero-bg" style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "0 40px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
-          <div onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ display: "flex", alignItems: "baseline", gap: 8, cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#fff" }}>Cash Flow</span>
             <span style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>Visualizer</span>
           </div>
@@ -59,7 +59,9 @@ export default function Landing({ onGetStarted, onLogin }) {
             <button onClick={onLogin} className="cta-btn" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#9ca3af" }}>
               Log In
             </button>
-
+            <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              Get Started Free
+            </button>
           </div>
         </div>
       </nav>
@@ -85,7 +87,7 @@ export default function Landing({ onGetStarted, onLogin }) {
               A beautiful Sankey diagram that shows exactly where your money comes from and where it goes — every single month.
             </p>
             <div className="fade-in" style={{ animationDelay: "0.3s", display: "flex", gap: 12 }}>
-              <button onClick={() => document.getElementById("pricing").scrollIntoView({ behavior: "smooth" })} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                 Get Started Free →
               </button>
               <button className="sec-btn" style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "14px 28px", fontSize: 15, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
@@ -218,7 +220,7 @@ export default function Landing({ onGetStarted, onLogin }) {
           <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
             No credit card required. Set up in under a minute.
           </p>
-          <button onClick={() => document.getElementById("pricing").scrollIntoView({ behavior: "smooth" })} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+          <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
             Get Started Free
           </button>
         </div>
