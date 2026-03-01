@@ -103,7 +103,7 @@ export default function App() {
     <ShareView
       month={sharedParams.month}
       data={sharedParams.data}
-      onGetStarted={() => { window.history.replaceState({}, "", window.location.pathname); setAuthMode("signup"); setShowAuth(true); }}
+      onGetStarted={() => { window.history.replaceState({}, "", window.location.pathname); window.location.reload(); }}
     />
   );
 
