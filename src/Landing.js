@@ -21,11 +21,13 @@ const pricing = [
 ];
 
 export default function Landing({ onGetStarted, onLogin }) {
+  const scrollTo = id => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: "#fafaf8", color: "#1a1a1a", minHeight: "100vh" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
         .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .cta-btn { transition: opacity 0.2s, transform 0.15s; }
         .sec-btn:hover { background: rgba(255,255,255,0.12) !important; }
@@ -35,7 +37,7 @@ export default function Landing({ onGetStarted, onLogin }) {
         .pricing-card:hover { transform: translateY(-6px); }
         .pricing-card { transition: transform 0.25s ease; }
         .nav-link:hover { color: #c4b5fd; }
-        .nav-link { transition: color 0.15s; }
+        .nav-link { transition: color 0.15s; cursor: pointer; }
         .fade-in { animation: fadeUp 0.7s ease forwards; opacity: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         .hero-bg {
@@ -53,14 +55,11 @@ export default function Landing({ onGetStarted, onLogin }) {
             <span style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>Visualizer</span>
           </div>
           <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-            {["Features", "Pricing"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", textDecoration: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{l}</a>
+            {[["Features", "features"], ["Pricing", "pricing"]].map(([label, id]) => (
+              <span key={id} onClick={() => scrollTo(id)} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{label}</span>
             ))}
             <button onClick={onLogin} className="cta-btn" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#9ca3af" }}>
               Log In
-            </button>
-            <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-              Get Started Free
             </button>
           </div>
         </div>
@@ -87,7 +86,7 @@ export default function Landing({ onGetStarted, onLogin }) {
               A beautiful Sankey diagram that shows exactly where your money comes from and where it goes — every single month.
             </p>
             <div className="fade-in" style={{ animationDelay: "0.3s", display: "flex", gap: 12 }}>
-              <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              <button onClick={() => scrollTo("pricing")} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                 Get Started Free →
               </button>
               <button className="sec-btn" style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "14px 28px", fontSize: 15, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
