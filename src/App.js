@@ -500,7 +500,7 @@ function CashFlow({ session, lang, setLang }) {
         {/* Sankey + Month Sidebar */}
         <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", flex: 1, minHeight: 320, maxHeight: 750, maxWidth: 1200, overflow: "hidden", alignSelf: "flex-start" }}>
+            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", flex: 1, minHeight: 320, maxHeight: 750, maxWidth: 1200, overflow: "hidden", margin: "0 auto" }}>
               <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
                 {links.map(l => (
                   <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
