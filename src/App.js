@@ -8,7 +8,6 @@ import Landing from "./Landing";
 import CheckEmail from "./CheckEmail";
 import Welcome from "./Welcome";
 import ShareView from "./ShareView";
-import { translations } from "./i18n";
 import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
