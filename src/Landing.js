@@ -1,27 +1,15 @@
-const features = [
-  { icon: "◈", title: "Interactive Sankey Diagram", desc: "Watch your money flow visually from income to every expense category in real time." },
-  { icon: "◷", title: "12-Month Overview", desc: "Navigate through every month of the year and build a complete picture of your finances." },
-  { icon: "⊕", title: "Share & Export", desc: "Share a snapshot of any month via URL, or export your full data as a JSON file." },
-  { icon: "☁", title: "Cloud Sync", desc: "Your data is saved securely in the cloud. Access it from any device, any time." },
+import { translations } from "./i18n";
+
+const LANGS = [
+  { code: "en", flag: "🇬🇧", label: "EN" },
+  { code: "es", flag: "🇪🇸", label: "ES" },
+  { code: "de", flag: "🇩🇪", label: "DE" },
 ];
 
-const pricing = [
-  {
-    name: "Free", price: "$0", period: "forever", highlight: false, cta: "Get Started Free", comingSoon: false,
-    features: ["Full Sankey diagram editor", "12 months of data", "Back-up & Restore your Data", "Share via URL", "Dark / Light mode"],
-  },
-  {
-    name: "Pro", price: "$7", period: "per month", highlight: true, cta: "Coming Soon", comingSoon: true,
-    features: ["Everything in Free", "User account + login", "Cloud sync across devices", "Multiple years of data", "Trend charts", "Budget targets", "Export to PDF / CSV"],
-  },
-  {
-    name: "Business", price: "$15", period: "per month", highlight: false, cta: "Coming Soon", comingSoon: true,
-    features: ["Everything in Pro", "Multiple financial profiles", "Bank API auto-import", "Shared access & collaboration", "Priority support"],
-  },
-];
-
-export default function Landing({ onGetStarted, onLogin }) {
+export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
+  const t = translations[lang] || translations.en;
   const scrollTo = id => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: "#fafaf8", color: "#1a1a1a", minHeight: "100vh" }}>
       <style>{`
@@ -45,6 +33,22 @@ export default function Landing({ onGetStarted, onLogin }) {
                       radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.2) 0%, transparent 50%),
                       #0a0818;
         }
+        .lang-select {
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 8px;
+          color: #9ca3af;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 7px 28px 7px 12px;
+          cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+          outline: none;
+          appearance: none;
+          -webkit-appearance: none;
+        }
+        .lang-select:hover { border-color: rgba(255,255,255,0.3); }
+        .lang-select option { background: #0f0f1a; color: #e2e8f0; }
       `}</style>
 
       {/* Nav */}
@@ -54,78 +58,76 @@ export default function Landing({ onGetStarted, onLogin }) {
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#fff" }}>Cash Flow</span>
             <span style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>Visualizer</span>
           </div>
-          <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-            {[["Features", "features"], ["Pricing", "pricing"]].map(([label, id]) => (
-              <span key={id} onClick={() => scrollTo(id)} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{label}</span>
-            ))}
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <span onClick={() => scrollTo("features")} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{t.nav_features}</span>
+            <span onClick={() => scrollTo("pricing")} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{t.nav_pricing}</span>
+            <div style={{ position: "relative" }}>
+              <select className="lang-select" value={lang} onChange={e => setLang(e.target.value)}>
+                {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.label}</option>)}
+              </select>
+              <span style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", color: "#6b7280", fontSize: 10, pointerEvents: "none" }}>▾</span>
+            </div>
             <button onClick={onLogin} className="cta-btn" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#9ca3af" }}>
-              Log In
+              {t.nav_login}
             </button>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="hero-bg" style={{ position: "relative", padding: "100px 40px 100px", overflow: "hidden" }}>
-        {/* decorative orb */}
+      <section className="hero-bg" style={{ position: "relative", padding: "100px 40px", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-20%", right: "-5%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-10%", left: "10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
-        {/* subtle grid lines */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none" }} />
-
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", position: "relative" }}>
           <div>
             <div className="fade-in" style={{ animationDelay: "0s", display: "inline-block", background: "rgba(124,58,237,0.2)", color: "#c4b5fd", fontSize: 12, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", padding: "5px 14px", borderRadius: 20, marginBottom: 28, fontFamily: "'DM Sans', sans-serif", border: "1px solid rgba(124,58,237,0.3)" }}>
-              Personal Finance · Visual
+              {t.hero_badge}
             </div>
             <h1 className="fade-in" style={{ animationDelay: "0.1s", fontFamily: "'Playfair Display', serif", fontSize: "clamp(36px, 4vw, 58px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 24, color: "#fff" }}>
-              Visualize your money,<br />
-              <span style={{ color: "#a78bfa" }}>month by month.</span>
+              {t.hero_title1}<br /><span style={{ color: "#a78bfa" }}>{t.hero_title2}</span>
             </h1>
             <p className="fade-in" style={{ animationDelay: "0.2s", fontSize: 17, lineHeight: 1.8, color: "#9ca3af", marginBottom: 40, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
-              A beautiful Sankey diagram that shows exactly where your money comes from and where it goes — every single month.
+              {t.hero_subtitle}
             </p>
             <div className="fade-in" style={{ animationDelay: "0.3s", display: "flex", gap: 12 }}>
               <button onClick={() => scrollTo("pricing")} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-                Get Started Free →
+                {t.hero_cta}
               </button>
               <button className="sec-btn" style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "14px 28px", fontSize: 15, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-                See how it works
+                {t.hero_secondary}
               </button>
             </div>
             <p className="fade-in" style={{ animationDelay: "0.4s", marginTop: 18, fontSize: 13, color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>
-              No credit card required · Free forever plan
+              {t.hero_note}
             </p>
           </div>
-
           {/* Demo card */}
           <div className="fade-in" style={{ animationDelay: "0.2s", background: "#0f0f1a", borderRadius: 16, padding: 24, boxShadow: "0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 2, fontFamily: "'DM Sans', sans-serif" }}>Financial Overview</div>
+                <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 2, fontFamily: "'DM Sans', sans-serif" }}>{t.demo_overview}</div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", fontFamily: "'Playfair Display', serif" }}>Cash Flow Visualizer</div>
               </div>
               <div style={{ background: "#1a1a2e", borderRadius: 8, padding: "4px 12px", fontSize: 12, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif" }}>Jan 2026</div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "stretch", height: 160, marginBottom: 12 }}>
               {[
-                [{ h: 100, c: "#c4b5fd" }, { h: 35, c: "#818cf8" }, { h: 18, c: "#a78bfa" }],
-                [{ h: 100, c: "#c4b5fd" }, { h: 50, c: "#818cf8" }],
-                [{ h: 153, c: "#7c3aed" }],
-                [{ h: 70, c: "#f472b6" }, { h: 50, c: "#fb7185" }, { h: 33, c: "#e879f9" }],
-                [{ h: 60, c: "#fbcfe8" }, { h: 45, c: "#f9a8d4" }, { h: 30, c: "#fca5a5" }, { h: 18, c: "#86efac" }],
+                [{ h: 100, c: "#b39ddb" }, { h: 35, c: "#9575cd" }, { h: 18, c: "#a78bfa" }],
+                [{ h: 100, c: "#b39ddb" }, { h: 50, c: "#9575cd" }],
+                [{ h: 153, c: "#6a0dad" }],
+                [{ h: 70, c: "#ef9a9a" }, { h: 50, c: "#f48fb1" }, { h: 33, c: "#ce93d8" }],
+                [{ h: 60, c: "#ef9a9a" }, { h: 45, c: "#f48fb1" }, { h: 30, c: "#ff8a65" }, { h: 18, c: "#66bb6a" }],
               ].map((col, ci) => (
                 <div key={ci} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
-                  {col.map((b, bi) => (
-                    <div key={bi} style={{ height: b.h * 0.85, background: b.c, borderRadius: 4, opacity: 0.85 }} />
-                  ))}
+                  {col.map((b, bi) => <div key={bi} style={{ height: b.h * 0.85, background: b.c, borderRadius: 4, opacity: 0.85 }} />)}
                 </div>
               ))}
             </div>
             <div style={{ background: "#161625", borderRadius: 8, padding: "8px 14px", display: "flex", gap: 16, fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>
-              <span style={{ color: "#6b7280" }}>Income: <strong style={{ color: "#c4b5fd" }}>$5,996</strong></span>
-              <span style={{ color: "#6b7280" }}>Expenses: <strong style={{ color: "#fbcfe8" }}>$5,060</strong></span>
-              <span style={{ color: "#6b7280" }}>Surplus: <strong style={{ color: "#86efac" }}>$936</strong></span>
+              <span style={{ color: "#6b7280" }}>{t.demo_income}: <strong style={{ color: "#c4b5fd" }}>$5,996</strong></span>
+              <span style={{ color: "#6b7280" }}>{t.demo_expenses}: <strong style={{ color: "#f48fb1" }}>$5,060</strong></span>
+              <span style={{ color: "#6b7280" }}>{t.demo_surplus}: <strong style={{ color: "#66bb6a" }}>$936</strong></span>
             </div>
           </div>
         </div>
@@ -135,13 +137,13 @@ export default function Landing({ onGetStarted, onLogin }) {
       <section id="features" style={{ padding: "80px 40px", background: "#fff", borderTop: "1px solid #e8e4df" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Features</div>
+            <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{t.features_label}</div>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 700, color: "#0f0f1a", letterSpacing: "-0.02em" }}>
-              Everything you need to<br />understand your finances
+              {t.features_heading1}<br />{t.features_heading2}
             </h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
-            {features.map((f, i) => (
+            {t.features.map((f, i) => (
               <div key={i} className="feature-card" style={{ background: "#fafaf8", border: "1px solid #e8e4df", borderRadius: 14, padding: "28px 22px" }}>
                 <div style={{ fontSize: 22, color: "#7c3aed", marginBottom: 12 }}>{f.icon}</div>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 700, color: "#0f0f1a", marginBottom: 10 }}>{f.title}</h3>
@@ -156,33 +158,19 @@ export default function Landing({ onGetStarted, onLogin }) {
       <section id="pricing" style={{ padding: "80px 40px", background: "#fafaf8", borderTop: "1px solid #e8e4df" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Pricing</div>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 700, color: "#0f0f1a", letterSpacing: "-0.02em" }}>
-              Simple, transparent pricing
-            </h2>
+            <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{t.pricing_label}</div>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 700, color: "#0f0f1a", letterSpacing: "-0.02em" }}>{t.pricing_heading}</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-            {pricing.map((p, i) => (
-              <div key={i} className="pricing-card" style={{
-                background: p.highlight ? "#0f0f1a" : "#fff",
-                border: p.highlight ? "2px solid #7c3aed" : "1px solid #e8e4df",
-                borderRadius: 16, padding: "32px 28px", position: "relative",
-              }}>
-                {p.highlight && (
-                  <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: p.comingSoon ? "#4b5563" : "#7c3aed", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 16px", borderRadius: 20, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>
-                    {p.comingSoon ? "Coming Soon" : "Most Popular"}
-                  </div>
-                )}
-                {p.comingSoon && !p.highlight && (
-                  <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#4b5563", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 16px", borderRadius: 20, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>
-                    Coming Soon
-                  </div>
-                )}
+            {t.pricing.map((p, i) => (
+              <div key={i} className="pricing-card" style={{ background: p.highlight ? "#0f0f1a" : "#fff", border: p.highlight ? "2px solid #7c3aed" : "1px solid #e8e4df", borderRadius: 16, padding: "32px 28px", position: "relative" }}>
+                {p.highlight && <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: p.comingSoon ? "#4b5563" : "#7c3aed", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 16px", borderRadius: 20, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>{p.comingSoon ? t.pricing_coming_soon : t.pricing_most_popular}</div>}
+                {p.comingSoon && !p.highlight && <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#4b5563", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 16px", borderRadius: 20, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>{t.pricing_coming_soon}</div>}
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: p.highlight ? "#9ca3af" : "#6b7280", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>{p.name}</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                     <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 900, color: p.highlight ? "#fff" : "#0f0f1a", filter: p.comingSoon ? "blur(6px)" : "none", userSelect: p.comingSoon ? "none" : "auto" }}>{p.price}</span>
-                    <span style={{ fontSize: 13, color: p.highlight ? "#6b7280" : "#9ca3af", fontFamily: "'DM Sans', sans-serif", filter: p.comingSoon ? "blur(4px)" : "none" }}>/{p.period}</span>
+                    <span style={{ fontSize: 13, color: p.highlight ? "#6b7280" : "#9ca3af", fontFamily: "'DM Sans', sans-serif", filter: p.comingSoon ? "blur(4px)" : "none" }}>/{p.comingSoon ? t.pricing_per_month : t.pricing_forever}</span>
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 28 }}>
@@ -193,15 +181,7 @@ export default function Landing({ onGetStarted, onLogin }) {
                     </div>
                   ))}
                 </div>
-                <button disabled={p.comingSoon} onClick={!p.comingSoon ? onGetStarted : undefined} style={{
-                  width: "100%",
-                  background: p.comingSoon ? (p.highlight ? "#2d2d3a" : "#f3f4f6") : (p.highlight ? "#7c3aed" : "#fff"),
-                  color: p.comingSoon ? "#6b7280" : (p.highlight ? "#fff" : "#4b5563"),
-                  border: p.highlight ? "none" : "1px solid #e8e4df",
-                  borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 600,
-                  cursor: p.comingSoon ? "not-allowed" : "pointer",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
+                <button disabled={p.comingSoon} onClick={!p.comingSoon ? onGetStarted : undefined} style={{ width: "100%", background: p.comingSoon ? (p.highlight ? "#2d2d3a" : "#f3f4f6") : (p.highlight ? "#7c3aed" : "#fff"), color: p.comingSoon ? "#6b7280" : (p.highlight ? "#fff" : "#4b5563"), border: p.highlight ? "none" : "1px solid #e8e4df", borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 600, cursor: p.comingSoon ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                   {p.cta}
                 </button>
               </div>
@@ -213,15 +193,9 @@ export default function Landing({ onGetStarted, onLogin }) {
       {/* Footer CTA */}
       <section style={{ padding: "80px 40px", background: "#0f0f1a", textAlign: "center" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 900, color: "#fff", marginBottom: 16, letterSpacing: "-0.02em" }}>
-            Start for free today.
-          </h2>
-          <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
-            No credit card required. Set up in under a minute.
-          </p>
-          <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-            Get Started Free
-          </button>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 900, color: "#fff", marginBottom: 16, letterSpacing: "-0.02em" }}>{t.footer_cta_heading}</h2>
+          <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>{t.footer_cta_sub}</p>
+          <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{t.footer_cta_btn}</button>
         </div>
       </section>
 
@@ -229,7 +203,7 @@ export default function Landing({ onGetStarted, onLogin }) {
       <footer style={{ padding: "24px 40px", background: "#0a0a12", borderTop: "1px solid #1f1f35" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700, color: "#4b5563" }}>Cash Flow Visualizer</span>
-          <span style={{ fontSize: 13, color: "#4b5563", fontFamily: "'DM Sans', sans-serif" }}>© 2026 · All rights reserved</span>
+          <span style={{ fontSize: 13, color: "#4b5563", fontFamily: "'DM Sans', sans-serif" }}>{t.footer_rights}</span>
         </div>
       </footer>
     </div>

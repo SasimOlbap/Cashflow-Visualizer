@@ -8,6 +8,7 @@ import Landing from "./Landing";
 import CheckEmail from "./CheckEmail";
 import Welcome from "./Welcome";
 import ShareView from "./ShareView";
+import { translations } from "./i18n";
 import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
@@ -54,6 +55,7 @@ const loadMonths = () => {
 
 export default function App() {
   const [session, setSession] = useState(null);
+  const [lang, setLang] = useState(() => localStorage.getItem("cf_lang") || "en");
   const [authLoading, setAuthLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState("login");
@@ -113,11 +115,13 @@ export default function App() {
     </div>
   );
 
+  const handleSetLang = (l) => { setLang(l); localStorage.setItem("cf_lang", l); };
+
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
-  if (session) return <ErrorBoundary><CashFlow session={session} /></ErrorBoundary>;
+  if (session) return <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
-  return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} />;
+  return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
 }
 
 // ── auth screen ───────────────────────────────────────────────────────────────
@@ -185,7 +189,7 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   );
 }
 
-function CashFlow({ session }) {
+function CashFlow({ session, lang, setLang }) {
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
@@ -468,6 +472,19 @@ function CashFlow({ session }) {
                 }}>
                   {darkMode ? "☀️ Light" : "🌙 Dark"}
                 </button>
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <select value={lang} onChange={e => setLang(e.target.value)} style={{
+                    background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+                    padding: "6px 28px 6px 10px", cursor: "pointer", color: T.btnText,
+                    fontSize: 13, fontWeight: 500, outline: "none",
+                    appearance: "none", WebkitAppearance: "none",
+                  }}>
+                    {[{ code: "en", flag: "🇬🇧", label: "EN" }, { code: "es", flag: "🇪🇸", label: "ES" }, { code: "de", flag: "🇩🇪", label: "DE" }].map(l => (
+                      <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+                    ))}
+                  </select>
+                  <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: T.textMuted, fontSize: 10, pointerEvents: "none" }}>▾</span>
+                </div>
               </div>
               <button onClick={copyFromPrev} style={{
                 background: "#7c3aed", border: "none", borderRadius: 20,
