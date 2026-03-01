@@ -197,7 +197,7 @@ function CashFlow({ session, lang, setLang }) {
   useEffect(() => {
     const obs = new ResizeObserver(entries => {
       const w = Math.min(1200, Math.max(800, entries[0].contentRect.width));
-      setSvgW(w); setSvgH(Math.min(800, Math.max(320, w * 0.59)));
+      setSvgW(w); setSvgH(Math.min(750, Math.max(320, w * 0.59)));
     });
     if (svgRef.current) obs.observe(svgRef.current);
     return () => obs.disconnect();
@@ -500,7 +500,7 @@ function CashFlow({ session, lang, setLang }) {
         {/* Sankey + Month Sidebar */}
         <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", minWidth: 800, maxWidth: 1200, minHeight: 320, maxHeight: 800, overflow: "hidden" }}>
+            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", flex: 1, minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
               <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
                 {links.map(l => (
                   <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
