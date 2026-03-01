@@ -43,7 +43,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
   const isDeficit = n.id === "__deficit_src" || n.id === "__deficit_agg";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
   const nw  = n.w || nodeWidth;
-  const right  = n.col <= 1 || n.col === 3;
+  const right  = n.col <= 1;
   const lx     = right ? n.x + nw + 6 : n.x - 6;
   const anchor = right ? "start" : "end";
   const my = n.y + n.h / 2;
