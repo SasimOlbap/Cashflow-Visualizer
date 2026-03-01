@@ -7,6 +7,7 @@ import { supabase } from "./supabase";
 import Landing from "./Landing";
 import CheckEmail from "./CheckEmail";
 import Welcome from "./Welcome";
+import ShareView from "./ShareView";
 import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
@@ -60,8 +61,20 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const isNewSignup = useRef(false);
 
+  // Detect shared link params before auth loads
+  const sharedParams = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const data = params.get("data");
+      const month = params.get("month");
+      if (data && month) {
+        return { month, data: JSON.parse(decodeURIComponent(atob(data))) };
+      }
+    } catch {}
+    return null;
+  })();
+
   useEffect(() => {
-    // Detect if user arrived via email verification link
     const hash = window.location.hash;
     const params = new URLSearchParams(window.location.search);
     const isEmailVerification = hash.includes("access_token") || params.get("type") === "signup";
@@ -70,7 +83,6 @@ export default function App() {
       setSession(session);
       if (session && isEmailVerification) {
         setShowWelcome(true);
-        // Clean up URL
         window.history.replaceState({}, "", window.location.pathname);
       }
       setAuthLoading(false);
@@ -85,6 +97,15 @@ export default function App() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Show shared view immediately — no auth needed
+  if (sharedParams) return (
+    <ShareView
+      month={sharedParams.month}
+      data={sharedParams.data}
+      onGetStarted={() => { window.history.replaceState({}, "", window.location.pathname); setAuthMode("signup"); setShowAuth(true); }}
+    />
+  );
 
   if (authLoading) return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0f0f1a" }}>
@@ -413,8 +434,8 @@ function CashFlow({ session }) {
                 <input ref={importRef} type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
                 <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
                   {[
-                    { label: "↓ Save",   onClick: handleSave },
-                    { label: "↑ Import", onClick: () => importRef.current?.click() },
+                    { label: "↓ Back-up", onClick: handleSave },
+                    { label: "↑ Restore", onClick: () => importRef.current?.click() },
                     { label: "⊕ Share",  onClick: handleShare, active: shareCopied },
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick} style={{
