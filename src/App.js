@@ -546,9 +546,16 @@ function CashFlow({ session, lang, setLang }) {
 
               {/* Month strip */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
-                <button onClick={goPrev} disabled={!canGoPrev} style={navBtnSt(canGoPrev)}>
-                  <DoubleArrow direction="left" color={hlColor} />
-                </button>
+                {/* ← → grouped pill on the left */}
+                <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
+                  <button onClick={goPrev} disabled={!canGoPrev} style={{ ...navBtnSt(canGoPrev), border: "none", borderRadius: 0 }}>
+                    <DoubleArrow direction="left" color={hlColor} />
+                  </button>
+                  <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
+                  <button onClick={goNext} disabled={!canGoNext} style={{ ...navBtnSt(canGoNext), border: "none", borderRadius: 0 }}>
+                    <DoubleArrow direction="right" color={hlColor} />
+                  </button>
+                </div>
                 <div style={{ display: "flex", flex: 1, gap: 2 }}>
                   {MONTH_NAMES.map((name, i) => {
                     const key = toKey(today.getFullYear(), i + 1);
@@ -573,9 +580,6 @@ function CashFlow({ session, lang, setLang }) {
                     );
                   })}
                 </div>
-                <button onClick={goNext} disabled={!canGoNext} style={navBtnSt(canGoNext)}>
-                  <DoubleArrow direction="right" color={hlColor} />
-                </button>
               </div>
 
               {/* SVG */}
