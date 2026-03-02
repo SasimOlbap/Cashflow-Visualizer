@@ -42,7 +42,7 @@ function DoubleArrow({ direction, color }) {
 }
 
 // ── Mobile-only screen ───────────────────────────────────────────────────────
-function MobileOnly() {
+function MobileOnly({ onBack }) {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -66,7 +66,7 @@ function MobileOnly() {
         </p>
         <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
         <p style={{ fontSize: 12, color: "#6b7280", fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Meanwhile, explore what it can do:</p>
-        <button onClick={() => window.history.back()} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+        <button onClick={onBack} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           Back to Landing Page
         </button>
       </div>
@@ -179,7 +179,7 @@ export default function App() {
   const isMobile = window.innerWidth < 768;
 
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
-  if (session) return isMobile ? <MobileOnly /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
+  if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
