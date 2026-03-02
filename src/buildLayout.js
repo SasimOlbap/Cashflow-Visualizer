@@ -73,9 +73,6 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   });
   nodes.forEach(n => { n.x = actualColX[n.col]; });
 
-  const centerX      = actualColX[2];
-  const maxDistLeft  = Math.max(...[0, 1].map(i => Math.abs(actualColX[i] - centerX))) || 1;
-  const maxDistRight = Math.max(...[3, 4].map(i => Math.abs(actualColX[i] - centerX))) || 1;
   const getHeightScale = ci => {
     const scales = [0.85, 0.90, 1.00, 0.90, 0.85];
     return scales[ci] ?? 0.85;
