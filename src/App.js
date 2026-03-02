@@ -14,33 +14,6 @@ import {
   GROUP_COLORS, LINK_LEFT, LINK_RIGHT,
 } from "./constants";
 
-// ── DoubleArrow nav icon ──────────────────────────────────────────────────────
-function DoubleArrow({ direction, color }) {
-  const size = 20;
-  const w = 8, h = 12;
-  const cy = size / 2;
-  const sep = 6;
-  const sw = 1.7;
-  let p1, p2;
-  if (direction === "right") {
-    const x1 = size / 2 - sep / 2 - w;
-    const x2 = size / 2 - sep / 2;
-    p1 = `M${x1},${cy-h/2} L${x1+w},${cy} L${x1},${cy+h/2}`;
-    p2 = `M${x2},${cy-h/2} L${x2+w},${cy} L${x2},${cy+h/2}`;
-  } else {
-    const x1 = size / 2 + sep / 2 + w;
-    const x2 = size / 2 + sep / 2;
-    p1 = `M${x1},${cy-h/2} L${x1-w},${cy} L${x1},${cy+h/2}`;
-    p2 = `M${x2},${cy-h/2} L${x2-w},${cy} L${x2},${cy+h/2}`;
-  }
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
-      <path d={p1} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" />
-      <path d={p2} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 // ── error boundary ────────────────────────────────────────────────────────────
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { crashed: false }; }
@@ -524,100 +497,86 @@ function CashFlow({ session, lang, setLang }) {
           </div>
         </div>
 
-        {/* Sankey card — month strip on top, tooltip bar on bottom */}
-        {(() => {
-          const hlColor = "#c4b5fd";
-          const dataMonths = MONTH_NAMES
-            .map((_, i) => toKey(today.getFullYear(), i + 1))
-            .filter(key => !!(months[key]?.income?.length || months[key]?.expenses?.length));
-          const curDataIdx = dataMonths.indexOf(curKey);
-          const canGoPrev  = curDataIdx > 0;
-          const canGoNext  = curDataIdx < dataMonths.length - 1;
-          const goPrev = () => { if (canGoPrev) { setCurKey(dataMonths[curDataIdx - 1]); setHovMonth(null); } };
-          const goNext = () => { if (canGoNext) { setCurKey(dataMonths[curDataIdx + 1]); setHovMonth(null); } };
-          const navBtnSt = (enabled) => ({
-            background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
-            padding: "5px 9px", cursor: enabled ? "pointer" : "default",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: enabled ? 1 : 0.28, transition: "opacity 0.15s", flexShrink: 0,
-          });
-          return (
-            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.3s", overflow: "hidden" }}>
-
-              {/* Month strip */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
-                <button onClick={goPrev} disabled={!canGoPrev} style={navBtnSt(canGoPrev)}>
-                  <DoubleArrow direction="left" color={hlColor} />
-                </button>
-                <div style={{ display: "flex", flex: 1, gap: 2 }}>
-                  {MONTH_NAMES.map((name, i) => {
-                    const key = toKey(today.getFullYear(), i + 1);
-                    const isSelected = key === curKey;
-                    const isHovered  = key === hovMonth;
-                    const hasData    = !!(months[key]?.income?.length || months[key]?.expenses?.length);
-                    return (
-                      <button key={key}
-                        onClick={() => { if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovMonth(null); }}
-                        onMouseEnter={() => hasData && setHovMonth(key)}
-                        onMouseLeave={() => setHovMonth(null)}
-                        style={{
-                          flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
-                          border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
-                          borderRadius: 7,
-                          color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
-                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
-                          padding: "5px 2px", cursor: "pointer", textAlign: "center",
-                          opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
-                          transition: "all 0.15s", whiteSpace: "nowrap",
-                        }}>{name}</button>
-                    );
-                  })}
-                </div>
-                <button onClick={goNext} disabled={!canGoNext} style={navBtnSt(canGoNext)}>
-                  <DoubleArrow direction="right" color={hlColor} />
-                </button>
-              </div>
-
-              {/* SVG */}
-              <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
-                <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-                  {links.map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
-                  ))}
-                  {nodes.map(n => (
-                    <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
-                  ))}
-                </svg>
-              </div>
-
-              {/* Tooltip bar */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
-                <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-                  <span style={{ color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
-                  <span style={{ color: T.textMuted }}>
-                    {surplus >= 0
-                      ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                      : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
-                  </span>
-                </div>
-                <div>
-                  {hovLink ? (
-                    <span>
-                      <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
-                      <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
-                      <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
-                    </span>
-                  ) : (
-                    <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
-                  )}
-                </div>
-              </div>
-
+        {/* Sankey + Month Sidebar */}
+        <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", flex: 1, minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
+              <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
+                {links.map(l => (
+                  <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
+                ))}
+                {nodes.map(n => (
+                  <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
+                    GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
+                ))}
+              </svg>
             </div>
-          );
-        })()}
+
+            {/* Tooltip */}
+            <div style={{ background: T.bgCard, borderRadius: 10, height: 46, padding: "8px 14px",
+              border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
+              display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.3s" }}>
+              <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
+                <span style={{ fontSize: 14, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 14, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                <span style={{ fontSize: 14, color: T.textMuted }}>
+                  {surplus >= 0
+                    ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                    : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
+                </span>
+              </div>
+              <div>
+                {hovLink ? (
+                  <span>
+                    <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                    <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                    <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+                  </span>
+                ) : (
+                  <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Month sidebar */}
+          <div style={{ display: "flex", flexDirection: "column", width: 52,
+            background: T.bgCard, borderRadius: 14, padding: "10px 6px",
+            border: `1px solid ${T.border}`, transition: "background 0.3s",
+            justifyContent: "flex-start", gap: 0 }}>
+            {MONTH_NAMES.map((name, i) => {
+              const key = toKey(today.getFullYear(), i + 1);
+              const isSelected = key === curKey;
+              const isHovered = key === hovMonth;
+              const hasData = !!(months[key]?.income?.length || months[key]?.expenses?.length);
+              return (
+                <button key={key}
+                  onClick={() => {
+                    if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } }));
+                    setCurKey(key);
+                    setHovMonth(null);
+                  }}
+                  onMouseEnter={() => hasData && setHovMonth(key)}
+                  onMouseLeave={() => setHovMonth(null)}
+                  style={{
+                    background: isSelected || isHovered ? T.bgCard : "transparent",
+                    border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
+                    borderRadius: 8,
+                    color: isSelected || isHovered ? "#c4b5fd" : hasData ? T.text : T.textFaint,
+                    fontSize: 13,
+                    fontWeight: isSelected || isHovered ? 700 : 400,
+                    padding: "6px 4px",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    opacity: isSelected || isHovered ? 1 : hasData ? 0.8 : 0.35,
+                    transition: "all 0.15s",
+                  }}>
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Editor */}
         <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "flex-start", flexWrap: "wrap" }}>
