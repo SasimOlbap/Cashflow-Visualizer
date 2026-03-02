@@ -14,6 +14,66 @@ import {
   GROUP_COLORS, LINK_LEFT, LINK_RIGHT,
 } from "./constants";
 
+// ── DoubleArrow nav icon ──────────────────────────────────────────────────────
+function DoubleArrow({ direction, color }) {
+  const size = 20;
+  const w = 8, h = 12;
+  const cy = size / 2;
+  const sep = 6;
+  const sw = 1.7;
+  let p1, p2;
+  if (direction === "right") {
+    const x1 = size / 2 - sep / 2 - w;
+    const x2 = size / 2 - sep / 2;
+    p1 = `M${x1},${cy-h/2} L${x1+w},${cy} L${x1},${cy+h/2}`;
+    p2 = `M${x2},${cy-h/2} L${x2+w},${cy} L${x2},${cy+h/2}`;
+  } else {
+    const x1 = size / 2 + sep / 2 + w;
+    const x2 = size / 2 + sep / 2;
+    p1 = `M${x1},${cy-h/2} L${x1-w},${cy} L${x1},${cy+h/2}`;
+    p2 = `M${x2},${cy-h/2} L${x2-w},${cy} L${x2},${cy+h/2}`;
+  }
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
+      <path d={p1} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={p2} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Mobile-only screen ───────────────────────────────────────────────────────
+function MobileOnly() {
+  return (
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      background: "radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.25) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.15) 0%, transparent 55%), #0a0818",
+      padding: "40px 24px", textAlign: "center", position: "relative", overflow: "hidden",
+      fontFamily: "'DM Sans','Segoe UI',sans-serif",
+    }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;600&display=swap');`}</style>
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
+      <div style={{ position: "relative", maxWidth: 320 }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Financial Overview</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff" }}>Cash Flow Visualizer</div>
+        </div>
+        <div style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🖥️</div>
+        </div>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 900, color: "#fff", marginBottom: 14, letterSpacing: "-0.02em", lineHeight: 1.2 }}>Best on desktop</h2>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: "#9ca3af", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
+          Cash Flow Visualizer is optimized for desktop. Please open it on a larger screen for the full experience.
+        </p>
+        <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
+        <p style={{ fontSize: 12, color: "#6b7280", fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Meanwhile, explore what it can do:</p>
+        <button onClick={() => window.history.back()} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+          Back to Landing Page
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── error boundary ────────────────────────────────────────────────────────────
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { crashed: false }; }
@@ -116,8 +176,10 @@ export default function App() {
 
   const handleSetLang = (l) => { setLang(l); localStorage.setItem("cf_lang", l); };
 
+  const isMobile = window.innerWidth < 768;
+
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
-  if (session) return <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
+  if (session) return isMobile ? <MobileOnly /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
@@ -197,7 +259,7 @@ function CashFlow({ session, lang, setLang }) {
   useEffect(() => {
     const obs = new ResizeObserver(entries => {
       const w = Math.min(1200, Math.max(320, entries[0].contentRect.width));
-      setSvgW(w); setSvgH(Math.min(750, Math.max(320, w * 0.59)));
+      setSvgW(w); setSvgH(Math.min(700, Math.max(320, w * 0.57)));
     });
     if (svgRef.current) obs.observe(svgRef.current);
     return () => obs.disconnect();
@@ -497,86 +559,104 @@ function CashFlow({ session, lang, setLang }) {
           </div>
         </div>
 
-        {/* Sankey + Month Sidebar */}
-        <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, transition: "background 0.3s", flex: 1, minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
-              <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-                {links.map(l => (
-                  <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
-                ))}
-                {nodes.map(n => (
-                  <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                    GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
-                ))}
-              </svg>
-            </div>
+        {/* Sankey card — month strip on top, tooltip bar on bottom */}
+        {(() => {
+          const hlColor = "#c4b5fd";
+          const dataMonths = MONTH_NAMES
+            .map((_, i) => toKey(today.getFullYear(), i + 1))
+            .filter(key => !!(months[key]?.income?.length || months[key]?.expenses?.length));
+          const curDataIdx = dataMonths.indexOf(curKey);
+          const canGoPrev  = curDataIdx > 0;
+          const canGoNext  = curDataIdx < dataMonths.length - 1;
+          const goPrev = () => { if (canGoPrev) { setCurKey(dataMonths[curDataIdx - 1]); setHovMonth(null); } };
+          const goNext = () => { if (canGoNext) { setCurKey(dataMonths[curDataIdx + 1]); setHovMonth(null); } };
+          const navBtnSt = (enabled) => ({
+            background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+            padding: "5px 9px", cursor: enabled ? "pointer" : "default",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            opacity: enabled ? 1 : 0.28, transition: "opacity 0.15s", flexShrink: 0,
+          });
+          return (
+            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.3s", overflow: "hidden" }}>
 
-            {/* Tooltip */}
-            <div style={{ background: T.bgCard, borderRadius: 10, height: 46, padding: "8px 14px",
-              border: `1px solid ${T.border}`, fontSize: 14, color: T.textNode,
-              display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.3s" }}>
-              <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                <span style={{ fontSize: 14, color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-                <span style={{ fontSize: 14, color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
-                <span style={{ fontSize: 14, color: T.textMuted }}>
-                  {surplus >= 0
-                    ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                    : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
-                </span>
+              {/* Month strip */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
+                {/* ← → grouped pill on the left */}
+                <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
+                  <button onClick={goPrev} disabled={!canGoPrev} style={{ ...navBtnSt(canGoPrev), border: "none", borderRadius: 0 }}>
+                    <DoubleArrow direction="left" color={hlColor} />
+                  </button>
+                  <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
+                  <button onClick={goNext} disabled={!canGoNext} style={{ ...navBtnSt(canGoNext), border: "none", borderRadius: 0 }}>
+                    <DoubleArrow direction="right" color={hlColor} />
+                  </button>
+                </div>
+                <div style={{ display: "flex", flex: 1, gap: 2 }}>
+                  {MONTH_NAMES.map((name, i) => {
+                    const key = toKey(today.getFullYear(), i + 1);
+                    const isSelected = key === curKey;
+                    const isHovered  = key === hovMonth;
+                    const hasData    = !!(months[key]?.income?.length || months[key]?.expenses?.length);
+                    return (
+                      <button key={key}
+                        onClick={() => { if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovMonth(null); }}
+                        onMouseEnter={() => hasData && setHovMonth(key)}
+                        onMouseLeave={() => setHovMonth(null)}
+                        style={{
+                          flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
+                          border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
+                          borderRadius: 7,
+                          color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
+                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
+                          padding: "5px 2px", cursor: "pointer", textAlign: "center",
+                          opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
+                          transition: "all 0.15s", whiteSpace: "nowrap",
+                        }}>{name}</button>
+                    );
+                  })}
+                </div>
               </div>
-              <div>
-                {hovLink ? (
-                  <span>
-                    <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
-                    <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
-                    <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+
+              {/* SVG */}
+              <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
+                <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
+                  {links.map(l => (
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
+                  ))}
+                  {nodes.map(n => (
+                    <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
+                  ))}
+                </svg>
+              </div>
+
+              {/* Tooltip bar */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
+                <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
+                  <span style={{ color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>
+                    {surplus >= 0
+                      ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                      : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                   </span>
-                ) : (
-                  <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
-                )}
+                </div>
+                <div>
+                  {hovLink ? (
+                    <span>
+                      <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                      <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                      <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
+                    </span>
+                  ) : (
+                    <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Month sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", width: 52,
-            background: T.bgCard, borderRadius: 14, padding: "10px 6px",
-            border: `1px solid ${T.border}`, transition: "background 0.3s",
-            justifyContent: "flex-start", gap: 0 }}>
-            {MONTH_NAMES.map((name, i) => {
-              const key = toKey(today.getFullYear(), i + 1);
-              const isSelected = key === curKey;
-              const isHovered = key === hovMonth;
-              const hasData = !!(months[key]?.income?.length || months[key]?.expenses?.length);
-              return (
-                <button key={key}
-                  onClick={() => {
-                    if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } }));
-                    setCurKey(key);
-                    setHovMonth(null);
-                  }}
-                  onMouseEnter={() => hasData && setHovMonth(key)}
-                  onMouseLeave={() => setHovMonth(null)}
-                  style={{
-                    background: isSelected || isHovered ? T.bgCard : "transparent",
-                    border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
-                    borderRadius: 8,
-                    color: isSelected || isHovered ? "#c4b5fd" : hasData ? T.text : T.textFaint,
-                    fontSize: 13,
-                    fontWeight: isSelected || isHovered ? 700 : 400,
-                    padding: "6px 4px",
-                    cursor: "pointer",
-                    textAlign: "center",
-                    opacity: isSelected || isHovered ? 1 : hasData ? 0.8 : 0.35,
-                    transition: "all 0.15s",
-                  }}>
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            </div>
+          );
+        })()}
 
         {/* Editor */}
         <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "flex-start", flexWrap: "wrap" }}>
