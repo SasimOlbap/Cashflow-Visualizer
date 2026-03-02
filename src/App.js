@@ -224,7 +224,7 @@ function CashFlow({ session, lang, setLang }) {
   useEffect(() => {
     const obs = new ResizeObserver(entries => {
       const w = Math.min(1200, Math.max(320, entries[0].contentRect.width));
-      setSvgW(w); setSvgH(Math.min(738, Math.max(320, w * 0.58)));
+      setSvgW(w); setSvgH(Math.min(735, Math.max(320, w * 0.58)));
     });
     if (svgRef.current) obs.observe(svgRef.current);
     return () => obs.disconnect();
