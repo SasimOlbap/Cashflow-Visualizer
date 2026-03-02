@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { translations } from "./i18n";
 
 const LANGS = [
@@ -7,8 +8,9 @@ const LANGS = [
 ];
 
 export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const t = translations[lang] || translations.en;
-  const scrollTo = id => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = id => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: "#fafaf8", color: "#1a1a1a", minHeight: "100vh" }}>
@@ -49,6 +51,27 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
         }
         .lang-select:hover { border-color: rgba(255,255,255,0.3); }
         .lang-select option { background: #0f0f1a; color: #e2e8f0; }
+        @media (max-width: 767px) {
+          .nav-desktop { display: none !important; }
+          .nav-hamburger { display: flex !important; }
+          .nav-mobile-menu { display: flex !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .hero-demo { display: none !important; }
+          .hero-btns { flex-direction: column !important; }
+          .hero-btns button { width: 100% !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .pricing-grid { grid-template-columns: 1fr !important; }
+          .hero-section { padding: 60px 20px 48px !important; }
+          .features-section { padding: 56px 20px !important; }
+          .pricing-section { padding: 56px 20px !important; }
+          .footer-cta-section { padding: 56px 20px !important; }
+          .footer-cta-btn { width: 100% !important; }
+          nav { padding: 0 20px !important; }
+        }
+        @media (min-width: 768px) {
+          .nav-hamburger { display: none !important; }
+          .nav-mobile-menu { display: none !important; }
+        }
       `}</style>
 
       {/* Nav */}
@@ -58,7 +81,8 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#fff" }}>Cash Flow</span>
             <span style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>Visualizer</span>
           </div>
-          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          {/* Desktop nav */}
+          <div className="nav-desktop" style={{ display: "flex", gap: 24, alignItems: "center" }}>
             <span onClick={() => scrollTo("features")} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{t.nav_features}</span>
             <span onClick={() => scrollTo("pricing")} className="nav-link" style={{ fontSize: 14, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{t.nav_pricing}</span>
             <div style={{ position: "relative" }}>
@@ -71,15 +95,33 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
               {t.nav_login}
             </button>
           </div>
+          {/* Hamburger */}
+          <button className="nav-hamburger" onClick={() => setMenuOpen(m => !m)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexDirection: "column", gap: 5 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ width: 22, height: 2, background: "#9ca3af", borderRadius: 2,
+                transform: menuOpen && i===0 ? "rotate(45deg) translate(5px,5px)" : menuOpen && i===2 ? "rotate(-45deg) translate(5px,-5px)" : "none",
+                opacity: menuOpen && i===1 ? 0 : 1, transition: "all 0.2s" }} />
+            ))}
+          </button>
         </div>
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="nav-mobile-menu" style={{ flexDirection: "column", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "16px 0 20px" }}>
+            <span onClick={() => scrollTo("features")} style={{ padding: "12px 0", fontSize: 15, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, cursor: "pointer" }}>{t.nav_features}</span>
+            <span onClick={() => scrollTo("pricing")} style={{ padding: "12px 0", fontSize: 15, color: "#9ca3af", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, cursor: "pointer" }}>{t.nav_pricing}</span>
+            <button onClick={onLogin} style={{ marginTop: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#9ca3af" }}>
+              {t.nav_login}
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
-      <section className="hero-bg" style={{ position: "relative", padding: "100px 40px", overflow: "hidden" }}>
+      <section className="hero-bg hero-section" style={{ position: "relative", padding: "100px 40px", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-20%", right: "-5%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "-10%", left: "10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", position: "relative" }}>
+        <div className="hero-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", position: "relative" }}>
           <div>
             <div className="fade-in" style={{ animationDelay: "0s", display: "inline-block", background: "rgba(124,58,237,0.2)", color: "#c4b5fd", fontSize: 12, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", padding: "5px 14px", borderRadius: 20, marginBottom: 28, fontFamily: "'DM Sans', sans-serif", border: "1px solid rgba(124,58,237,0.3)" }}>
               {t.hero_badge}
@@ -90,7 +132,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
             <p className="fade-in" style={{ animationDelay: "0.2s", fontSize: 17, lineHeight: 1.8, color: "#9ca3af", marginBottom: 40, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
               {t.hero_subtitle}
             </p>
-            <div className="fade-in" style={{ animationDelay: "0.3s", display: "flex", gap: 12 }}>
+            <div className="fade-in hero-btns" style={{ animationDelay: "0.3s", display: "flex", gap: 12 }}>
               <button onClick={() => scrollTo("pricing")} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                 {t.hero_cta}
               </button>
@@ -103,7 +145,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
             </p>
           </div>
           {/* Demo card */}
-          <div className="fade-in" style={{ animationDelay: "0.2s", background: "#0f0f1a", borderRadius: 16, padding: 24, boxShadow: "0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="fade-in hero-demo" style={{ animationDelay: "0.2s", background: "#0f0f1a", borderRadius: 16, padding: 24, boxShadow: "0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 2, fontFamily: "'DM Sans', sans-serif" }}>{t.demo_overview}</div>
@@ -134,7 +176,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
       </section>
 
       {/* Features */}
-      <section id="features" style={{ padding: "80px 40px", background: "#fff", borderTop: "1px solid #e8e4df" }}>
+      <section id="features" className="features-section" style={{ padding: "80px 40px", background: "#fff", borderTop: "1px solid #e8e4df" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{t.features_label}</div>
@@ -142,7 +184,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
               {t.features_heading1}<br />{t.features_heading2}
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+          <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
             {t.features.map((f, i) => (
               <div key={i} className="feature-card" style={{ background: "#fafaf8", border: "1px solid #e8e4df", borderRadius: 14, padding: "28px 22px" }}>
                 <div style={{ fontSize: 22, color: "#7c3aed", marginBottom: 12 }}>{f.icon}</div>
@@ -155,13 +197,13 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" style={{ padding: "80px 40px", background: "#fafaf8", borderTop: "1px solid #e8e4df" }}>
+      <section id="pricing" className="pricing-section" style={{ padding: "80px 40px", background: "#fafaf8", borderTop: "1px solid #e8e4df" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{t.pricing_label}</div>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 700, color: "#0f0f1a", letterSpacing: "-0.02em" }}>{t.pricing_heading}</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
             {t.pricing.map((p, i) => (
               <div key={i} className="pricing-card" style={{ background: p.highlight ? "#0f0f1a" : "#fff", border: p.highlight ? "2px solid #7c3aed" : "1px solid #e8e4df", borderRadius: 16, padding: "32px 28px", position: "relative" }}>
                 {p.highlight && <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: p.comingSoon ? "#4b5563" : "#7c3aed", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 16px", borderRadius: 20, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>{p.comingSoon ? t.pricing_coming_soon : t.pricing_most_popular}</div>}
@@ -191,11 +233,11 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
       </section>
 
       {/* Footer CTA */}
-      <section style={{ padding: "80px 40px", background: "#0f0f1a", textAlign: "center" }}>
+      <section className="footer-cta-section" style={{ padding: "80px 40px", background: "#0f0f1a", textAlign: "center" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 900, color: "#fff", marginBottom: 16, letterSpacing: "-0.02em" }}>{t.footer_cta_heading}</h2>
           <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>{t.footer_cta_sub}</p>
-          <button onClick={onGetStarted} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{t.footer_cta_btn}</button>
+          <button onClick={onGetStarted} className="cta-btn footer-cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "16px 36px", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{t.footer_cta_btn}</button>
         </div>
       </section>
 

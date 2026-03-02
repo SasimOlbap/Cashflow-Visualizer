@@ -41,6 +41,39 @@ function DoubleArrow({ direction, color }) {
   );
 }
 
+// ── Mobile-only screen ───────────────────────────────────────────────────────
+function MobileOnly() {
+  return (
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      background: "radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.25) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.15) 0%, transparent 55%), #0a0818",
+      padding: "40px 24px", textAlign: "center", position: "relative", overflow: "hidden",
+      fontFamily: "'DM Sans','Segoe UI',sans-serif",
+    }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;600&display=swap');`}</style>
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
+      <div style={{ position: "relative", maxWidth: 320 }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Financial Overview</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff" }}>Cash Flow Visualizer</div>
+        </div>
+        <div style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🖥️</div>
+        </div>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 900, color: "#fff", marginBottom: 14, letterSpacing: "-0.02em", lineHeight: 1.2 }}>Best on desktop</h2>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: "#9ca3af", marginBottom: 32, fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
+          Cash Flow Visualizer is optimized for desktop. Please open it on a larger screen for the full experience.
+        </p>
+        <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
+        <p style={{ fontSize: 12, color: "#6b7280", fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Meanwhile, explore what it can do:</p>
+        <button onClick={() => window.history.back()} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+          Back to Landing Page
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── error boundary ────────────────────────────────────────────────────────────
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { crashed: false }; }
@@ -143,8 +176,10 @@ export default function App() {
 
   const handleSetLang = (l) => { setLang(l); localStorage.setItem("cf_lang", l); };
 
+  const isMobile = window.innerWidth < 768;
+
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
-  if (session) return <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
+  if (session) return isMobile ? <MobileOnly /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
