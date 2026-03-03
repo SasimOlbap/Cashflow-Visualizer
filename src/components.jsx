@@ -6,19 +6,19 @@ export function LinkPath({ link, color, onHover, hovered, colX }) {
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
   const isSurplusLink = link.target === "__surplus";
-  const isDeficitLink = link.target === "__deficit_agg";
-  // surplus: straight col2->col3, curve col3->col4
+  // deficit flows from __deficit_agg (col1) to __total (col2), render extending to col0
+  const isDeficitLink = link.source === "__deficit_agg" && link.target === "__total";
+  // surplus: straight col2->col3 then curve to col4
   const col4x = colX ? colX[4] : tx;
   const swx   = colX ? colX[3] : mx;
   const scmx  = (swx + col4x) / 2;
-  // deficit: straight col2->col1, curve col1->col0
-  const col0x = colX ? colX[0] : tx;
-  const dwx   = colX ? colX[1] : mx;
-  const dcmx  = (dwx + col0x) / 2;
+  // deficit: flows col1->col2 normally, but visually extends left to col0
+  const col0x = colX ? colX[0] : sx;
+  const dcmx  = (col0x + sx) / 2;
   const d = isSurplusLink
     ? `M${sx},${sy0} L${swx},${sy0} C${scmx},${sy0} ${scmx},${ty0} ${col4x},${ty0} L${col4x},${ty1} C${scmx},${ty1} ${scmx},${sy1} ${swx},${sy1} L${sx},${sy1} Z`
     : isDeficitLink
-    ? `M${sx},${sy0} L${dwx},${sy0} C${dcmx},${sy0} ${dcmx},${ty0} ${col0x},${ty0} L${col0x},${ty1} C${dcmx},${ty1} ${dcmx},${sy1} ${dwx},${sy1} L${sx},${sy1} Z`
+    ? `M${col0x},${sy0} C${dcmx},${sy0} ${dcmx},${sy0} ${sx},${sy0} L${tx},${ty0} L${tx},${ty1} L${sx},${sy1} C${dcmx},${sy1} ${dcmx},${sy1} ${col0x},${sy1} Z`
     : `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
