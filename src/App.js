@@ -434,7 +434,7 @@ function CashFlow({ session, lang, setLang }) {
   try {
     layoutResult = buildLayout(income, expenses, svgW, svgH, colOffsets);
   } catch {}
-  const { nodes, links, nodeWidth, grand, totalExp, surplus } = layoutResult;
+  const { nodes, links, nodeWidth, grand, totalExp, surplus, colX } = layoutResult;
 
   const nodeMapD = {};
   nodes.forEach(n => { nodeMapD[n.id] = n; });
@@ -445,12 +445,9 @@ function CashFlow({ session, lang, setLang }) {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__deficit_src" || link.source === "__deficit_agg" ||
-        link.target === "__deficit_agg" || (link.target === "__total" && link.source === "__deficit_agg"))
-      return "#f87171";
+    if (link.source === "__deficit_agg" && link.target === "__total") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
-    if (link.source === "__surplus" || link.target === "__surplus" || link.target === "__surplus_leaf")
-      return "#86efac";
+    if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
     return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
   };
@@ -621,11 +618,11 @@ function CashFlow({ session, lang, setLang }) {
               <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
                 <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
                   {links.map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
                   ))}
                 </svg>
               </div>
