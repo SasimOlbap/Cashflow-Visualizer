@@ -38,7 +38,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark }) {
   const isSurplus = n.id === "__surplus" || n.id === "__surplus_leaf";
   const isDeficit = n.id === "__deficit_src" || n.id === "__deficit_agg";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
@@ -58,8 +58,8 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
       <text x={lx} y={my + 8} textAnchor={anchor} fontSize={Math.max(9, fs - 1)}>
-        <tspan fill="#ffffff">{fmt(n.value)}</tspan>
-        <tspan fill="#ffffff" fontSize={Math.max(8, fs - 2)} dx={5}>{pct(n.value, grand)}</tspan>
+        <tspan fill={T.textNode}>{fmt(n.value)}</tspan>
+        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={Math.max(8, fs - 2)} dx={5}>{pct(n.value, grand)}</tspan>
       </text>
     </g>
   );
