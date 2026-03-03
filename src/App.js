@@ -493,6 +493,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
+    <>
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
         ? `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.12) 0%, transparent 50%), ${T.bg}`
         : `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), ${T.bg}`, minHeight: "100vh",
@@ -726,7 +727,6 @@ function CashFlow({ session, lang, setLang }) {
       </div>
       </div>
     </div>
-
       {/* Right-click context menu */}
       {ctxMenu && (
         <div onClick={() => setCtxMenu(null)} style={{ position: "fixed", inset: 0, zIndex: 1000 }}>
@@ -778,5 +778,6 @@ function CashFlow({ session, lang, setLang }) {
           </div>
         </div>
       )}
+    </>
   );
 }
