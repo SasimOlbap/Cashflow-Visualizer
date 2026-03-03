@@ -6,19 +6,9 @@ export function LinkPath({ link, color, onHover, hovered, colX }) {
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
   const isSurplusLink = link.target === "__surplus";
-  // deficit flows from __deficit_agg (col1) to __total (col2), render extending to col0
   const isDeficitLink = link.source === "__deficit_agg" && link.target === "__total";
-  // surplus: straight col2->col3 then curve to col4
-  const col4x = colX ? colX[4] : tx;
-  const swx   = colX ? colX[3] : mx;
-  const scmx  = (swx + col4x) / 2;
-  // deficit: flows col1->col2 normally, but visually extends left to col0
-  const col0x = colX ? colX[0] : sx;
-  const dcmx  = (col0x + sx) / 2;
-  const d = isSurplusLink
-    ? `M${sx},${sy0} L${swx},${sy0} C${scmx},${sy0} ${scmx},${ty0} ${col4x},${ty0} L${col4x},${ty1} C${scmx},${ty1} ${scmx},${sy1} ${swx},${sy1} L${sx},${sy1} Z`
-    : isDeficitLink
-    ? `M${col0x},${sy0} C${dcmx},${sy0} ${dcmx},${sy0} ${sx},${sy0} L${tx},${ty0} L${tx},${ty1} L${sx},${sy1} C${dcmx},${sy1} ${dcmx},${sy1} ${col0x},${sy1} Z`
+  const d = (isSurplusLink || isDeficitLink)
+    ? `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`
     : `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
@@ -52,24 +42,22 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark, nx: nxProp }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark }) {
   const isSurplus = n.id === "__surplus";
   const isDeficit = n.id === "__deficit_agg";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
   const nw  = n.w || nodeWidth;
-  const nx  = nxProp ?? n.x;
-  // surplus/deficit render at outer cols, label on outer side
-  const right  = isSurplus ? false : isDeficit ? true : n.col <= 1;
-  const lx     = right ? nx + nw + 6 : nx - 6;
+  const right  = n.col <= 1;
+  const lx     = right ? n.x + nw + 6 : n.x - 6;
   const anchor = right ? "start" : "end";
   const my = n.y + n.h / 2;
   const fs = Math.min(14, Math.max(9, n.h * 0.30));
   return (
     <g key={n.id}>
-      <rect x={nx} y={n.y} width={nw} height={n.h} fill={c} rx={3}
+      <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
         style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
-      <rect x={nx - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
+      <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
         style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>

@@ -620,13 +620,10 @@ function CashFlow({ session, lang, setLang }) {
                   {links.map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
-                  {nodes.map(n => {
-                    const nx = (n.id === "__surplus" && colX) ? colX[4] : (n.id === "__deficit_agg" && colX) ? colX[0] : n.x;
-                    return (
-                      <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                        GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} nx={nx} />
-                    );
-                  })}
+                  {nodes.map(n => (
+                    <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
+                  ))}
                 </svg>
               </div>
 
