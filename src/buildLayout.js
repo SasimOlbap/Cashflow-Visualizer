@@ -18,8 +18,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
 
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
-  // deficit shown only as agg in col1, rendered at col0
-  if (deficit > 0) push("__deficit_phantom", "", deficit, "source"); // phantom for col0 height balance
+  // deficit shown only as agg in col1
   if (activeSum  > 0) push("__active",      "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive",     "Passive Income", passiveSum, "agg");
   if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
