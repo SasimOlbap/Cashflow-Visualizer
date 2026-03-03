@@ -45,7 +45,9 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark }) {
   const isSurplus = n.id === "__surplus";
   const isDeficit = n.id === "__deficit_agg";
+  const isPhantom = n.id === "__surplus_phantom";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
+  if (isPhantom || n.id === "__deficit_phantom") return <g key={n.id} />; // invisible spacer
   const nw  = n.w || nodeWidth;
   const right  = n.col <= 1;
   const lx     = right ? n.x + nw + 6 : n.x - 6;

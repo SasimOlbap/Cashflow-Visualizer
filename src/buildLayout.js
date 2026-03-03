@@ -19,6 +19,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
   // deficit shown only as agg in col1, rendered at col0
+  if (deficit > 0) push("__deficit_phantom", "", deficit, "source"); // phantom for col0 height balance
   if (activeSum  > 0) push("__active",      "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive",     "Passive Income", passiveSum, "agg");
   if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
@@ -26,6 +27,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c], catSums[c], "category"); });
   // surplus as category (col3) for sizing, rendered visually at col4
   if (surplus > 0) push("__surplus", "Surplus", surplus, "category");
+  if (surplus > 0) push("__surplus_phantom", "", surplus, "leaf"); // phantom for col4 height balance
   CATS.forEach(c => {
     expenses.filter(e => e.category === c && (Number(e.value) || 0) > 0)
       .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
