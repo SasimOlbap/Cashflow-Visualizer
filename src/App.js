@@ -176,21 +176,6 @@ export default function App() {
 
   const handleSetLang = (l) => { setLang(l); localStorage.setItem("cf_lang", l); };
 
-  const deleteMonth = (key) => {
-    setMonths(p => {
-      const next = { ...p };
-      delete next[key];
-      return next;
-    });
-    if (curKey === key) {
-      // Switch to nearest available month
-      const remaining = Object.keys(months).filter(k => k !== key);
-      if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
-    }
-    setConfirmDel(null);
-    setCtxMenu(null);
-  };
-
   const isMobile = window.innerWidth < 768;
 
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
@@ -288,6 +273,20 @@ function CashFlow({ session, lang, setLang }) {
   const [hovMonth,  setHovMonth]  = useState(null);
   const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
+
+  const deleteMonth = (key) => {
+    setMonths(p => {
+      const next = { ...p };
+      delete next[key];
+      return next;
+    });
+    if (curKey === key) {
+      const remaining = Object.keys(months).filter(k => k !== key);
+      if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
+    }
+    setConfirmDel(null);
+    setCtxMenu(null);
+  };
   const [niLabel,   setNiLabel]   = useState("");
   const [niType,    setNiType]    = useState("active");
   const [neLabel,   setNeLabel]   = useState("");
