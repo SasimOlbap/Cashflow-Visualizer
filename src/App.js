@@ -271,6 +271,22 @@ function CashFlow({ session, lang, setLang }) {
   const [months,    setMonths]    = useState(loadMonths);
   const [curKey,    setCurKey]    = useState(initKey);
   const [hovMonth,  setHovMonth]  = useState(null);
+  const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
+  const [confirmDel,setConfirmDel]= useState(null); // key to delete
+
+  const deleteMonth = (key) => {
+    setMonths(p => {
+      const next = { ...p };
+      delete next[key];
+      return next;
+    });
+    if (curKey === key) {
+      const remaining = Object.keys(months).filter(k => k !== key);
+      if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
+    }
+    setConfirmDel(null);
+    setCtxMenu(null);
+  };
   const [niLabel,   setNiLabel]   = useState("");
   const [niType,    setNiType]    = useState("active");
   const [neLabel,   setNeLabel]   = useState("");
@@ -476,6 +492,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
+    <>
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
         ? `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.12) 0%, transparent 50%), ${T.bg}`
         : `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), ${T.bg}`, minHeight: "100vh",
@@ -599,6 +616,7 @@ function CashFlow({ session, lang, setLang }) {
                         onClick={() => { if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovMonth(null); }}
                         onMouseEnter={() => hasData && setHovMonth(key)}
                         onMouseLeave={() => setHovMonth(null)}
+                        onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, x: e.clientX, y: e.clientY }); } }}
                         style={{
                           flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
@@ -708,5 +726,57 @@ function CashFlow({ session, lang, setLang }) {
       </div>
       </div>
     </div>
+      {/* Right-click context menu */}
+      {ctxMenu && (
+        <div onClick={() => setCtxMenu(null)} style={{ position: "fixed", inset: 0, zIndex: 1000 }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            position: "fixed", left: ctxMenu.x, top: ctxMenu.y,
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 10, padding: "4px", zIndex: 1001,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.3)", minWidth: 160,
+          }}>
+            <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
+              width: "100%", background: "none", border: "none", borderRadius: 7,
+              padding: "8px 14px", textAlign: "left", cursor: "pointer",
+              color: "#f87171", fontSize: 13, fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: 8,
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.1)"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}>
+              🗑 Delete month
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm delete dialog */}
+      {confirmDel && (
+        <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1002, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 16, padding: "28px 32px", maxWidth: 340, width: "90%",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.4)", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 12 }}>🗑</div>
+            <h3 style={{ color: T.text, fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Delete this month?</h3>
+            <p style={{ color: T.textMuted, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+              All data for <strong style={{ color: T.text }}>{confirmDel}</strong> will be permanently deleted.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmDel(null)} style={{
+                flex: 1, background: T.btnBg, border: `1px solid ${T.border}`,
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: T.text, fontSize: 14, fontWeight: 600,
+              }}>Cancel</button>
+              <button onClick={() => deleteMonth(confirmDel)} style={{
+                flex: 1, background: "#ef4444", border: "none",
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: "#fff", fontSize: 14, fontWeight: 600,
+              }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
