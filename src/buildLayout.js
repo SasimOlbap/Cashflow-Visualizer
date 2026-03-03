@@ -24,7 +24,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
   CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c], catSums[c], "category"); });
-  if (surplus > 0) push("__surplus", "Surplus", surplus, "category");
+  // surplus shown only as leaf in col 4
   CATS.forEach(c => {
     expenses.filter(e => e.category === c && (Number(e.value) || 0) > 0)
       .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
@@ -41,12 +41,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficit    > 0) addLink("__deficit_src", "__deficit_agg", deficit);
   if (deficit    > 0) addLink("__deficit_agg", "__total",       deficit);
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
-  if (surplus > 0) addLink("__total", "__surplus", surplus);
+  if (surplus > 0) addLink("__total", "__surplus_leaf", surplus);
   expenses.forEach(e => {
     const v = Number(e.value) || 0;
     if (v > 0 && catSums[e.category] > 0) addLink("__cat_" + e.category, e.id, v);
   });
-  if (surplus > 0) addLink("__surplus", "__surplus_leaf", surplus);
+  // no intermediate surplus link needed
 
   const colMap    = { source: 0, agg: 1, total: 2, category: 3, leaf: 4 };
   const colWidths = [20, 20, 20, 20, 20];
@@ -115,5 +115,5 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  return { nodes, links, nodeWidth, grand, totalExp, surplus };
+  return { nodes, links, nodeWidth, grand, totalExp, surplus, colX: actualColX };
 }

@@ -1,11 +1,16 @@
 // ── subcomponents ──────────────────────────────────────────────────────────
 
 // ── LinkPath ──────────────────────────────────────────────────────────────
-export function LinkPath({ link, color, onHover, hovered }) {
+export function LinkPath({ link, color, onHover, hovered, colX }) {
   const { sx, tx, sy0, sy1, ty0, ty1 } = link;
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
-  const d   = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
+  const isSurplusLink = link.target === "__surplus_leaf";
+  const wx  = colX ? colX[3] : mx;
+  const cmx = colX ? (colX[3] + tx) / 2 : mx;
+  const d = isSurplusLink
+    ? `M${sx},${sy0} L${wx},${sy0} C${cmx},${sy0} ${cmx},${ty0} ${tx},${ty0} L${tx},${ty1} C${cmx},${ty1} ${cmx},${sy1} ${wx},${sy1} L${sx},${sy1} Z`
+    : `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
       style={{ transition: "opacity 0.15s", cursor: "pointer" }}
