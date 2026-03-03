@@ -18,7 +18,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
 
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
-  if (deficit > 0) push("__deficit_src", "Deficit", deficit, "source");
+  // deficit shown only as agg in col1, rendered at col0
   if (activeSum  > 0) push("__active",      "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive",     "Passive Income", passiveSum, "agg");
   if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
@@ -38,8 +38,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   passive.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
   if (activeSum  > 0) addLink("__active",      "__total", activeSum);
   if (passiveSum > 0) addLink("__passive",     "__total", passiveSum);
-  if (deficit    > 0) addLink("__deficit_src", "__deficit_agg", deficit);
-  if (deficit    > 0) addLink("__deficit_agg", "__total",       deficit);
+  // no deficit_src link needed
+  if (deficit    > 0) addLink("__total", "__deficit_agg", deficit);
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
   if (surplus > 0) addLink("__total", "__surplus_leaf", surplus);
   expenses.forEach(e => {

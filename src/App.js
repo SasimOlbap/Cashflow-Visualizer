@@ -445,12 +445,9 @@ function CashFlow({ session, lang, setLang }) {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__deficit_src" || link.source === "__deficit_agg" ||
-        link.target === "__deficit_agg" || (link.target === "__total" && link.source === "__deficit_agg"))
-      return "#f87171";
+    if (link.target === "__deficit_agg") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
-    if (link.source === "__surplus" || link.target === "__surplus" || link.target === "__surplus_leaf")
-      return "#86efac";
+    if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
     return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
   };
@@ -623,10 +620,13 @@ function CashFlow({ session, lang, setLang }) {
                   {links.map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
-                  {nodes.map(n => (
-                    <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
-                  ))}
+                  {nodes.map(n => {
+                    const nx = (n.id === "__surplus" && colX) ? colX[4] : (n.id === "__deficit_agg" && colX) ? colX[0] : n.x;
+                    return (
+                      <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
+                        GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} nx={nx} />
+                    );
+                  })}
                 </svg>
               </div>
 
