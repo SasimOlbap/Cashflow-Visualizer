@@ -57,8 +57,10 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
         style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
-      <text x={lx} y={my + 7}  textAnchor={anchor} fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : T.textVal} fontSize={Math.max(9, fs - 1)}>{fmt(n.value)}</text>
-      <text x={lx} y={my + 18} textAnchor={anchor} fill={T.textDim} fontSize={Math.max(8, fs - 2)}>{pct(n.value, grand)}</text>
+      <text x={lx} y={my + 8} textAnchor={anchor} fontSize={Math.max(9, fs - 1)}>
+        <tspan fill={isDeficit ? "#f87171" : isSurplus ? "#86efac" : T.textVal}>{fmt(n.value)}</tspan>
+        <tspan fill={T.textDim} fontSize={Math.max(8, fs - 2)} dx={5}>{pct(n.value, grand)}</tspan>
+      </text>
     </g>
   );
 }
