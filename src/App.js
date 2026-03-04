@@ -267,7 +267,14 @@ function CashFlow({ session, lang, setLang }) {
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
 
-  const deleteMonth = (key) => {
+  const deleteMonth = async (key) => {
+    // Delete from Supabase first
+    const [y, m] = key.split("-").map(Number);
+    const { error } = await supabase.from("cashflow").delete()
+      .eq("user_id", session.user.id)
+      .eq("year", y)
+      .eq("month", m);
+    if (error) { console.error("Failed to delete month:", error); return; }
     setMonths(p => {
       const next = { ...p };
       delete next[key];
@@ -277,12 +284,6 @@ function CashFlow({ session, lang, setLang }) {
       const remaining = Object.keys(months).filter(k => k !== key);
       if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
     }
-    // Delete from Supabase
-    const [y, m] = key.split("-").map(Number);
-    supabase.from("cashflow").delete()
-      .eq("user_id", session.user.id)
-      .eq("year", y)
-      .eq("month", m);
     setConfirmDel(null);
     setCtxMenu(null);
   };
