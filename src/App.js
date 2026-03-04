@@ -100,18 +100,6 @@ const initKey = toKey(today.getFullYear(), 1);
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-const loadMonths = () => {
-  try {
-    const s = localStorage.getItem("cf_months");
-    if (s) return JSON.parse(s);
-  } catch {}
-  const empty = { income: [], expenses: [] };
-  const result = {};
-  for (let i = 1; i <= 12; i++) result[toKey(today.getFullYear(), i)] = empty;
-  result[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
-  return result;
-};
-
 export default function App() {
   const [session, setSession] = useState(null);
   const [lang, setLang] = useState(() => localStorage.getItem("cf_lang") || "en");
