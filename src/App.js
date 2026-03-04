@@ -268,7 +268,11 @@ function CashFlow({ session, lang, setLang }) {
   // ── state ─────────────────────────────────────────────────────────────────
   const [darkMode,  setDarkMode]  = useState(true);
   const [hovered,   setHovered]   = useState(null);
-  const [months,    setMonths]    = useState(loadMonths);
+  const [months,    setMonths]    = useState(() => {
+    const empty = {};
+    for (let i = 1; i <= 12; i++) empty[toKey(today.getFullYear(), i)] = { income: [], expenses: [] };
+    return empty;
+  });
   const [curKey,    setCurKey]    = useState(initKey);
   const [hovMonth,  setHovMonth]  = useState(null);
   const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
