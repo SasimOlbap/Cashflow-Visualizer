@@ -277,6 +277,12 @@ function CashFlow({ session, lang, setLang }) {
       const remaining = Object.keys(months).filter(k => k !== key);
       if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
     }
+    // Delete from Supabase
+    const [y, m] = key.split("-").map(Number);
+    supabase.from("cashflow").delete()
+      .eq("user_id", session.user.id)
+      .eq("year", y)
+      .eq("month", m);
     setConfirmDel(null);
     setCtxMenu(null);
   };
@@ -323,22 +329,17 @@ function CashFlow({ session, lang, setLang }) {
   }, [session.user.id]);
 
   // Save current month to Supabase whenever it changes
-  useEffect(() => {
-    const saveToCloud = async () => {
-      if (!cloudLoaded.current) return; // don't save before initial load completes
-      const [y, m] = curKey.split("-").map(Number);
-      const cur = months[curKey];
-      if (!cur) return;
-      await supabase.from("cashflow").upsert({
-        user_id: session.user.id,
-        year: y, month: m,
-        income: cur.income,
-        expenses: cur.expenses,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "user_id,year,month" });
-    };
-    saveToCloud();
-  }, [months, curKey, session.user.id]);
+  const saveMonth = async (key, data) => {
+    if (!cloudLoaded.current) return;
+    const [y, m] = key.split("-").map(Number);
+    await supabase.from("cashflow").upsert({
+      user_id: session.user.id,
+      year: y, month: m,
+      income: data.income,
+      expenses: data.expenses,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,year,month" });
+  };
 
   // Auto-save to localStorage as fallback
   useEffect(() => {
@@ -352,18 +353,28 @@ function CashFlow({ session, lang, setLang }) {
   const expenses   = curData.expenses;
   const isEmpty    = income.length === 0 && expenses.length === 0;
 
-  const setIncome   = fn => setMonths(p => ({ ...p, [curKey]: { ...p[curKey], income:   fn(p[curKey]?.income   || []) } }));
-  const setExpenses = fn => setMonths(p => ({ ...p, [curKey]: { ...p[curKey], expenses: fn(p[curKey]?.expenses || []) } }));
+  const setIncome   = (fn) => setMonths(p => {
+    const updated = { ...p[curKey], income: fn(p[curKey]?.income || []) };
+    saveMonth(curKey, updated);
+    return { ...p, [curKey]: updated };
+  });
+  const setExpenses = (fn) => setMonths(p => {
+    const updated = { ...p[curKey], expenses: fn(p[curKey]?.expenses || []) };
+    saveMonth(curKey, updated);
+    return { ...p, [curKey]: updated };
+  });
 
   const copyFromPrev = () => {
     const [y, m] = curKey.split("-").map(Number);
     const prevKey = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
     const prev = months[prevKey];
     if (!prev) return;
-    setMonths(p => ({ ...p, [curKey]: {
+    const updated = {
       income:   prev.income.map(i   => ({ ...i, id: uid() })),
       expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
-    }}));
+    };
+    setMonths(p => ({ ...p, [curKey]: updated }));
+    saveMonth(curKey, updated);
   };
   const [y, m] = curKey.split("-").map(Number);
   const prevKey = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
