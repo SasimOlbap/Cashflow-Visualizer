@@ -668,11 +668,6 @@ function CashFlow({ session, lang, setLang }) {
                         }}>
                           {/* invisible bridge to prevent hover gap */}
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
-                          <button onClick={() => { setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovEmpty(null); }} style={{
-                            background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
-                            borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
-                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                          }}>✨ New Graph</button>
                           {prevHasData && (
                             <button onClick={() => {
                               const prev = months[prevKey];
