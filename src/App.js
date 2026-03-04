@@ -282,8 +282,12 @@ function CashFlow({ session, lang, setLang }) {
       return next;
     });
     if (curKey === key) {
-      const remaining = Object.keys(months).filter(k => k !== key);
-      if (remaining.length > 0) setCurKey(remaining[remaining.length - 1]);
+      const remaining = Object.keys(months).filter(k => k !== key).sort();
+      if (remaining.length > 0) {
+        // Go to the nearest previous month, or the first one if none before
+        const before = remaining.filter(k => k < key);
+        setCurKey(before.length > 0 ? before[before.length - 1] : remaining[0]);
+      }
     }
     setConfirmDel(null);
     setCtxMenu(null);
