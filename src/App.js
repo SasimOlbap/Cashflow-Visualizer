@@ -306,13 +306,14 @@ function CashFlow({ session, lang, setLang }) {
       const empty = { income: [], expenses: [] };
       const freshMonths = {};
       for (let i = 1; i <= 12; i++) freshMonths[toKey(year, i)] = empty;
-      freshMonths[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
 
-      // Overlay with cloud data if any exists
+      // Overlay with cloud data if any exists, otherwise seed January with defaults
       if (data?.length) {
         data.forEach(row => {
           freshMonths[toKey(year, row.month)] = { income: row.income, expenses: row.expenses };
         });
+      } else {
+        freshMonths[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
       }
 
       setMonths(freshMonths);
