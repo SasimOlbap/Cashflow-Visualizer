@@ -321,6 +321,14 @@ function CashFlow({ session, lang, setLang }) {
         });
       } else {
         freshMonths[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
+        // Save default January to Supabase so it persists on next login
+        await supabase.from("cashflow").upsert({
+          user_id: session.user.id,
+          year, month: 1,
+          income: INIT_INCOME,
+          expenses: INIT_EXPENSES,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id,year,month" });
       }
 
       setMonths(freshMonths);
