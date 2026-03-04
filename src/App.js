@@ -255,6 +255,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── state ─────────────────────────────────────────────────────────────────
   const [darkMode,  setDarkMode]  = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [hovered,   setHovered]   = useState(null);
   const [months,    setMonths]    = useState(() => {
     const empty = {};
@@ -507,6 +508,7 @@ function CashFlow({ session, lang, setLang }) {
   );
 
   // ── render ────────────────────────────────────────────────────────────────
+  if (loggingOut) return null;
   return (
     <>
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
@@ -548,7 +550,7 @@ function CashFlow({ session, lang, setLang }) {
                     </button>
                   ))}
                 </div>
-                <button onClick={async () => { await supabase.auth.signOut(); window.location.reload(); }} style={{
+                <button onClick={async () => { setLoggingOut(true); await supabase.auth.signOut(); window.location.reload(); }} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
                   fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
