@@ -642,7 +642,7 @@ function CashFlow({ session, lang, setLang }) {
                         onMouseLeave={() => setHovEmpty(null)}
                       >
                       <button
-                        onClick={() => { if (!hasData) { setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); } setCurKey(key); setHovMonth(null); setHovEmpty(null); }}
+                        onClick={() => { if (hasData) { setCurKey(key); setHovMonth(null); setHovEmpty(null); } }}
                         onMouseEnter={() => hasData && setHovMonth(key)}
                         onMouseLeave={() => setHovMonth(null)}
                         onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, x: e.clientX, y: e.clientY }); } }}
@@ -666,6 +666,8 @@ function CashFlow({ session, lang, setLang }) {
                           boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
                           display: "flex", flexDirection: "column", gap: 6, minWidth: 160,
                         }}>
+                          {/* invisible bridge to prevent hover gap */}
+                          <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
                           <button onClick={() => { setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovEmpty(null); }} style={{
                             background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
                             borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
