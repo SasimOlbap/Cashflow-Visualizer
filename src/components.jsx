@@ -48,6 +48,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
   const isPhantom = n.id === "__surplus_phantom";
   const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
   if (isPhantom || n.id === "__deficit_phantom") return <g key={n.id} />; // invisible spacer
+  if (!isFinite(n.y) || !isFinite(n.h)) return <g key={n.id} />; // guard against NaN
   const nw  = n.w || nodeWidth;
   const right  = n.col <= 1;
   const lx     = right ? n.x + nw + 6 : n.x - 6;

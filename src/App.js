@@ -545,7 +545,7 @@ function CashFlow({ session, lang, setLang }) {
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
                   fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
                 }}>
-                  Sign Out
+                  Log Out
                 </button>
                 <button onClick={() => setDarkMode(d => !d)} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
