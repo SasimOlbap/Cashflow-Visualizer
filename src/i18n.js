@@ -38,11 +38,11 @@ export const translations = {
     pricing: [
       {
         name: "Free", price: "$0", highlight: false, cta: "Get Started Free", comingSoon: false,
-        features: ["Full Sankey diagram editor", "12 months of data", "Back-up & Restore your Data", "Share via URL", "Dark / Light mode"],
+        features: ["User account + cloud sync", "Full Sankey diagram editor", "12 months of data", "1 financial profile", "Dark / Light mode", "Multi-language (EN, ES, DE)"],
       },
       {
         name: "Pro", price: "$7", highlight: true, cta: "Coming Soon", comingSoon: true,
-        features: ["Everything in Free", "User account + login", "Cloud sync across devices", "Multiple years of data", "Trend charts", "Budget targets", "Export to PDF / CSV"],
+        features: ["Everything in Free", "Multiple years of data", "Trend & comparison charts", "Budget targets", "Export to PDF / CSV"],
       },
       {
         name: "Business", price: "$15", highlight: false, cta: "Coming Soon", comingSoon: true,
@@ -146,11 +146,11 @@ export const translations = {
     pricing: [
       {
         name: "Gratis", price: "$0", highlight: false, cta: "Comenzar gratis", comingSoon: false,
-        features: ["Editor completo de Sankey", "12 meses de datos", "Copia de seguridad y restauración", "Compartir por URL", "Modo oscuro / claro"],
+        features: ["Cuenta de usuario + sincronización", "Editor completo de Sankey", "12 meses de datos", "1 perfil financiero", "Modo oscuro / claro", "Multiidioma (EN, ES, DE)"],
       },
       {
         name: "Pro", price: "$7", highlight: true, cta: "Próximamente", comingSoon: true,
-        features: ["Todo lo de Gratis", "Cuenta de usuario", "Sincronización en la nube", "Varios años de datos", "Gráficos de tendencias", "Objetivos de presupuesto", "Exportar a PDF / CSV"],
+        features: ["Todo lo de Gratis", "Varios años de datos", "Gráficos de tendencias y comparación", "Objetivos de presupuesto", "Exportar a PDF / CSV"],
       },
       {
         name: "Business", price: "$15", highlight: false, cta: "Próximamente", comingSoon: true,
@@ -247,11 +247,11 @@ export const translations = {
     pricing: [
       {
         name: "Kostenlos", price: "$0", highlight: false, cta: "Kostenlos starten", comingSoon: false,
-        features: ["Vollständiger Sankey-Editor", "12 Monate Daten", "Datensicherung & Wiederherstellung", "Teilen per URL", "Dunkel- / Hellmodus"],
+        features: ["Konto + Cloud-Synchronisation", "Vollständiger Sankey-Editor", "12 Monate Daten", "1 Finanzprofil", "Dunkel- / Hellmodus", "Mehrsprachig (EN, ES, DE)"],
       },
       {
         name: "Pro", price: "$7", highlight: true, cta: "Demnächst", comingSoon: true,
-        features: ["Alles aus Kostenlos", "Benutzerkonto + Login", "Cloud-Sync über Geräte", "Mehrere Jahre Daten", "Trenddiagramme", "Budgetziele", "Export als PDF / CSV"],
+        features: ["Alles aus Kostenlos", "Mehrere Jahre Daten", "Trend- & Vergleichsdiagramme", "Budgetziele", "Export als PDF / CSV"],
       },
       {
         name: "Business", price: "$15", highlight: false, cta: "Demnächst", comingSoon: true,
