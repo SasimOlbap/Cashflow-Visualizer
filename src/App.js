@@ -273,6 +273,7 @@ function CashFlow({ session, lang, setLang }) {
   const [hovMonth,  setHovMonth]  = useState(null);
   const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
+  const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
 
   const deleteMonth = (key) => {
     setMonths(p => {
@@ -323,6 +324,7 @@ function CashFlow({ session, lang, setLang }) {
       }
 
       setMonths(freshMonths);
+      cloudLoaded.current = true;
     };
     loadFromCloud();
   }, [session.user.id]);
@@ -330,6 +332,7 @@ function CashFlow({ session, lang, setLang }) {
   // Save current month to Supabase whenever it changes
   useEffect(() => {
     const saveToCloud = async () => {
+      if (!cloudLoaded.current) return; // don't save before initial load completes
       const [y, m] = curKey.split("-").map(Number);
       const cur = months[curKey];
       if (!cur) return;
