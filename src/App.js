@@ -256,6 +256,7 @@ function CashFlow({ session, lang, setLang }) {
   // ── state ─────────────────────────────────────────────────────────────────
   const [darkMode,  setDarkMode]  = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [hovEmpty,  setHovEmpty]  = useState(null); // key of hovered empty month
   const [hovered,   setHovered]   = useState(null);
   const [months,    setMonths]    = useState(() => {
     const empty = {};
@@ -633,13 +634,20 @@ function CashFlow({ session, lang, setLang }) {
                     const isSelected = key === curKey;
                     const isHovered  = key === hovMonth;
                     const hasData    = !!(months[key]?.income?.length || months[key]?.expenses?.length);
+                    const prevKey = i === 0 ? null : toKey(today.getFullYear(), i);
+                    const prevHasData = prevKey && !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
                     return (
-                      <button key={key}
-                        onClick={() => { if (!months[key]) setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovMonth(null); }}
+                      <div key={key} style={{ flex: 1, position: "relative" }}
+                        onMouseEnter={() => { if (!hasData && key !== curKey) setHovEmpty(key); }}
+                        onMouseLeave={() => setHovEmpty(null)}
+                      >
+                      <button
+                        onClick={() => { if (!hasData) { setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); } setCurKey(key); setHovMonth(null); setHovEmpty(null); }}
                         onMouseEnter={() => hasData && setHovMonth(key)}
                         onMouseLeave={() => setHovMonth(null)}
                         onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, x: e.clientX, y: e.clientY }); } }}
                         style={{
+                          width: "100%",
                           flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
                           borderRadius: 7,
@@ -649,6 +657,40 @@ function CashFlow({ session, lang, setLang }) {
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
+                      {hovEmpty === key && (
+                        <div style={{
+                          position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
+                          background: darkMode ? "#1e1b2e" : "#ffffff",
+                          border: `1px solid ${T.accent}66`,
+                          borderRadius: 10, padding: "8px", zIndex: 999,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                          display: "flex", flexDirection: "column", gap: 6, minWidth: 160,
+                        }}>
+                          <button onClick={() => { setMonths(p => ({ ...p, [key]: { income: [], expenses: [] } })); setCurKey(key); setHovEmpty(null); }} style={{
+                            background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
+                            borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                          }}>✨ New Graph</button>
+                          {prevHasData && (
+                            <button onClick={() => {
+                              const prev = months[prevKey];
+                              const copied = {
+                                income: prev.income.map(i => ({ ...i, id: uid() })),
+                                expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
+                              };
+                              setMonths(p => ({ ...p, [key]: copied }));
+                              saveMonth(key, copied);
+                              setCurKey(key);
+                              setHovEmpty(null);
+                            }} style={{
+                              background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
+                              borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
+                              cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            }}>📋 Copy data from {MONTH_NAMES[i - 1]}</button>
+                          )}
+                        </div>
+                      )}
+                      </div>
                     );
                   })}
                 </div>
