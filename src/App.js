@@ -638,7 +638,7 @@ function CashFlow({ session, lang, setLang }) {
                     const prevHasData = prevKey && !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
                     return (
                       <div key={key} style={{ flex: 1, position: "relative" }}
-                        onMouseEnter={() => { if (!hasData && key !== curKey) setHovEmpty(key); }}
+                        onMouseEnter={() => { if (!hasData && key !== curKey && prevHasData) setHovEmpty(key); }}
                         onMouseLeave={() => setHovEmpty(null)}
                       >
                       <button
@@ -659,7 +659,8 @@ function CashFlow({ session, lang, setLang }) {
                         }}>{name}</button>
                       {hovEmpty === key && (
                         <div style={{
-                          position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
+                          position: "absolute", top: "calc(100% + 6px)",
+                          ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
                           background: darkMode ? "#1e1b2e" : "#ffffff",
                           border: `1px solid ${T.accent}66`,
                           borderRadius: 10, padding: "8px", zIndex: 999,
