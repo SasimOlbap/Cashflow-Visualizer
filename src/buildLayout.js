@@ -39,6 +39,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
       .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
   });
   if (surplus > 0) push("__surplus_phantom", "", surplus, "leaf");
+  if (catSums["Carryover"] > 0) push("__carryover_phantom", "", catSums["Carryover"], "leaf");
 
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
