@@ -63,13 +63,15 @@ export const CAT_COLORS = {
 };
 
 export const GROUP_COLORS = {
-  source:   "#b39ddb",
-  agg:      "#9575cd",
-  total:    "#6a0dad",
-  category: "#e57373",
-  leaf:     "#f48fb1",
-  surplus:  "#66bb6a",
-  deficit:  "#f87171",
+  source:    "#b39ddb",
+  agg:       "#9575cd",
+  total:     "#6a0dad",
+  category:  "#e57373",
+  leaf:      "#f48fb1",
+  surplus:   "#66bb6a",
+  deficit:   "#f87171",
+  carryover_surplus: "#86efac",
+  carryover_deficit: "#f87171",
 };
 
 export const LINK_LEFT  = ["#b39ddb", "#9575cd"];

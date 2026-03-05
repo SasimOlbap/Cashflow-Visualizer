@@ -266,9 +266,16 @@ function CashFlow({ session, lang, setLang }) {
   const [curKey,    setCurKey]    = useState(initKey);
   const [hovMonth,  setHovMonth]  = useState(null);
   const [ctxMenu,   setCtxMenu]   = useState(null);
-  const [confirmDel,setConfirmDel]= useState(null);
-  const cloudLoaded = useRef(false);
+  const [confirmDel,setConfirmDel]= useState(null); // key to delete
+  const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
   const ctxMenuTimer = useRef(null);
+
+  // ── carryover state ───────────────────────────────────────────────────────
+  // carryoverOverrides: { [monthKey]: { value: number, isManual: boolean } }
+  const [carryoverOverrides, setCarryoverOverrides] = useState({});
+  const [carryoverPrompt, setCarryoverPrompt] = useState(null); // { key, autoValue, prevLabel }
+  const [editingCarryover, setEditingCarryover] = useState(false);
+  const [carryoverEditVal, setCarryoverEditVal] = useState("");
 
   const deleteMonth = async (key) => {
     // Delete from Supabase first
@@ -418,7 +425,52 @@ function CashFlow({ session, lang, setLang }) {
     setNeLabel("");
   };
 
-  // ── save / import / share ─────────────────────────────────────────────────
+  // ── carryover helpers ─────────────────────────────────────────────────────
+  const getCarryoverAuto = (key) => {
+    const [y, m] = key.split("-").map(Number);
+    const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
+    const prev = months[pk];
+    if (!prev?.income?.length && !prev?.expenses?.length) return null;
+    const prevIncome = prev.income.reduce((s, i) => s + (Number(i.value) || 0), 0);
+    const prevExp    = prev.expenses.reduce((s, e) => s + (Number(e.value) || 0), 0);
+    return prevIncome - prevExp; // positive = surplus carryover, negative = deficit carryover
+  };
+
+  const getCarryoverValue = (key) => {
+    const override = carryoverOverrides[key];
+    if (override) return override.value;
+    return getCarryoverAuto(key);
+  };
+
+  const isCarryoverManual = (key) => !!(carryoverOverrides[key]?.isManual);
+
+  // Watch for prev month changes and prompt if current month has manual carryover
+  useEffect(() => {
+    if (!cloudLoaded.current) return;
+    const [y, m] = curKey.split("-").map(Number);
+    const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
+    if (!isCarryoverManual(curKey)) return;
+    const autoVal = getCarryoverAuto(curKey);
+    if (autoVal === null) return;
+    const currentVal = carryoverOverrides[curKey]?.value;
+    if (autoVal !== currentVal) {
+      const prevMonth = MONTH_NAMES[m === 1 ? 11 : m - 2];
+      setCarryoverPrompt({ key: curKey, autoValue: autoVal, prevLabel: prevMonth });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [months]);
+
+  // Build income array with carryover injected at the bottom
+  const getIncomeWithCarryover = (key) => {
+    const base = months[key]?.income || [];
+    const carryVal = getCarryoverValue(key);
+    if (carryVal === null) return base;
+    const absVal = Math.abs(carryVal);
+    const label = carryVal >= 0 ? "↩ Surplus Carryover" : "↩ Deficit Carryover";
+    return [...base, { id: "__carryover", label, value: absVal, type: "passive", _isCarryover: true, _isDeficit: carryVal < 0 }];
+  };
+
+
   const importRef = useRef(null);
   const [shareCopied, setShareCopied] = useState(false);
 
@@ -471,7 +523,8 @@ function CashFlow({ session, lang, setLang }) {
   }, []);
   let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
   try {
-    layoutResult = buildLayout(income, expenses, svgW, svgH, colOffsets);
+    const incomeWithCarryover = getIncomeWithCarryover(displayKey);
+    layoutResult = buildLayout(incomeWithCarryover, expenses, svgW, svgH, colOffsets);
   } catch {}
   const { nodes, links, nodeWidth, grand, totalExp, surplus, colX } = layoutResult;
 
@@ -485,6 +538,7 @@ function CashFlow({ session, lang, setLang }) {
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
     if (link.source === "__deficit_agg" && link.target === "__total") return "#f87171";
+    if (link.source === "__carryover") return getCarryoverValue(displayKey) >= 0 ? "#86efac" : "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
@@ -629,7 +683,7 @@ function CashFlow({ session, lang, setLang }) {
                     <DoubleArrow direction="right" color={hlColor} />
                   </button>
                 </div>
-                <div style={{ display: "flex", flex: 1, gap: 2 }} onClick={() => setCtxMenu(null)}>
+                <div style={{ display: "flex", flex: 1, gap: 2 }}>
                   {MONTH_NAMES.map((name, i) => {
                     const key = toKey(today.getFullYear(), i + 1);
                     const isSelected = key === curKey;
@@ -639,20 +693,14 @@ function CashFlow({ session, lang, setLang }) {
                     const prevHasData = prevKey && !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
                     return (
                       <div key={key} style={{ flex: 1, position: "relative" }}
-                        onMouseEnter={() => {
-                          clearTimeout(ctxMenuTimer.current);
-                          if (!hasData && key !== curKey && prevHasData) setHovEmpty(key);
-                        }}
-                        onMouseLeave={() => {
-                          setHovEmpty(null);
-                          ctxMenuTimer.current = setTimeout(() => setCtxMenu(null), 200);
-                        }}
+                        onMouseEnter={() => { if (!hasData && key !== curKey && prevHasData) setHovEmpty(key); }}
+                        onMouseLeave={() => setHovEmpty(null)}
                       >
                       <button
                         onClick={() => { if (hasData) { setCurKey(key); setHovMonth(null); setHovEmpty(null); } }}
                         onMouseEnter={() => hasData && setHovMonth(key)}
                         onMouseLeave={() => setHovMonth(null)}
-                        onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, i }); } }}
+                        onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, x: e.clientX, y: e.clientY }); } }}
                         style={{
                           width: "100%",
                           flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
@@ -664,62 +712,35 @@ function CashFlow({ session, lang, setLang }) {
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
-                      {hovEmpty === key && prevHasData && (
+                      {hovEmpty === key && (
                         <div style={{
                           position: "absolute", top: "calc(100% + 6px)",
                           ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
-                          background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
-                          backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-                          border: `1px solid ${T.accent}59`,
-                          borderRadius: 8, padding: "4px", zIndex: 999,
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
+                          background: darkMode ? "#1e1b2e" : "#ffffff",
+                          border: `1px solid ${T.accent}66`,
+                          borderRadius: 10, padding: "8px", zIndex: 999,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                          display: "flex", flexDirection: "column", gap: 6, minWidth: 160,
                         }}>
+                          {/* invisible bridge to prevent hover gap */}
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
-                          <button onClick={() => {
-                            const prev = months[prevKey];
-                            const copied = {
-                              income: prev.income.map(i => ({ ...i, id: uid() })),
-                              expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
-                            };
-                            setMonths(p => ({ ...p, [key]: copied }));
-                            saveMonth(key, copied);
-                            setCurKey(key);
-                            setHovEmpty(null);
-                          }} style={{
-                            width: "100%", background: "transparent", border: "none",
-                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
-                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 6,
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
-                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 Copy data from {MONTH_NAMES[i - 1]}</button>
-                        </div>
-                      )}
-                      {ctxMenu?.key === key && (
-                        <div
-                          onMouseEnter={() => clearTimeout(ctxMenuTimer.current)}
-                          onMouseLeave={() => { ctxMenuTimer.current = setTimeout(() => setCtxMenu(null), 200); }}
-                          style={{
-                            position: "absolute", top: "calc(100% + 6px)",
-                            ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
-                            background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
-                            backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-                            border: `1px solid ${T.accent}59`,
-                            borderRadius: 8, padding: "4px", zIndex: 999,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
-                          }}>
-                          <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
-                            width: "100%", background: "transparent", border: "none",
-                            borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
-                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 6,
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.12)"}
-                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >🗑 Delete month</button>
+                          {prevHasData && (
+                            <button onClick={() => {
+                              const prev = months[prevKey];
+                              const copied = {
+                                income: prev.income.map(i => ({ ...i, id: uid() })),
+                                expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
+                              };
+                              setMonths(p => ({ ...p, [key]: copied }));
+                              saveMonth(key, copied);
+                              setCurKey(key);
+                              setHovEmpty(null);
+                            }} style={{
+                              background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
+                              borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
+                              cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            }}>📋 Copy data from {MONTH_NAMES[i - 1]}</button>
+                          )}
                         </div>
                       )}
                       </div>
@@ -751,6 +772,17 @@ function CashFlow({ session, lang, setLang }) {
                       ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
                       : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                   </span>
+                  {(() => {
+                    const cv = getCarryoverValue(displayKey);
+                    if (cv === null) return null;
+                    const isPos = cv >= 0;
+                    const color = isPos ? "#86efac" : "#f87171";
+                    return (
+                      <span style={{ color: T.textMuted }}>
+                        ↩ <strong style={{ color }}>{isPos ? "+" : "-"}${Math.abs(cv).toLocaleString()}</strong>
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div>
                   {hovLink ? (
@@ -785,6 +817,61 @@ function CashFlow({ session, lang, setLang }) {
               <ItemRow key={item.id} item={item} accent="#a78bfa" T={T}
                 onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
             ))}
+            {/* Carryover row */}
+            {(() => {
+              const carryVal = getCarryoverValue(curKey);
+              if (carryVal === null) return null;
+              const isPos = carryVal >= 0;
+              const color = isPos ? "#86efac" : "#f87171";
+              const label = isPos ? "↩ Surplus Carryover" : "↩ Deficit Carryover";
+              const isManual = isCarryoverManual(curKey);
+              return (
+                <div style={{ marginTop: 10, borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
+                  <div style={{ fontSize: 11, letterSpacing: "0.13em", textTransform: "uppercase", color: T.textSub, marginBottom: 6 }}>
+                    Carryover {isManual ? <span style={{ color: T.textDim, fontSize: 10 }}>(manual)</span> : <span style={{ color: T.textDim, fontSize: 10 }}>(auto)</span>}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ width: 3, height: 34, borderRadius: 2, background: color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color, fontSize: 14, padding: "4px 7px", fontWeight: 600 }}>
+                      {label}
+                    </div>
+                    {editingCarryover ? (
+                      <div style={{ position: "relative", flexShrink: 0 }}>
+                        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
+                        <input
+                          type="number" min="0"
+                          value={carryoverEditVal}
+                          onChange={e => setCarryoverEditVal(e.target.value)}
+                          onBlur={() => {
+                            const v = Number(carryoverEditVal);
+                            if (!isNaN(v)) setCarryoverOverrides(p => ({ ...p, [curKey]: { value: isPos ? v : -v, isManual: true } }));
+                            setEditingCarryover(false);
+                          }}
+                          onKeyDown={e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditingCarryover(false); }}
+                          autoFocus
+                          style={{ width: 86, background: T.bgInput, border: `1px solid ${T.accent}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", outline: "none" }}
+                        />
+                      </div>
+                    ) : (
+                      <div style={{ position: "relative", flexShrink: 0 }}>
+                        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
+                        <div
+                          onClick={() => { setCarryoverEditVal(String(Math.abs(carryVal))); setEditingCarryover(true); }}
+                          style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", cursor: "pointer" }}
+                        >{Math.abs(carryVal).toLocaleString()}</div>
+                      </div>
+                    )}
+                    <button
+                      title="Reset to auto"
+                      onClick={() => setCarryoverOverrides(p => { const n = { ...p }; delete n[curKey]; return n; })}
+                      style={{ background: "none", border: "none", color: isManual ? T.textMuted : T.textFaint, cursor: isManual ? "pointer" : "default", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
+                      onMouseEnter={e => { if (isManual) e.currentTarget.style.color = color; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = isManual ? T.textMuted : T.textFaint; }}
+                    >↺</button>
+                  </div>
+                </div>
+              );
+            })()}
             <div style={{ display: "flex", gap: 5, marginTop: 12, flexWrap: "wrap" }}>
               <input placeholder="New item…" value={niLabel} onChange={e => setNiLabel(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addIn()} style={inpSt} />
@@ -822,6 +909,64 @@ function CashFlow({ session, lang, setLang }) {
       </div>
       </div>
     </div>
+      {/* Carryover update prompt */}
+      {carryoverPrompt && (
+        <div onClick={() => setCarryoverPrompt(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1002, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 16, padding: "28px 32px", maxWidth: 360, width: "90%",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.4)", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 12 }}>↩</div>
+            <h3 style={{ color: T.text, fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Carryover changed</h3>
+            <p style={{ color: T.textMuted, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+              <strong style={{ color: T.text }}>{carryoverPrompt.prevLabel}</strong> was updated.
+              Reset carryover to the new auto-calculated value of{" "}
+              <strong style={{ color: carryoverPrompt.autoValue >= 0 ? "#86efac" : "#f87171" }}>
+                {carryoverPrompt.autoValue >= 0 ? "+" : "-"}${Math.abs(carryoverPrompt.autoValue).toLocaleString()}
+              </strong>?
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setCarryoverPrompt(null)} style={{
+                flex: 1, background: T.btnBg, border: `1px solid ${T.border}`,
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: T.text, fontSize: 14, fontWeight: 600,
+              }}>Keep manual</button>
+              <button onClick={() => {
+                setCarryoverOverrides(p => { const n = { ...p }; delete n[carryoverPrompt.key]; return n; });
+                setCarryoverPrompt(null);
+              }} style={{
+                flex: 1, background: "#7c3aed", border: "none",
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: "#fff", fontSize: 14, fontWeight: 600,
+              }}>Reset to auto</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Right-click context menu */}
+      {ctxMenu && (
+        <div onClick={() => setCtxMenu(null)} style={{ position: "fixed", inset: 0, zIndex: 1000 }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            position: "fixed", left: ctxMenu.x, top: ctxMenu.y,
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 10, padding: "4px", zIndex: 1001,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.3)", minWidth: 160,
+          }}>
+            <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
+              width: "100%", background: "none", border: "none", borderRadius: 7,
+              padding: "8px 14px", textAlign: "left", cursor: "pointer",
+              color: "#f87171", fontSize: 13, fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: 8,
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.1)"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}>
+              🗑 Delete month
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Confirm delete dialog */}
       {confirmDel && (

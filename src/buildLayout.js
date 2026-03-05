@@ -17,7 +17,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
 
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
-  passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
+  passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, i.id === "__carryover" ? (Number(i.value) >= 0 ? "carryover_surplus" : "carryover_deficit") : "source"));
   if (deficit > 0) push("__deficit_phantom", "", deficit, "source"); // phantom at bottom of col0
   // deficit shown only as agg in col1
   if (activeSum  > 0) push("__active",      "Active Income",  activeSum,  "agg");
@@ -50,7 +50,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   });
 
 
-  const colMap    = { source: 0, agg: 1, total: 2, category: 3, leaf: 4 };
+  const colMap    = { source: 0, agg: 1, total: 2, category: 3, leaf: 4, carryover_surplus: 0, carryover_deficit: 0 };
   const colWidths = [20, 20, 20, 20, 20];
   const nodeWidth = 20;
   const nodeMap   = {};
