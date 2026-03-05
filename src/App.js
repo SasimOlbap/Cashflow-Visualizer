@@ -266,8 +266,8 @@ function CashFlow({ session, lang, setLang }) {
   const [curKey,    setCurKey]    = useState(initKey);
   const [hovMonth,  setHovMonth]  = useState(null);
   const [ctxMenu,   setCtxMenu]   = useState(null);
-  const [confirmDel,setConfirmDel]= useState(null); // key to delete
-  const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
+  const [confirmDel,setConfirmDel]= useState(null);
+  const cloudLoaded = useRef(false);
   const ctxMenuTimer = useRef(null);
 
   const deleteMonth = async (key) => {
@@ -671,8 +671,8 @@ function CashFlow({ session, lang, setLang }) {
                           background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
                           backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                           border: `1px solid ${T.accent}59`,
-                          borderRadius: 10, padding: "5px", zIndex: 999,
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 170,
+                          borderRadius: 8, padding: "4px", zIndex: 999,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
                         }}>
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
                           <button onClick={() => {
@@ -687,9 +687,10 @@ function CashFlow({ session, lang, setLang }) {
                             setHovEmpty(null);
                           }} style={{
                             width: "100%", background: "transparent", border: "none",
-                            borderRadius: 7, color: T.textNode, fontSize: 12, padding: "7px 10px",
-                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                            fontFamily: "inherit", transition: "background 0.12s",
+                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
+                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: 6,
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
@@ -706,15 +707,15 @@ function CashFlow({ session, lang, setLang }) {
                             background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
                             backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                             border: `1px solid ${T.accent}59`,
-                            borderRadius: 10, padding: "5px", zIndex: 999,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 170,
+                            borderRadius: 8, padding: "4px", zIndex: 999,
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
                           }}>
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
-                            borderRadius: 7, color: "#f87171", fontSize: 12, padding: "7px 10px",
+                            borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
                             cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                            transition: "background 0.12s",
+                            fontFamily: "inherit", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: 6,
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.12)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
