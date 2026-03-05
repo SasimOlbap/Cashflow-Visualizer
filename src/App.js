@@ -265,7 +265,7 @@ function CashFlow({ session, lang, setLang }) {
   });
   const [curKey,    setCurKey]    = useState(initKey);
   const [hovMonth,  setHovMonth]  = useState(null);
-  const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
+  const [ctxMenu,   setCtxMenu]   = useState(null);
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
   const ctxMenuTimer = useRef(null);
@@ -668,10 +668,11 @@ function CashFlow({ session, lang, setLang }) {
                         <div style={{
                           position: "absolute", top: "calc(100% + 6px)",
                           ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
-                          background: darkMode ? "#1e1b2e" : "#ffffff",
-                          border: `1px solid ${T.accent}66`,
-                          borderRadius: 10, padding: "8px", zIndex: 999,
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.2)", minWidth: 160,
+                          background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
+                          backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+                          border: `1px solid ${T.accent}59`,
+                          borderRadius: 10, padding: "5px", zIndex: 999,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 170,
                         }}>
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
                           <button onClick={() => {
@@ -685,10 +686,14 @@ function CashFlow({ session, lang, setLang }) {
                             setCurKey(key);
                             setHovEmpty(null);
                           }} style={{
-                            width: "100%", background: "rgba(167,139,250,0.15)", border: "none",
-                            borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
+                            width: "100%", background: "transparent", border: "none",
+                            borderRadius: 7, color: T.textNode, fontSize: 12, padding: "7px 10px",
                             cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                          }}>📋 Copy data from {MONTH_NAMES[i - 1]}</button>
+                            fontFamily: "inherit", transition: "background 0.12s",
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >📋 Copy data from {MONTH_NAMES[i - 1]}</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -698,17 +703,22 @@ function CashFlow({ session, lang, setLang }) {
                           style={{
                             position: "absolute", top: "calc(100% + 6px)",
                             ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
-                            background: darkMode ? "#1e1b2e" : "#ffffff",
-                            border: `1px solid ${T.accent}66`,
-                            borderRadius: 10, padding: "8px", zIndex: 999,
-                            boxShadow: "0 4px 20px rgba(0,0,0,0.2)", minWidth: 160,
-                        }}>
+                            background: darkMode ? "rgba(30,27,46,0.92)" : "rgba(255,255,255,0.95)",
+                            backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+                            border: `1px solid ${T.accent}59`,
+                            borderRadius: 10, padding: "5px", zIndex: 999,
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 170,
+                          }}>
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
-                            width: "100%", background: "rgba(248,113,113,0.15)", border: "none",
-                            borderRadius: 7, color: "#f87171", fontSize: 12, padding: "6px 10px",
-                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8,
-                          }}>🗑 Delete month</button>
+                            width: "100%", background: "transparent", border: "none",
+                            borderRadius: 7, color: "#f87171", fontSize: 12, padding: "7px 10px",
+                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            transition: "background 0.12s",
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.12)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >🗑 Delete month</button>
                         </div>
                       )}
                       </div>
@@ -811,7 +821,6 @@ function CashFlow({ session, lang, setLang }) {
       </div>
       </div>
     </div>
-
 
       {/* Confirm delete dialog */}
       {confirmDel && (
