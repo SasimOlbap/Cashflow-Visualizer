@@ -9,9 +9,6 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const passiveSum = passive.reduce((s, i) => s + (Number(i.value) || 0), 0);
   const grand      = activeSum + passiveSum;
 
-  // Carryover surplus is income; deficit carryover comes in as a special expense
-  const carryoverIncome  = income.find(i => i.id === "__carryover" && !i._isDeficit);
-  const carryoverDeficit = expenses.find(e => e.id === "__carryover_exp");
 
   const catSums = {};
   ALL_CATS.forEach(c => {
