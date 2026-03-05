@@ -446,9 +446,16 @@ function CashFlow({ session, lang, setLang }) {
   const isCarryoverManual = (key) => !!(carryoverOverrides[key]?.isManual);
 
   // Watch for prev month changes and prompt if current month has manual carryover
+  const prevMonthDataRef = useRef(null);
   useEffect(() => {
     if (!cloudLoaded.current) return;
-    const m = Number(curKey.split("-")[1]);
+    if (!isCarryoverManual(curKey)) return;
+    const [y, m] = curKey.split("-").map(Number);
+    const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
+    const prevData = JSON.stringify(months[pk]);
+    if (prevMonthDataRef.current === null) { prevMonthDataRef.current = prevData; return; }
+    if (prevData === prevMonthDataRef.current) return;
+    prevMonthDataRef.current = prevData;
     const autoVal = getCarryoverAuto(curKey);
     if (autoVal === null) return;
     const currentVal = carryoverOverrides[curKey]?.value;
@@ -458,6 +465,8 @@ function CashFlow({ session, lang, setLang }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [months]);
+
+  useEffect(() => { prevMonthDataRef.current = null; }, [curKey]);
 
   // Build income array with carryover injected at the bottom
   const getIncomeWithCarryover = (key) => {
