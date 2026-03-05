@@ -537,7 +537,7 @@ function CashFlow({ session, lang, setLang }) {
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
     if (link.source === "__deficit_agg" && link.target === "__total") return "#f87171";
-    if (link.source === "__carryover") return getCarryoverValue(displayKey) >= 0 ? "#86efac" : "#f87171";
+    if (link.source === "__carryover") return link.sourceNode?.group === "carryover_deficit" ? "#f87171" : "#86efac";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
