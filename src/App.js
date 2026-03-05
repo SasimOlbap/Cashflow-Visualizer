@@ -448,8 +448,7 @@ function CashFlow({ session, lang, setLang }) {
   // Watch for prev month changes and prompt if current month has manual carryover
   useEffect(() => {
     if (!cloudLoaded.current) return;
-    const [y, m] = curKey.split("-").map(Number);
-    if (!isCarryoverManual(curKey)) return;
+    const [_y, m] = curKey.split("-").map(Number);
     const autoVal = getCarryoverAuto(curKey);
     if (autoVal === null) return;
     const currentVal = carryoverOverrides[curKey]?.value;
