@@ -51,6 +51,7 @@ export const CAT_LABELS = {
   Payroll:     "Payroll Deductions",
   "Long-Term": "Long-Term Planning",
   Flexible:    "Flexible Spending",
+  Carryover:   "Deficit Carryover",
 };
 
 export const CAT_COLORS = {
@@ -60,6 +61,7 @@ export const CAT_COLORS = {
   Payroll:     "#ef9a9a",
   "Long-Term": "#ce93d8",
   Flexible:    "#ff8a65",
+  Carryover:   "#f87171",
 };
 
 export const GROUP_COLORS = {
