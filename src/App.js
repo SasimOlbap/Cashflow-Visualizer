@@ -268,6 +268,7 @@ function CashFlow({ session, lang, setLang }) {
   const [ctxMenu,   setCtxMenu]   = useState(null); // { key, x, y }
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
+  const ctxMenuTimer = useRef(null);
 
   const deleteMonth = async (key) => {
     // Delete from Supabase first
@@ -628,7 +629,7 @@ function CashFlow({ session, lang, setLang }) {
                     <DoubleArrow direction="right" color={hlColor} />
                   </button>
                 </div>
-                <div style={{ display: "flex", flex: 1, gap: 2 }}>
+                <div style={{ display: "flex", flex: 1, gap: 2 }} onClick={() => setCtxMenu(null)}>
                   {MONTH_NAMES.map((name, i) => {
                     const key = toKey(today.getFullYear(), i + 1);
                     const isSelected = key === curKey;
@@ -638,14 +639,20 @@ function CashFlow({ session, lang, setLang }) {
                     const prevHasData = prevKey && !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
                     return (
                       <div key={key} style={{ flex: 1, position: "relative" }}
-                        onMouseEnter={() => { if (!hasData && key !== curKey && prevHasData) setHovEmpty(key); }}
-                        onMouseLeave={() => { setHovEmpty(null); setCtxMenu(null); }}
+                        onMouseEnter={() => {
+                          clearTimeout(ctxMenuTimer.current);
+                          if (!hasData && key !== curKey && prevHasData) setHovEmpty(key);
+                        }}
+                        onMouseLeave={() => {
+                          setHovEmpty(null);
+                          ctxMenuTimer.current = setTimeout(() => setCtxMenu(null), 200);
+                        }}
                       >
                       <button
                         onClick={() => { if (hasData) { setCurKey(key); setHovMonth(null); setHovEmpty(null); } }}
                         onMouseEnter={() => hasData && setHovMonth(key)}
                         onMouseLeave={() => setHovMonth(null)}
-                        onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, x: e.clientX, y: e.clientY }); } }}
+                        onContextMenu={e => { if (hasData) { e.preventDefault(); setCtxMenu({ key, i }); } }}
                         style={{
                           width: "100%",
                           flex: 1, background: isSelected || isHovered ? "rgba(167,139,250,0.12)" : "transparent",
@@ -657,35 +664,51 @@ function CashFlow({ session, lang, setLang }) {
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
-                      {hovEmpty === key && (
+                      {hovEmpty === key && prevHasData && (
                         <div style={{
                           position: "absolute", top: "calc(100% + 6px)",
                           ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
                           background: darkMode ? "#1e1b2e" : "#ffffff",
                           border: `1px solid ${T.accent}66`,
                           borderRadius: 10, padding: "8px", zIndex: 999,
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-                          display: "flex", flexDirection: "column", gap: 6, minWidth: 160,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.2)", minWidth: 160,
                         }}>
-                          {/* invisible bridge to prevent hover gap */}
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
-                          {prevHasData && (
-                            <button onClick={() => {
-                              const prev = months[prevKey];
-                              const copied = {
-                                income: prev.income.map(i => ({ ...i, id: uid() })),
-                                expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
-                              };
-                              setMonths(p => ({ ...p, [key]: copied }));
-                              saveMonth(key, copied);
-                              setCurKey(key);
-                              setHovEmpty(null);
-                            }} style={{
-                              background: "rgba(167,139,250,0.15)", border: `1px solid ${T.accent}44`,
-                              borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
-                              cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                            }}>📋 Copy data from {MONTH_NAMES[i - 1]}</button>
-                          )}
+                          <button onClick={() => {
+                            const prev = months[prevKey];
+                            const copied = {
+                              income: prev.income.map(i => ({ ...i, id: uid() })),
+                              expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
+                            };
+                            setMonths(p => ({ ...p, [key]: copied }));
+                            saveMonth(key, copied);
+                            setCurKey(key);
+                            setHovEmpty(null);
+                          }} style={{
+                            width: "100%", background: "rgba(167,139,250,0.15)", border: "none",
+                            borderRadius: 7, color: T.text, fontSize: 12, padding: "6px 10px",
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                          }}>📋 Copy data from {MONTH_NAMES[i - 1]}</button>
+                        </div>
+                      )}
+                      {ctxMenu?.key === key && (
+                        <div
+                          onMouseEnter={() => clearTimeout(ctxMenuTimer.current)}
+                          onMouseLeave={() => { ctxMenuTimer.current = setTimeout(() => setCtxMenu(null), 200); }}
+                          style={{
+                            position: "absolute", top: "calc(100% + 6px)",
+                            ...(i >= 10 ? { right: 0 } : { left: "50%", transform: "translateX(-50%)" }),
+                            background: darkMode ? "#1e1b2e" : "#ffffff",
+                            border: `1px solid ${T.accent}66`,
+                            borderRadius: 10, padding: "8px", zIndex: 999,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.2)", minWidth: 160,
+                        }}>
+                          <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
+                            width: "100%", background: "rgba(248,113,113,0.15)", border: "none",
+                            borderRadius: 7, color: "#f87171", fontSize: 12, padding: "6px 10px",
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8,
+                          }}>🗑 Delete month</button>
                         </div>
                       )}
                       </div>
@@ -788,28 +811,7 @@ function CashFlow({ session, lang, setLang }) {
       </div>
       </div>
     </div>
-      {/* Right-click context menu */}
-      {ctxMenu && (
-        <div onClick={() => setCtxMenu(null)} style={{ position: "fixed", inset: 0, zIndex: 1000 }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            position: "fixed", left: ctxMenu.x, top: ctxMenu.y,
-            background: T.bgCard, border: `1px solid ${T.border}`,
-            borderRadius: 10, padding: "4px", zIndex: 1001,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)", minWidth: 160,
-          }}>
-            <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
-              width: "100%", background: "none", border: "none", borderRadius: 7,
-              padding: "8px 14px", textAlign: "left", cursor: "pointer",
-              color: "#f87171", fontSize: 13, fontFamily: "inherit",
-              display: "flex", alignItems: "center", gap: 8,
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.1)"}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}>
-              🗑 Delete month
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Confirm delete dialog */}
       {confirmDel && (
