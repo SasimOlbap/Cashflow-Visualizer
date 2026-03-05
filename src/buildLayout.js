@@ -29,11 +29,14 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (passiveSum > 0) push("__passive",     "Passive Income", passiveSum, "agg");
   if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
-  ALL_CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], c === "Carryover" ? "carryover_deficit" : "category"); });
+  ALL_CATS.forEach(c => { if (c !== "Carryover" && catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], "category"); });
   if (surplus > 0) push("__surplus", "Surplus", surplus, "category");
+  // Deficit carryover: single node at col 3, no separate leaf
+  if (catSums["Carryover"] > 0) push("__carryover_exp", "↩ Deficit Carryover", catSums["Carryover"], "carryover_deficit");
   ALL_CATS.forEach(c => {
+    if (c === "Carryover") return; // handled above
     expenses.filter(e => e.category === c && (Number(e.value) || 0) > 0)
-      .forEach(e => push(e.id, e.label, Number(e.value) || 0, c === "Carryover" ? "carryover_deficit" : "leaf"));
+      .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
   });
   if (surplus > 0) push("__surplus_phantom", "", surplus, "leaf");
 
@@ -45,9 +48,11 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (activeSum  > 0) addLink("__active",  "__total", activeSum);
   if (passiveSum > 0) addLink("__passive", "__total", passiveSum);
   if (deficit    > 0) addLink("__deficit_agg", "__total", deficit);
-  ALL_CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
+  ALL_CATS.forEach(c => { if (c !== "Carryover" && catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
+  if (catSums["Carryover"] > 0) addLink("__total", "__carryover_exp", catSums["Carryover"]);
   if (surplus > 0) addLink("__total", "__surplus", surplus);
   expenses.forEach(e => {
+    if (e.category === "Carryover") return; // no leaf link needed
     const v = Number(e.value) || 0;
     if (v > 0 && catSums[e.category] > 0) addLink("__cat_" + e.category, e.id, v);
   });

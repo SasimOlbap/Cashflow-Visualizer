@@ -559,8 +559,7 @@ function CashFlow({ session, lang, setLang }) {
     const col = link.sourceNode?.col ?? 0;
     if (link.source === "__deficit_agg" && link.target === "__total") return "#f87171";
     if (link.source === "__carryover") return "#86efac";
-    if (link.source === "__total" && link.target === "__cat_Carryover") return "#f87171";
-    if (link.source === "__cat_Carryover") return "#f87171";
+    if (link.source === "__total" && link.target === "__carryover_exp") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
