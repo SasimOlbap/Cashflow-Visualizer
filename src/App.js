@@ -268,6 +268,7 @@ function CashFlow({ session, lang, setLang }) {
   const [ctxMenu,   setCtxMenu]   = useState(null);
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
+  // eslint-disable-next-line no-unused-vars
   const ctxMenuTimer = useRef(null);
 
   // ── carryover state ───────────────────────────────────────────────────────
@@ -448,7 +449,6 @@ function CashFlow({ session, lang, setLang }) {
   useEffect(() => {
     if (!cloudLoaded.current) return;
     const [y, m] = curKey.split("-").map(Number);
-    const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
     if (!isCarryoverManual(curKey)) return;
     const autoVal = getCarryoverAuto(curKey);
     if (autoVal === null) return;
