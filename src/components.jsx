@@ -5,6 +5,7 @@ export function LinkPath({ link, color, onHover, hovered, colX }) {
   const { sx, tx, sy0, sy1, ty0, ty1 } = link;
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
+  // Standard bezier ribbon
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
@@ -38,7 +39,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark }) {
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_agg" || n.id === "__deficit_cat";
   const isPhantom  = n.id === "__surplus_phantom"
@@ -57,28 +58,59 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
       ? GROUP_COLORS.surplus
       : GROUP_COLORS[n.group] || GROUP_COLORS.category;
 
-  const nw     = n.w || nodeWidth;
-  const right  = n.col <= 1;
-  const lx     = right ? n.x + nw + 6 : n.x - 6;
-  const anchor = right ? "start" : "end";
-  const my     = n.y + n.h / 2;
-  const fs     = Math.min(14, Math.max(9, n.h * 0.30));
-  const fs2    = Math.max(9, fs - 1);
-  const fs3    = Math.max(8, fs - 2);
+  const nw      = n.w || nodeWidth;
+  const right   = n.col <= 1;
+  const my      = n.y + n.h / 2;
+  const fs      = Math.min(14, Math.max(9, n.h * 0.30));
+  const fs2     = Math.max(9, fs - 1);
+  const fs3     = Math.max(8, fs - 2);
+  const valCol  = T.textNode;
+  const sepCol  = isDark ? "#ffffff" : "#000000";
 
-  return (
-    <g key={n.id}>
+  const rect = (
+    <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
         style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
         style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
-      <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
+    </>
+  );
+
+  // Col2 total node: dual labels — Total Income left, Total Expenses right
+  if (n.col === 2) {
+    const lxLeft  = n.x - 6;
+    const lxRight = n.x + nw + 6;
+    return (
+      <g key={n.id}>
+        {rect}
+        <text x={lxLeft} y={my - 6} textAnchor="end" fill={valCol} fontSize={fs} fontWeight={600}>Total Income</text>
+        <text x={lxLeft} y={my + 8} textAnchor="end" fontSize={fs2}>
+          <tspan fill={valCol}>${fmt(grand)}</tspan>
+          <tspan fill={sepCol} fontSize={fs3}> / </tspan>
+          <tspan fill={sepCol} fontSize={fs3}>100%</tspan>
+        </text>
+        <text x={lxRight} y={my - 6} textAnchor="start" fill={valCol} fontSize={fs} fontWeight={600}>Total Expenses</text>
+        <text x={lxRight} y={my + 8} textAnchor="start" fontSize={fs2}>
+          <tspan fill={valCol}>${fmt(totalExp)}</tspan>
+          <tspan fill={sepCol} fontSize={fs3}> / </tspan>
+          <tspan fill={sepCol} fontSize={fs3}>{pct(totalExp, grand)}</tspan>
+        </text>
+      </g>
+    );
+  }
+
+  const lx     = right ? n.x + nw + 6 : n.x - 6;
+  const anchor = right ? "start" : "end";
+  return (
+    <g key={n.id}>
+      {rect}
+      <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}>{n.label}</text>
       <text x={lx} y={my + 8} textAnchor={anchor} fontSize={fs2}>
-        <tspan fill={T.textNode}>${fmt(n.value)}</tspan>
-        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={fs3}> / </tspan>
-        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={fs3}>{pct(n.value, grand)}</tspan>
+        <tspan fill={valCol}>${fmt(n.value)}</tspan>
+        <tspan fill={sepCol} fontSize={fs3}> / </tspan>
+        <tspan fill={sepCol} fontSize={fs3}>{pct(n.value, grand)}</tspan>
       </text>
     </g>
   );
