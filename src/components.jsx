@@ -47,6 +47,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
     || n.id === "__carryover_phantom"
     || n.id === "__col0_deficit_phantom"
     || n.id === "__col1_deficit_phantom"
+    || n.id === "__col1_surplus_phantom"
     || n.id === "__deficit_src_phantom";
 
   if (isPhantom) return <g key={n.id} />;

@@ -36,9 +36,10 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
-  // COL 1: agg nodes + phantom spacer to match col0
+  // COL 1: agg nodes + phantom spacers to match col0 height
   if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
+  if (surplusCarryAmt > 0) push("__col1_surplus_phantom", "", surplusCarryAmt, "agg_phantom");
   if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
   else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
 
