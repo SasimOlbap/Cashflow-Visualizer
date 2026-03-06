@@ -18,24 +18,26 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  const totalNodeVal = deficit > 0 ? totalExp : grand;
+  // Total node value must equal sum of all outgoing flows
+  // In deficit: cats(totalExp) + deficit flows out, so size = totalExp + deficit
+  // In surplus: grand flows out (cats + surplus = grand)
+  const totalNodeVal = deficit > 0 ? totalExp + deficit : grand;
 
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
 
-  // COL 0: income sources
-  // surplus carryover node sits in col0 (group carryover_surplus maps to 0)
+  // COL 0: income sources + phantom to match col1 phantom
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passive.forEach(i => push(i.id, i.label, Number(i.value) || 0,
     i.id === "__carryover" ? "carryover_surplus" : "source"));
-  // Phantom spacer in col0 to match deficit carryover node height in col1
   if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
-  // When deficit but no carryover, phantom to balance deficit_agg in col1
-  else if (deficit > 0) push("__deficit_src_phantom", "", deficit, "source_phantom");
+  else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
-  // COL 1: agg nodes only
+  // COL 1: agg nodes + phantom spacer to match col0
   if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
+  if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
+  else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
 
   // COL 2: total node
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
@@ -61,8 +63,10 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   passive.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
   // Col1 -> Col2
-  if (activeSum  > 0) addLink("__active",  "__total", activeSum);
-  if (passiveSum > 0) addLink("__passive", "__total", passiveSum);
+  if (activeSum  > 0) addLink("__active",              "__total", activeSum);
+  if (passiveSum > 0) addLink("__passive",              "__total", passiveSum);
+  // Phantom fills gap between grand and totalNodeVal on left of total node (invisible)
+  if (deficit    > 0) addLink("__col1_deficit_phantom", "__total", deficit);
 
   // Col2 -> Col3
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });

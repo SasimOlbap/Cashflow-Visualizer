@@ -560,8 +560,8 @@ function CashFlow({ session, lang, setLang }) {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__deficit_agg"  && link.target === "__total")      return "#f87171";
-    if (link.source === "__total"        && link.target === "__deficit_cat") return "#f87171";
+    if (link.source === "__col1_deficit_phantom") return "transparent";
+    if (link.source === "__total" && link.target === "__deficit_cat") return "#f87171";
     if (link.source === "__carryover") return "#86efac";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.target === "__surplus") return "#86efac";
