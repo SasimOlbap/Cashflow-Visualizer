@@ -66,13 +66,11 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
-  // Col1 -> Col2
-  if (activeSum  > 0) addLink("__active",              "__total", activeSum);
-  if (passiveSum > 0) addLink("__passive",              "__total", passiveSum);
-  if (deficit    > 0) addLink("__col1_deficit_phantom", "__total", deficit);
-
-  // Col0 -> Col2 direct (surplus carryover skips col1)
-  if (surplusCarryAmt > 0) addLink("__carryover", "__total", surplusCarryAmt);
+  // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
+  if (activeSum      > 0) addLink("__active",              "__total", activeSum);
+  if (passiveSum     > 0) addLink("__passive",              "__total", passiveSum);
+  if (surplusCarryAmt > 0) addLink("__carryover",           "__total", surplusCarryAmt);
+  if (deficit        > 0) addLink("__col1_deficit_phantom", "__total", deficit);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
