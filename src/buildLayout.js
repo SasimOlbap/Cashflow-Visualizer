@@ -37,7 +37,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
   if (deficit    > 0) push("__deficit_agg", "Deficit",    deficit,    "agg");
-  if (deficitCarryAmt > 0) push("__carryover_exp", "↩ Deficit Carryover", deficitCarryAmt, "carryover_deficit_src");
+  // Phantom spacer in col1 to match col0 deficit phantom — keeps both cols same height
+  if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
 
   // COL 2: total node
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
@@ -82,7 +83,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
 
   const colMap = {
     source: 0, source_phantom: 0, carryover_surplus: 0,
-    agg: 1, carryover_deficit_src: 1,
+    agg: 1, agg_phantom: 1, carryover_deficit_src: 1,
     total: 2,
     category: 3, deficit_cat: 3,
     leaf: 4,
