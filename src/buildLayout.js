@@ -36,9 +36,10 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
-  // COL 1: agg nodes — passive inflated to include carryover so ribbon exits seamlessly
-  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,                    "agg");
-  if (passiveSum + surplusCarryAmt > 0) push("__passive", "Passive Income", passiveSum + surplusCarryAmt, "agg");
+  // COL 1: agg nodes + phantom spacers
+  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
+  if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
+  if (surplusCarryAmt > 0) push("__col1_surplus_phantom", "", surplusCarryAmt, "agg_phantom");
   if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
   else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
 
@@ -64,13 +65,14 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   // Col0 -> Col1
   active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
-  // Carryover feeds into passive node directly (no gap between passive and carryover ribbon)
-  if (surplusCarryAmt > 0) addLink("__carryover", "__passive", surplusCarryAmt);
 
   // Col1 -> Col2
   if (activeSum  > 0) addLink("__active",              "__total", activeSum);
-  if (passiveSum + surplusCarryAmt > 0) addLink("__passive", "__total", passiveSum + surplusCarryAmt);
+  if (passiveSum > 0) addLink("__passive",              "__total", passiveSum);
   if (deficit    > 0) addLink("__col1_deficit_phantom", "__total", deficit);
+
+  // Col0 -> Col2 direct (surplus carryover skips col1)
+  if (surplusCarryAmt > 0) addLink("__carryover", "__total", surplusCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
