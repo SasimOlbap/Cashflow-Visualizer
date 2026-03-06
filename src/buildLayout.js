@@ -1,11 +1,14 @@
 import { fmt, CATS, CAT_LABELS } from "./constants";
 
 export function buildLayout(income, expenses, width, height, colOffsets = [0, 0, 0, 0, 0]) {
-  const active     = income.filter(i => i.type === "active");
-  const passive    = income.filter(i => i.type === "passive" && i.id !== "__carryover_exp");
-  const activeSum  = active.reduce((s, i)  => s + (Number(i.value) || 0), 0);
-  const passiveSum = passive.reduce((s, i) => s + (Number(i.value) || 0), 0);
-  const grand      = activeSum + passiveSum;
+  const active          = income.filter(i => i.type === "active");
+  const passive         = income.filter(i => i.type === "passive" && i.id !== "__carryover_exp");
+  const passiveRegular  = passive.filter(i => i.id !== "__carryover");
+  const activeSum       = active.reduce((s, i) => s + (Number(i.value) || 0), 0);
+  const passiveSum      = passiveRegular.reduce((s, i) => s + (Number(i.value) || 0), 0);
+  const surplusCarry    = passive.find(i => i.id === "__carryover");
+  const surplusCarryAmt = surplusCarry ? (Number(surplusCarry.value) || 0) : 0;
+  const grand           = activeSum + passiveSum + surplusCarryAmt;
 
   // Deficit carryover comes in via expenses with category "Carryover"
   const deficitCarryItem = expenses.find(e => e.category === "Carryover");
@@ -28,8 +31,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
 
   // COL 0: income sources + phantom to match col1 phantom
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
-  passive.forEach(i => push(i.id, i.label, Number(i.value) || 0,
-    i.id === "__carryover" ? "carryover_surplus" : "source"));
+  passiveRegular.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
+  if (surplusCarryAmt > 0) push("__carryover", surplusCarry.label, surplusCarryAmt, "carryover_surplus");
   if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
@@ -58,15 +61,17 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
-  // Col0 -> Col1
-  active.forEach(i  => { if (activeSum  > 0) addLink(i.id, "__active",  Number(i.value) || 0); });
-  passive.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
+  // Col0 -> Col1 (carryover surplus links directly to col2 instead)
+  active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
+  passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
   // Col1 -> Col2
   if (activeSum  > 0) addLink("__active",              "__total", activeSum);
   if (passiveSum > 0) addLink("__passive",              "__total", passiveSum);
-  // Phantom fills gap between grand and totalNodeVal on left of total node (invisible)
   if (deficit    > 0) addLink("__col1_deficit_phantom", "__total", deficit);
+
+  // Col0 -> Col2 direct (surplus carryover skips col1)
+  if (surplusCarryAmt > 0) addLink("__carryover", "__total", surplusCarryAmt);
 
   // Col2 -> Col3
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
