@@ -41,13 +41,15 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 // ── SankeyNode ────────────────────────────────────────────────────────────
 export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark }) {
   const isSurplus  = n.id === "__surplus";
-  const isDeficit  = n.id === "__deficit_agg" || n.id === "__deficit_cat";
+  const isDeficit  = n.id === "__deficit_cat";
   const isPhantom  = n.id === "__surplus_phantom"
     || n.id === "__deficit_phantom"
     || n.id === "__carryover_phantom"
     || n.id === "__col0_deficit_phantom"
     || n.id === "__col1_deficit_phantom"
     || n.id === "__col1_surplus_phantom"
+    || n.id === "__col3_surplus_phantom"
+    || n.id === "__col3_deficit_phantom"
     || n.id === "__deficit_src_phantom";
 
   if (isPhantom) return <g key={n.id} />;

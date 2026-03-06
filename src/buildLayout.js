@@ -46,18 +46,18 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   // COL 2: total node
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
 
-  // COL 3: expense categories + surplus/deficit
+  // COL 3: expense categories + phantom spacers for surplus/deficit
   CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], "category"); });
-  if (surplus > 0) push("__surplus",      "Surplus", surplus, "category");
-  if (deficit  > 0) push("__deficit_cat", "Deficit", deficit, "deficit_cat");
+  if (surplus > 0) push("__col3_surplus_phantom", "", surplus, "category_phantom");
+  if (deficit  > 0) push("__col3_deficit_phantom", "", deficit, "category_phantom");
 
-  // COL 4: leaves + phantoms
+  // COL 4: leaves + surplus/deficit nodes (direct from col2)
   CATS.forEach(c => {
     expenses.filter(e => e.category === c && (Number(e.value) || 0) > 0)
       .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
   });
-  if (surplus > 0) push("__surplus_phantom", "", surplus, "leaf");
-  if (deficit  > 0) push("__deficit_phantom", "", deficit, "leaf");
+  if (surplus > 0) push("__surplus",      "Surplus", surplus, "leaf");
+  if (deficit  > 0) push("__deficit_cat", "Deficit", deficit, "leaf");
 
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
@@ -74,10 +74,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   // Col0 -> Col2 direct (surplus carryover skips col1)
   if (surplusCarryAmt > 0) addLink("__carryover", "__total", surplusCarryAmt);
 
-  // Col2 -> Col3
+  // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
-  if (surplus > 0) addLink("__total", "__surplus",      surplus);
-  if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
 
   // Col3 -> Col4
   expenses.forEach(e => {
@@ -86,11 +84,15 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     if (v > 0 && catSums[e.category] > 0) addLink("__cat_" + e.category, e.id, v);
   });
 
+  // Col2 -> Col4 direct (surplus and deficit skip col3, added last for z-order on top)
+  if (surplus > 0) addLink("__total", "__surplus",      surplus);
+  if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
+
   const colMap = {
     source: 0, source_phantom: 0, carryover_surplus: 0,
-    agg: 1, agg_phantom: 1, carryover_deficit_src: 1,
+    agg: 1, agg_phantom: 1,
     total: 2,
-    category: 3, deficit_cat: 3,
+    category: 3, category_phantom: 3,
     leaf: 4,
   };
   const colWidths = [20, 20, 20, 20, 20];
