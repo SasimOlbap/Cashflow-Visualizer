@@ -33,12 +33,9 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   // When deficit but no carryover, phantom to balance deficit_agg in col1
   else if (deficit > 0) push("__deficit_src_phantom", "", deficit, "source_phantom");
 
-  // COL 1: agg nodes + deficit carryover (visual only)
+  // COL 1: agg nodes only
   if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
   if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
-  if (deficit    > 0) push("__deficit_agg", "Deficit",    deficit,    "agg");
-  // Phantom spacer in col1 to match col0 deficit phantom — keeps both cols same height
-  if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
 
   // COL 2: total node
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
@@ -64,10 +61,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   passive.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
   // Col1 -> Col2
-  if (activeSum  > 0) addLink("__active",     "__total", activeSum);
-  if (passiveSum > 0) addLink("__passive",     "__total", passiveSum);
-  if (deficit    > 0) addLink("__deficit_agg", "__total", deficit);
-  // __carryover_exp: NO link — visual only
+  if (activeSum  > 0) addLink("__active",  "__total", activeSum);
+  if (passiveSum > 0) addLink("__passive", "__total", passiveSum);
 
   // Col2 -> Col3
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
