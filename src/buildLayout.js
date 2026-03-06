@@ -21,10 +21,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  // Total node value must equal sum of all outgoing flows
-  // In deficit: cats(totalExp) + deficit flows out, so size = totalExp + deficit
-  // In surplus: grand flows out (cats + surplus = grand)
-  const totalNodeVal = deficit > 0 ? totalExp + deficit : grand;
+  // Total node = totalExp on both sides. Deficit is contained within expenses, not extra.
+  const totalNodeVal = totalExp > 0 ? totalExp : grand;
 
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
