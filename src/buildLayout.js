@@ -21,7 +21,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  const totalNodeVal = totalExp > 0 ? totalExp : grand;
+  const totalNodeVal = deficit > 0 ? totalExp : grand;
 
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
