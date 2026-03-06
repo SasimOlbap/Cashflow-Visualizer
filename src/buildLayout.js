@@ -21,7 +21,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  const totalNodeVal = deficit > 0 ? totalExp + deficit : grand;
+  const totalNodeVal = totalExp > 0 ? totalExp : grand;
 
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
@@ -64,10 +64,9 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
   // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
-  if (activeSum      > 0) addLink("__active",              "__total", activeSum);
-  if (passiveSum     > 0) addLink("__passive",              "__total", passiveSum);
-  if (surplusCarryAmt > 0) addLink("__carryover",           "__total", surplusCarryAmt);
-  if (deficit        > 0) addLink("__col1_deficit_phantom", "__total", deficit);
+  if (activeSum       > 0) addLink("__active",   "__total", activeSum);
+  if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
+  if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
@@ -156,13 +155,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  // Manually fix deficit ribbon source: anchor to bottom of __total node
-  // so it overlaps the last expense unit rather than falling below col2
+  // Anchor deficit ribbon to bottom of __total: overlaps last expense unit
   if (deficit > 0) {
     const defLink = links.find(l => l.source === "__total" && l.target === "__deficit_cat");
     const total = nodeMap["__total"];
-    if (defLink && total) {
-      const defH = total.value > 0 ? (deficit / total.value) * total.h : 0;
+    if (defLink && total && totalExp > 0) {
+      const defH = (deficit / totalExp) * total.h;
       defLink.sy0 = total.y + total.h - defH;
       defLink.sy1 = total.y + total.h;
     }
