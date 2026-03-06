@@ -29,17 +29,16 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
 
-  // COL 0: income sources + phantom to match col1 phantom
+  // COL 0: income sources + phantoms
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passiveRegular.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
   if (surplusCarryAmt > 0) push("__carryover", surplusCarry.label, surplusCarryAmt, "carryover_surplus");
   if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
-  // COL 1: agg nodes + phantom spacers to match col0 height
-  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
-  if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
-  if (surplusCarryAmt > 0) push("__col1_surplus_phantom", "", surplusCarryAmt, "agg_phantom");
+  // COL 1: agg nodes — passive inflated to include carryover so ribbon exits seamlessly
+  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,                    "agg");
+  if (passiveSum + surplusCarryAmt > 0) push("__passive", "Passive Income", passiveSum + surplusCarryAmt, "agg");
   if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
   else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
 
@@ -62,17 +61,16 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
-  // Col0 -> Col1 (carryover surplus links directly to col2 instead)
+  // Col0 -> Col1
   active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
+  // Carryover feeds into passive node directly (no gap between passive and carryover ribbon)
+  if (surplusCarryAmt > 0) addLink("__carryover", "__passive", surplusCarryAmt);
 
   // Col1 -> Col2
   if (activeSum  > 0) addLink("__active",              "__total", activeSum);
-  if (passiveSum > 0) addLink("__passive",              "__total", passiveSum);
+  if (passiveSum + surplusCarryAmt > 0) addLink("__passive", "__total", passiveSum + surplusCarryAmt);
   if (deficit    > 0) addLink("__col1_deficit_phantom", "__total", deficit);
-
-  // Col0 -> Col2 direct (surplus carryover skips col1)
-  if (surplusCarryAmt > 0) addLink("__carryover", "__total", surplusCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
