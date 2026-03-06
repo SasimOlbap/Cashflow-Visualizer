@@ -5,11 +5,7 @@ export function LinkPath({ link, color, onHover, hovered, colX }) {
   const { sx, tx, sy0, sy1, ty0, ty1 } = link;
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
-  const isSurplusLink = link.target === "__surplus";
-  const isDeficitLink = link.source === "__deficit_agg" && link.target === "__total";
-  const d = (isSurplusLink || isDeficitLink)
-    ? `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`
-    : `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
+  const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
       style={{ transition: "opacity 0.15s", cursor: "pointer" }}
@@ -43,18 +39,32 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
 export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, startDrag, isDark }) {
-  const isSurplus = n.id === "__surplus";
-  const isDeficit = n.id === "__deficit_agg";
-  const isPhantom = n.id === "__surplus_phantom";
-  const c   = isDeficit ? GROUP_COLORS.deficit : isSurplus ? GROUP_COLORS.surplus : GROUP_COLORS[n.group];
-  if (isPhantom || n.id === "__deficit_phantom" || n.id === "__carryover_phantom") return <g key={n.id} />; // invisible spacer
-  if (!isFinite(n.y) || !isFinite(n.h)) return <g key={n.id} />; // guard against NaN
-  const nw  = n.w || nodeWidth;
+  const isSurplus  = n.id === "__surplus";
+  const isDeficit  = n.id === "__deficit_agg" || n.id === "__deficit_cat";
+  const isPhantom  = n.id === "__surplus_phantom"
+    || n.id === "__deficit_phantom"
+    || n.id === "__carryover_phantom"
+    || n.id === "__col0_deficit_phantom"
+    || n.id === "__deficit_src_phantom";
+
+  if (isPhantom) return <g key={n.id} />;
+  if (!isFinite(n.y) || !isFinite(n.h)) return <g key={n.id} />;
+
+  const c = isDeficit
+    ? GROUP_COLORS.deficit
+    : isSurplus
+      ? GROUP_COLORS.surplus
+      : GROUP_COLORS[n.group] || GROUP_COLORS.category;
+
+  const nw     = n.w || nodeWidth;
   const right  = n.col <= 1;
   const lx     = right ? n.x + nw + 6 : n.x - 6;
   const anchor = right ? "start" : "end";
-  const my = n.y + n.h / 2;
-  const fs = Math.min(14, Math.max(9, n.h * 0.30));
+  const my     = n.y + n.h / 2;
+  const fs     = Math.min(14, Math.max(9, n.h * 0.30));
+  const fs2    = Math.max(9, fs - 1);
+  const fs3    = Math.max(8, fs - 2);
+
   return (
     <g key={n.id}>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
@@ -64,9 +74,10 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, fmt, pct, sta
         style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
       <text x={lx} y={my - 6} textAnchor={anchor} fill={T.textNode} fontSize={fs} fontWeight={600}>{n.label}</text>
-      <text x={lx} y={my + 8} textAnchor={anchor} fontSize={Math.max(9, fs - 1)}>
-        <tspan fill={T.textNode}>{fmt(n.value)}</tspan>
-        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={Math.max(8, fs - 2)} dx={5}>{pct(n.value, grand)}</tspan>
+      <text x={lx} y={my + 8} textAnchor={anchor} fontSize={fs2}>
+        <tspan fill={T.textNode}>${fmt(n.value)}</tspan>
+        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={fs3}> / </tspan>
+        <tspan fill={isDark ? "#ffffff" : "#000000"} fontSize={fs3}>{pct(n.value, grand)}</tspan>
       </text>
     </g>
   );

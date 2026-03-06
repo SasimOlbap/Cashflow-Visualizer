@@ -1,7 +1,5 @@
 import { fmt, CATS, CAT_LABELS } from "./constants";
 
-const ALL_CATS = [...CATS, "Carryover"];
-
 export function buildLayout(income, expenses, width, height, colOffsets = [0, 0, 0, 0, 0]) {
   const active     = income.filter(i => i.type === "active");
   const passive    = income.filter(i => i.type === "passive" && i.id !== "__carryover_exp");
@@ -9,56 +7,86 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const passiveSum = passive.reduce((s, i) => s + (Number(i.value) || 0), 0);
   const grand      = activeSum + passiveSum;
 
+  // Deficit carryover comes in via expenses with category "Carryover"
+  const deficitCarryItem = expenses.find(e => e.category === "Carryover");
+  const deficitCarryAmt  = deficitCarryItem ? (Number(deficitCarryItem.value) || 0) : 0;
 
   const catSums = {};
-  ALL_CATS.forEach(c => {
+  CATS.forEach(c => {
     catSums[c] = expenses.filter(e => e.category === c).reduce((s, e) => s + (Number(e.value) || 0), 0);
   });
-  const totalExp     = ALL_CATS.reduce((s, c) => s + catSums[c], 0);
-  const surplus      = grand - totalExp;
-  const deficit      = surplus < 0 ? Math.abs(surplus) : 0;
+  const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
+  const surplus  = grand - totalExp;
+  const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
   const totalNodeVal = deficit > 0 ? totalExp : grand;
 
   const nodes = [];
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
 
+  // COL 0: income sources
+  // surplus carryover node sits in col0 (group carryover_surplus maps to 0)
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
-  passive.forEach(i => push(i.id, i.label, Number(i.value) || 0, i.id === "__carryover" ? "carryover_surplus" : "source"));
-  if (deficit > 0) push("__deficit_phantom", "", deficit, "source");
-  if (activeSum  > 0) push("__active",      "Active Income",  activeSum,  "agg");
-  if (passiveSum > 0) push("__passive",     "Passive Income", passiveSum, "agg");
-  if (deficit    > 0) push("__deficit_agg", "Deficit",        deficit,    "agg");
+  passive.forEach(i => push(i.id, i.label, Number(i.value) || 0,
+    i.id === "__carryover" ? "carryover_surplus" : "source"));
+  // Phantom spacer in col0 to match deficit carryover node height in col1
+  if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
+  // When deficit but no carryover, phantom to balance deficit_agg in col1
+  else if (deficit > 0) push("__deficit_src_phantom", "", deficit, "source_phantom");
+
+  // COL 1: agg nodes + deficit carryover (visual only)
+  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
+  if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
+  if (deficit    > 0) push("__deficit_agg", "Deficit",    deficit,    "agg");
+  if (deficitCarryAmt > 0) push("__carryover_exp", "↩ Deficit Carryover", deficitCarryAmt, "carryover_deficit_src");
+
+  // COL 2: total node
   push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
-  ALL_CATS.forEach(c => { if (c !== "Carryover" && catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], "category"); });
-  if (surplus > 0) push("__surplus", "Surplus", surplus, "category");
-  // Deficit carryover: single node at col 3, no separate leaf
-  if (catSums["Carryover"] > 0) push("__carryover_exp", "↩ Deficit Carryover", catSums["Carryover"], "carryover_deficit");
-  ALL_CATS.forEach(c => {
-    if (c === "Carryover") return; // handled above
+
+  // COL 3: expense categories + surplus/deficit
+  CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], "category"); });
+  if (surplus > 0) push("__surplus",      "Surplus", surplus, "category");
+  if (deficit  > 0) push("__deficit_cat", "Deficit", deficit, "deficit_cat");
+
+  // COL 4: leaves + phantoms
+  CATS.forEach(c => {
     expenses.filter(e => e.category === c && (Number(e.value) || 0) > 0)
       .forEach(e => push(e.id, e.label, Number(e.value) || 0, "leaf"));
   });
   if (surplus > 0) push("__surplus_phantom", "", surplus, "leaf");
-  if (catSums["Carryover"] > 0) push("__carryover_phantom", "", catSums["Carryover"], "leaf");
+  if (deficit  > 0) push("__deficit_phantom", "", deficit, "leaf");
 
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
+  // Col0 -> Col1
   active.forEach(i  => { if (activeSum  > 0) addLink(i.id, "__active",  Number(i.value) || 0); });
   passive.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
-  if (activeSum  > 0) addLink("__active",  "__total", activeSum);
-  if (passiveSum > 0) addLink("__passive", "__total", passiveSum);
+
+  // Col1 -> Col2
+  if (activeSum  > 0) addLink("__active",     "__total", activeSum);
+  if (passiveSum > 0) addLink("__passive",     "__total", passiveSum);
   if (deficit    > 0) addLink("__deficit_agg", "__total", deficit);
-  ALL_CATS.forEach(c => { if (c !== "Carryover" && catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
-  if (catSums["Carryover"] > 0) addLink("__total", "__carryover_exp", catSums["Carryover"]);
-  if (surplus > 0) addLink("__total", "__surplus", surplus);
+  // __carryover_exp: NO link — visual only
+
+  // Col2 -> Col3
+  CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
+  if (surplus > 0) addLink("__total", "__surplus",      surplus);
+  if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
+
+  // Col3 -> Col4
   expenses.forEach(e => {
-    if (e.category === "Carryover") return; // no leaf link needed
+    if (e.category === "Carryover") return;
     const v = Number(e.value) || 0;
     if (v > 0 && catSums[e.category] > 0) addLink("__cat_" + e.category, e.id, v);
   });
 
-  const colMap    = { source: 0, agg: 1, total: 2, category: 3, leaf: 4, carryover_surplus: 0, carryover_deficit: 3 };
+  const colMap = {
+    source: 0, source_phantom: 0, carryover_surplus: 0,
+    agg: 1, carryover_deficit_src: 1,
+    total: 2,
+    category: 3, deficit_cat: 3,
+    leaf: 4,
+  };
   const colWidths = [20, 20, 20, 20, 20];
   const nodeWidth = 20;
   const nodeMap   = {};

@@ -432,13 +432,16 @@ function CashFlow({ session, lang, setLang }) {
     const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
     const prev = months[pk];
     if (!prev?.income?.length && !prev?.expenses?.length) return null;
-    // Include prev month's own carryover recursively (iterative to avoid infinite loop)
+    // Mirror buildLayout exactly: surplus/deficit carryover from prev month's own chain
     const prevCarry = getCarryoverValue(pk);
-    let prevIncome = prev.income.reduce((s, i) => s + (Number(i.value) || 0), 0);
-    let prevExp    = prev.expenses.reduce((s, e) => s + (Number(e.value) || 0), 0);
-    if (prevCarry !== null && prevCarry > 0) prevIncome += prevCarry;   // surplus adds to income
-    if (prevCarry !== null && prevCarry < 0) prevExp += Math.abs(prevCarry); // deficit adds to expenses
-    return prevIncome - prevExp;
+    const prevActiveSum  = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
+    const prevPassiveSum = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
+    // Surplus carryover adds to passive income; deficit carryover reduces net income
+    let prevGross = prevActiveSum + prevPassiveSum;
+    if (prevCarry !== null && prevCarry > 0) prevGross += prevCarry;   // surplus carryover boosts income
+    if (prevCarry !== null && prevCarry < 0) prevGross -= Math.abs(prevCarry); // deficit carryover reduces income
+    const prevExp = prev.expenses.reduce((s, e) => s + (Number(e.value) || 0), 0);
+    return prevGross - prevExp;
   };
 
   const getCarryoverValue = (key) => {
@@ -485,7 +488,7 @@ function CashFlow({ session, lang, setLang }) {
     const base = months[key]?.expenses || [];
     const carryVal = getCarryoverValue(key);
     if (carryVal === null || carryVal >= 0) return base;
-    // Deficit carryover goes into expenses as its own category
+    // Deficit carryover injected as special expense - buildLayout handles it on left side
     return [...base, { id: "__carryover_exp", label: "↩ Deficit Carryover", value: Math.abs(carryVal), category: "Carryover", _isCarryover: true }];
   };
 
@@ -557,9 +560,9 @@ function CashFlow({ session, lang, setLang }) {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__deficit_agg" && link.target === "__total") return "#f87171";
+    if (link.source === "__deficit_agg"  && link.target === "__total")      return "#f87171";
+    if (link.source === "__total"        && link.target === "__deficit_cat") return "#f87171";
     if (link.source === "__carryover") return "#86efac";
-    if (link.source === "__total" && link.target === "__carryover_exp") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     if (link.target === "__surplus") return "#86efac";
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
@@ -811,7 +814,7 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
                   ))}
                 </svg>
               </div>
@@ -871,10 +874,14 @@ function CashFlow({ session, lang, setLang }) {
               <ItemRow key={item.id} item={item} accent="#a78bfa" T={T}
                 onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
             ))}
-            {/* Carryover row - only show surplus here */}
+            {/* Carryover row - surplus or deficit, both shown in income panel */}
             {(() => {
               const carryVal = getCarryoverValue(curKey);
-              if (carryVal === null || carryVal <= 0) return null;
+              if (carryVal === null) return null;
+              const isPos = carryVal > 0;
+              const color = isPos ? "#86efac" : "#f87171";
+              const label = isPos ? "↩ Surplus Carryover" : "↩ Deficit Carryover";
+              const absVal = Math.abs(carryVal);
               const isManual = isCarryoverManual(curKey);
               return (
                 <div style={{ marginTop: 10, borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
@@ -882,30 +889,30 @@ function CashFlow({ session, lang, setLang }) {
                     Carryover {isManual ? <span style={{ color: T.textDim, fontSize: 10 }}>(manual)</span> : <span style={{ color: T.textDim, fontSize: 10 }}>(auto)</span>}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ width: 3, height: 34, borderRadius: 2, background: "#86efac", flexShrink: 0 }} />
-                    <div style={{ flex: 1, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color: "#86efac", fontSize: 14, padding: "4px 7px", fontWeight: 600 }}>
-                      ↩ Surplus Carryover
+                    <div style={{ width: 3, height: 34, borderRadius: 2, background: color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color, fontSize: 14, padding: "4px 7px", fontWeight: 600 }}>
+                      {label}
                     </div>
                     {editingCarryover ? (
                       <div style={{ position: "relative", flexShrink: 0 }}>
                         <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
                         <input type="number" min="0" value={carryoverEditVal}
                           onChange={e => setCarryoverEditVal(e.target.value)}
-                          onBlur={() => { const v = Number(carryoverEditVal); if (!isNaN(v)) setCarryoverOverrides(p => ({ ...p, [curKey]: { value: v, isManual: true } })); setEditingCarryover(false); }}
+                          onBlur={() => { const v = Number(carryoverEditVal); if (!isNaN(v)) setCarryoverOverrides(p => ({ ...p, [curKey]: { value: isPos ? v : -v, isManual: true } })); setEditingCarryover(false); }}
                           onKeyDown={e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditingCarryover(false); }}
                           autoFocus style={{ width: 86, background: T.bgInput, border: `1px solid ${T.accent}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", outline: "none" }} />
                       </div>
                     ) : (
                       <div style={{ position: "relative", flexShrink: 0 }}>
                         <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
-                        <div onClick={() => { setCarryoverEditVal(String(carryVal)); setEditingCarryover(true); }}
+                        <div onClick={() => { setCarryoverEditVal(String(absVal)); setEditingCarryover(true); }}
                           style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", cursor: "pointer" }}
-                        >{carryVal.toLocaleString()}</div>
+                        >{absVal.toLocaleString()}</div>
                       </div>
                     )}
                     <button title="Reset to auto" onClick={() => setCarryoverOverrides(p => { const n = { ...p }; delete n[curKey]; return n; })}
                       style={{ background: "none", border: "none", color: isManual ? T.textMuted : T.textFaint, cursor: isManual ? "pointer" : "default", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
-                      onMouseEnter={e => { if (isManual) e.currentTarget.style.color = "#86efac"; }}
+                      onMouseEnter={e => { if (isManual) e.currentTarget.style.color = color; }}
                       onMouseLeave={e => { e.currentTarget.style.color = isManual ? T.textMuted : T.textFaint; }}
                     >↺</button>
                   </div>
@@ -935,48 +942,6 @@ function CashFlow({ session, lang, setLang }) {
                 ))}
               </div>
             ))}
-            {/* Deficit carryover row */}
-            {(() => {
-              const carryVal = getCarryoverValue(curKey);
-              if (carryVal === null || carryVal >= 0) return null;
-              const isManual = isCarryoverManual(curKey);
-              const absVal = Math.abs(carryVal);
-              return (
-                <div style={{ marginTop: 10, borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
-                  <div style={{ fontSize: 11, letterSpacing: "0.13em", textTransform: "uppercase", color: T.textSub, marginBottom: 6 }}>
-                    Carryover {isManual ? <span style={{ color: T.textDim, fontSize: 10 }}>(manual)</span> : <span style={{ color: T.textDim, fontSize: 10 }}>(auto)</span>}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ width: 3, height: 34, borderRadius: 2, background: "#f87171", flexShrink: 0 }} />
-                    <div style={{ flex: 1, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color: "#f87171", fontSize: 14, padding: "4px 7px", fontWeight: 600 }}>
-                      ↩ Deficit Carryover
-                    </div>
-                    {editingCarryover ? (
-                      <div style={{ position: "relative", flexShrink: 0 }}>
-                        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
-                        <input type="number" min="0" value={carryoverEditVal}
-                          onChange={e => setCarryoverEditVal(e.target.value)}
-                          onBlur={() => { const v = Number(carryoverEditVal); if (!isNaN(v)) setCarryoverOverrides(p => ({ ...p, [curKey]: { value: -v, isManual: true } })); setEditingCarryover(false); }}
-                          onKeyDown={e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditingCarryover(false); }}
-                          autoFocus style={{ width: 86, background: T.bgInput, border: `1px solid ${T.accent}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", outline: "none" }} />
-                      </div>
-                    ) : (
-                      <div style={{ position: "relative", flexShrink: 0 }}>
-                        <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", color: T.textDim, fontSize: 14, pointerEvents: "none" }}>$</span>
-                        <div onClick={() => { setCarryoverEditVal(String(absVal)); setEditingCarryover(true); }}
-                          style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6, color: T.textVal, fontSize: 14, padding: "4px 6px 4px 18px", cursor: "pointer" }}
-                        >{absVal.toLocaleString()}</div>
-                      </div>
-                    )}
-                    <button title="Reset to auto" onClick={() => setCarryoverOverrides(p => { const n = { ...p }; delete n[curKey]; return n; })}
-                      style={{ background: "none", border: "none", color: isManual ? T.textMuted : T.textFaint, cursor: isManual ? "pointer" : "default", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
-                      onMouseEnter={e => { if (isManual) e.currentTarget.style.color = "#f87171"; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = isManual ? T.textMuted : T.textFaint; }}
-                    >↺</button>
-                  </div>
-                </div>
-              );
-            })()}
             <div style={{ display: "flex", gap: 5, marginTop: 12, flexWrap: "wrap" }}>
               <input placeholder="New item…" value={neLabel} onChange={e => setNeLabel(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addEx()} style={selSt} />
