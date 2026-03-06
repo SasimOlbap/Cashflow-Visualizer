@@ -21,7 +21,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  // Total node = totalExp on both sides. Deficit is contained within expenses, not extra.
+  // Total node always sized to totalExp so ribbon heights are uniform on both ends
   const totalNodeVal = totalExp > 0 ? totalExp : grand;
 
   const nodes = [];
@@ -65,10 +65,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
   // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
-  if (activeSum      > 0) addLink("__active",              "__total", activeSum);
-  if (passiveSum     > 0) addLink("__passive",              "__total", passiveSum);
-  if (surplusCarryAmt > 0) addLink("__carryover",           "__total", surplusCarryAmt);
-  if (deficit        > 0) addLink("__col1_deficit_phantom", "__total", deficit);
+  if (activeSum       > 0) addLink("__active",              "__total", activeSum);
+  if (passiveSum      > 0) addLink("__passive",              "__total", passiveSum);
+  if (surplusCarryAmt > 0) addLink("__carryover",            "__total", surplusCarryAmt);
+  if (deficit         > 0) addLink("__col1_deficit_phantom", "__total", deficit);
+  // In surplus: incoming > totalExp, so phantom absorbs the excess on left side
+  if (surplus         > 0) addLink("__col1_surplus_phantom", "__total", surplus);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
