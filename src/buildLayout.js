@@ -21,9 +21,6 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const totalExp = CATS.reduce((s, c) => s + catSums[c], 0);
   const surplus  = grand - totalExp;
   const deficit  = surplus < 0 ? Math.abs(surplus) : 0;
-  // Total node value must equal sum of all outgoing flows
-  // In deficit: cats(totalExp) + deficit flows out, so size = totalExp + deficit
-  // In surplus: grand flows out (cats + surplus = grand)
   const totalNodeVal = deficit > 0 ? totalExp + deficit : grand;
 
   const nodes = [];
@@ -158,6 +155,18 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
       srcRem[s.id] -= sh; tgtRem[t.id] -= th;
     } catch {}
   });
+
+  // Manually fix deficit ribbon source: anchor to bottom of __total node
+  // so it overlaps the last expense unit rather than falling below col2
+  if (deficit > 0) {
+    const defLink = links.find(l => l.source === "__total" && l.target === "__deficit_cat");
+    const total = nodeMap["__total"];
+    if (defLink && total) {
+      const defH = total.value > 0 ? (deficit / total.value) * total.h : 0;
+      defLink.sy0 = total.y + total.h - defH;
+      defLink.sy1 = total.y + total.h;
+    }
+  }
 
   return { nodes, links, nodeWidth, grand, totalExp, surplus, colX: actualColX };
 }
