@@ -440,7 +440,9 @@ function CashFlow({ session, lang, setLang }) {
     let prevGross = prevActiveSum + prevPassiveSum;
     if (prevCarry !== null && prevCarry > 0) prevGross += prevCarry;   // surplus carryover boosts income
     if (prevCarry !== null && prevCarry < 0) prevGross -= Math.abs(prevCarry); // deficit carryover reduces income
-    const prevExp = prev.expenses.reduce((s, e) => s + (Number(e.value) || 0), 0);
+    const prevExp = prev.expenses
+      .filter(e => e.category !== "Carryover")
+      .reduce((s, e) => s + (Number(e.value) || 0), 0);
     return prevGross - prevExp;
   };
 
