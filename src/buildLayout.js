@@ -162,14 +162,16 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     const total = nodeMap["__total"];
     const srcNode = nodeMap["__carryover_deficit"];
     if (defCarryLink && total && srcNode && totalExp > 0) {
-      // Ribbon height = same proportion as deficit ribbon on right side
-      const ribbonH = (deficitCarryAmt / totalExp) * total.h;
+      // Target ribbon height = deficit proportion of __total
+      const targetH = (deficitCarryAmt / totalExp) * total.h;
+      // Source ribbon height = clamped to actual node height
+      const sourceH = Math.min(targetH, srcNode.h);
       // Target: anchor to bottom of __total
       defCarryLink.ty1 = total.y + total.h;
-      defCarryLink.ty0 = defCarryLink.ty1 - ribbonH;
-      // Source: anchor to bottom of col0 node
+      defCarryLink.ty0 = defCarryLink.ty1 - targetH;
+      // Source: anchor to bottom of col0 node, clamped
       defCarryLink.sy1 = srcNode.y + srcNode.h;
-      defCarryLink.sy0 = defCarryLink.sy1 - ribbonH;
+      defCarryLink.sy0 = defCarryLink.sy1 - sourceH;
     }
   }
 
