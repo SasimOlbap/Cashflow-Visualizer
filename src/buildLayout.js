@@ -156,12 +156,14 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  // Force deficit carryover ribbon to uniform height (source height = target height)
+  // Anchor deficit carryover ribbon to bottom of __total, uniform height
   if (deficitCarryAmt > 0) {
     const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
-    if (defCarryLink) {
-      const sh = defCarryLink.sy1 - defCarryLink.sy0;
-      defCarryLink.ty1 = defCarryLink.ty0 + sh;
+    const total = nodeMap["__total"];
+    if (defCarryLink && total) {
+      const sh = defCarryLink.sy1 - defCarryLink.sy0; // source height
+      defCarryLink.ty1 = total.y + total.h;           // anchor to bottom of __total
+      defCarryLink.ty0 = defCarryLink.ty1 - sh;       // same height as source
     }
   }
 
