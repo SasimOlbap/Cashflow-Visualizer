@@ -432,16 +432,25 @@ function CashFlow({ session, lang, setLang }) {
     const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
     const prev = months[pk];
     if (!prev?.income?.length && !prev?.expenses?.length) return null;
-    // Mirror buildLayout exactly: surplus/deficit carryover from prev month's own chain
-    const prevCarry = getCarryoverValue(pk);
+
+    // Reconstruct prev month exactly as buildLayout does:
+    // - surplus carryover boosts grand (flows into __total as income)
+    // - deficit carryover is a separate flow and NOT counted in totalExp
+    const prevCarry      = getCarryoverValue(pk);
     const prevActiveSum  = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
     const prevPassiveSum = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    // Surplus carryover adds to passive income; deficit carryover reduces net income
-    let prevGross = prevActiveSum + prevPassiveSum;
-    if (prevCarry !== null && prevCarry > 0) prevGross += prevCarry;   // surplus carryover boosts income
-    if (prevCarry !== null && prevCarry < 0) prevGross -= Math.abs(prevCarry); // deficit carryover reduces income
-    const prevExp = prev.expenses.reduce((s, e) => s + (Number(e.value) || 0), 0);
-    return prevGross - prevExp;
+    const prevSurplusCarry = prevCarry !== null && prevCarry > 0 ? prevCarry : 0;
+
+    // grand = active + passive + surplusCarry
+    const prevGrand = prevActiveSum + prevPassiveSum + prevSurplusCarry;
+
+    // totalExp = real expenses only (deficit carryover is a separate node, not in totalExp)
+    const prevRealExp = prev.expenses
+      .filter(e => e.category !== "Carryover")
+      .reduce((s, e) => s + (Number(e.value) || 0), 0);
+
+    // surplus = grand - realExp (matches what buildLayout shows on screen)
+    return prevGrand - prevRealExp;
   };
 
   const getCarryoverValue = (key) => {
@@ -564,7 +573,6 @@ function CashFlow({ session, lang, setLang }) {
     if (link.source === "__total" && link.target === "__deficit_cat") return "#f87171";
     if (link.source === "__total" && link.target === "__surplus")     return "#86efac";
     if (link.source === "__carryover") return "#86efac";
-    if (link.source === "__carryover_deficit") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
     return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
