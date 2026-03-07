@@ -30,7 +30,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
   passiveRegular.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
   if (surplusCarryAmt > 0) push("__carryover", surplusCarry.label, surplusCarryAmt, "carryover_surplus");
-  if (deficitCarryAmt > 0) push("__col0_deficit_phantom", "", deficitCarryAmt, "source_phantom");
+  if (deficitCarryAmt > 0) push("__carryover_deficit", "↩ Deficit Carryover", deficitCarryAmt, "carryover_deficit");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit,          "source_phantom");
 
   // COL 1: agg nodes + phantom spacers
@@ -67,6 +67,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (activeSum       > 0) addLink("__active",   "__total", activeSum);
   if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
   if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
+  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
@@ -83,7 +84,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
 
   const colMap = {
-    source: 0, source_phantom: 0, carryover_surplus: 0,
+    source: 0, source_phantom: 0, carryover_surplus: 0, carryover_deficit: 0,
     agg: 1, agg_phantom: 1,
     total: 2,
     category: 3, category_phantom: 3,
