@@ -573,6 +573,7 @@ function CashFlow({ session, lang, setLang }) {
     if (link.source === "__total" && link.target === "__deficit_cat") return "#f87171";
     if (link.source === "__total" && link.target === "__surplus")     return "#86efac";
     if (link.source === "__carryover") return "#86efac";
+    if (link.source === "__carryover_deficit") return "#f87171";
     if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
     return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
