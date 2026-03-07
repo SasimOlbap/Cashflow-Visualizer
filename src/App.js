@@ -432,18 +432,23 @@ function CashFlow({ session, lang, setLang }) {
     const pk = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
     const prev = months[pk];
     if (!prev?.income?.length && !prev?.expenses?.length) return null;
-    // Mirror buildLayout exactly: surplus/deficit carryover from prev month's own chain
-    const prevCarry = getCarryoverValue(pk);
+
     const prevActiveSum  = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
     const prevPassiveSum = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    // Surplus carryover adds to passive income; deficit carryover reduces net income
-    let prevGross = prevActiveSum + prevPassiveSum;
-    if (prevCarry !== null && prevCarry > 0) prevGross += prevCarry;   // surplus carryover boosts income
-    if (prevCarry !== null && prevCarry < 0) prevGross -= Math.abs(prevCarry); // deficit carryover reduces income
+    const prevCarry      = getCarryoverValue(pk);
+
+    // Surplus carryover adds to income; deficit carryover is an extra burden, handled separately
+    const prevGross = prevActiveSum + prevPassiveSum + (prevCarry !== null && prevCarry > 0 ? prevCarry : 0);
+
+    // Exclude Carryover category expenses — deficit carryover is accounted for below, not in expenses
     const prevExp = prev.expenses
       .filter(e => e.category !== "Carryover")
       .reduce((s, e) => s + (Number(e.value) || 0), 0);
-    return prevGross - prevExp;
+
+    // Deficit carryover was an additional burden on top of regular expenses
+    const deficitCarry = prevCarry !== null && prevCarry < 0 ? Math.abs(prevCarry) : 0;
+
+    return prevGross - prevExp - deficitCarry;
   };
 
   const getCarryoverValue = (key) => {
