@@ -433,22 +433,24 @@ function CashFlow({ session, lang, setLang }) {
     const prev = months[pk];
     if (!prev?.income?.length && !prev?.expenses?.length) return null;
 
-    const prevActiveSum  = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    const prevPassiveSum = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    const prevCarry      = getCarryoverValue(pk);
+    // Reconstruct prev month exactly as buildLayout does
+    const prevCarry        = getCarryoverValue(pk);
+    const prevActiveSum    = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
+    const prevPassiveSum   = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
+    const prevSurplusCarry = prevCarry !== null && prevCarry > 0 ? prevCarry : 0;
+    const prevDeficitCarry = prevCarry !== null && prevCarry < 0 ? Math.abs(prevCarry) : 0;
 
-    // Surplus carryover adds to income; deficit carryover is an extra burden, handled separately
-    const prevGross = prevActiveSum + prevPassiveSum + (prevCarry !== null && prevCarry > 0 ? prevCarry : 0);
+    // grand = active + passive + surplusCarry (mirrors buildLayout)
+    const prevGrand = prevActiveSum + prevPassiveSum + prevSurplusCarry;
 
-    // Exclude Carryover category expenses — deficit carryover is accounted for below, not in expenses
-    const prevExp = prev.expenses
+    // totalExp = real expenses + deficit carryover burden (mirrors buildLayout)
+    const prevRealExp  = prev.expenses
       .filter(e => e.category !== "Carryover")
       .reduce((s, e) => s + (Number(e.value) || 0), 0);
+    const prevTotalExp = prevRealExp + prevDeficitCarry;
 
-    // Deficit carryover was an additional burden on top of regular expenses
-    const deficitCarry = prevCarry !== null && prevCarry < 0 ? Math.abs(prevCarry) : 0;
-
-    return prevGross - prevExp - deficitCarry;
+    // surplus = grand - totalExp (negative = deficit, carries forward)
+    return prevGrand - prevTotalExp;
   };
 
   const getCarryoverValue = (key) => {
