@@ -874,7 +874,10 @@ function CashFlow({ session, lang, setLang }) {
               {/* SVG */}
               <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
                 <svg key={curKey} width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-                  {links.map(l => (
+                  {[...links].sort((a, b) => {
+                    const priority = l => (l.source === "__carryover_deficit" || l.source === "__col1_deficit_phantom") ? 1 : 0;
+                    return priority(a) - priority(b);
+                  }).map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
                   {nodes.map(n => (
