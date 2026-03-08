@@ -63,11 +63,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
-  // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
+  // Col1 -> Col2 + carryover
+  // deficit carryover added FIRST so tgtOff claims bottom of __total before passive/active fill it
+  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
   if (activeSum       > 0) addLink("__active",   "__total", activeSum);
   if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
   if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
-  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
@@ -156,20 +157,12 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  // Anchor deficit carryover ribbon: match the deficit ribbon height exactly, both sides
+  // Anchor deficit carryover source side only (sy) to bottom of col0 node
   if (deficitCarryAmt > 0) {
     const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
-    const total = nodeMap["__total"];
     const srcNode = nodeMap["__carryover_deficit"];
-    if (defCarryLink && total && srcNode && totalExp > 0) {
-      // Target ribbon height = deficit proportion of __total
-      const targetH = (deficitCarryAmt / totalExp) * total.h;
-      // Source ribbon height = clamped to actual node height
-      const sourceH = Math.min(targetH, srcNode.h);
-      // Target: anchor to bottom of __total
-      defCarryLink.ty1 = total.y + total.h;
-      defCarryLink.ty0 = defCarryLink.ty1 - targetH;
-      // Source: anchor to bottom of col0 node, clamped
+    if (defCarryLink && srcNode) {
+      const sourceH = defCarryLink.sy1 - defCarryLink.sy0;
       defCarryLink.sy1 = srcNode.y + srcNode.h;
       defCarryLink.sy0 = defCarryLink.sy1 - sourceH;
     }
