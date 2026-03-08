@@ -11,7 +11,7 @@ import ShareView from "./ShareView";
 import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
-  GROUP_COLORS, LINK_LEFT, LINK_RIGHT,
+  GROUP_COLORS, LINK_LEFT, LINK_LEFT_ACTIVE, LINK_LEFT_PASSIVE, LINK_RIGHT,
 } from "./constants";
 import { translations } from "./i18n";
 
@@ -624,7 +624,12 @@ function CashFlow({ session, lang, setLang }) {
     if (link.source === "__total" && link.target === "__surplus")     return "#86efac";
     if (link.source === "__carryover") return "#86efac";
     if (link.source === "__carryover_deficit") return "#f87171";
-    if (col <= 1) return LINK_LEFT[Math.min(col, 1)];
+    if (col <= 1) {
+      const grp = link.sourceNode?.group ?? "";
+      if (grp === "source_active"  || grp === "agg_active")  return LINK_LEFT_ACTIVE[Math.min(col, 1)];
+      if (grp === "source_passive" || grp === "agg_passive") return LINK_LEFT_PASSIVE[Math.min(col, 1)];
+      return LINK_LEFT[Math.min(col, 1)];
+    }
     const idx = CATS.findIndex(c => link.source === "__cat_" + c);
     return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
   };

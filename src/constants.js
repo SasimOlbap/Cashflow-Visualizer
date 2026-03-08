@@ -103,9 +103,13 @@ export const CAT_COLORS = {
 };
 
 export const GROUP_COLORS = {
-  source:            "#aecde8", // Col 0 · light blue
-  agg:               "#4e88b4", // Col 1 · mid blue
-  total:             "#1a5fa8", // Col 2 · dark blue
+  source:            "#aecde8", // fallback
+  source_active:     "#aecde8", // Col 0 · active sources · light blue
+  source_passive:    "#1a5fa8", // Col 0 · passive sources · dark blue
+  agg:               "#4e88b4", // fallback
+  agg_active:        "#aecde8", // Col 1 · Active Income · light blue
+  agg_passive:       "#1a5fa8", // Col 1 · Passive Income · dark blue
+  total:             "#4e88b4", // Col 2 · mid blue
   category:          "#e57373",
   leaf:              "#f48fb1",
   surplus:           "#66bb6a",
@@ -114,7 +118,9 @@ export const GROUP_COLORS = {
   carryover_deficit: "#f87171",
 };
 
-export const LINK_LEFT  = ["#aecde8", "#4e88b4"]; // light → mid blue
+export const LINK_LEFT        = ["#aecde8", "#4e88b4"]; // fallback
+export const LINK_LEFT_ACTIVE  = ["#aecde8", "#aecde8"]; // active: light blue throughout
+export const LINK_LEFT_PASSIVE = ["#1a5fa8", "#1a5fa8"]; // passive: dark blue throughout
 export const LINK_RIGHT = [
   "#e57373", // Debt & Credit
   "#4db6ac", // Education

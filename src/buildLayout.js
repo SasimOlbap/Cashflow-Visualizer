@@ -27,15 +27,15 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const push = (id, label, value, group) => nodes.push({ id, label, value: value || 0, group });
 
   // COL 0: income sources + phantoms
-  active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source"));
-  passiveRegular.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source"));
+  active.forEach(i  => push(i.id, i.label, Number(i.value) || 0, "source_active"));
+  passiveRegular.forEach(i => push(i.id, i.label, Number(i.value) || 0, "source_passive"));
   if (surplusCarryAmt > 0) push("__carryover", surplusCarry.label, surplusCarryAmt, "carryover_surplus");
   if (deficitCarryAmt > 0) push("__carryover_deficit", "\u21a9 Deficit Carryover", deficitCarryAmt, "carryover_deficit");
   else if (deficit    > 0) push("__col0_deficit_phantom", "", deficit, "source_phantom");
 
   // COL 1: agg nodes + phantom spacers
-  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg");
-  if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg");
+  if (activeSum  > 0) push("__active",  "Active Income",  activeSum,  "agg_active");
+  if (passiveSum > 0) push("__passive", "Passive Income", passiveSum, "agg_passive");
   if (surplusCarryAmt > 0) push("__col1_surplus_phantom", "", surplusCarryAmt, "agg_phantom");
   if (deficitCarryAmt > 0) push("__col1_deficit_phantom", "", deficitCarryAmt, "agg_phantom");
   else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
@@ -84,8 +84,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
 
   const colMap = {
-    source: 0, source_phantom: 0, carryover_surplus: 0, carryover_deficit: 0,
-    agg: 1, agg_phantom: 1,
+    source: 0, source_active: 0, source_passive: 0, source_phantom: 0, carryover_surplus: 0, carryover_deficit: 0,
+    agg: 1, agg_active: 1, agg_passive: 1, agg_phantom: 1,
     total: 2,
     category: 3, category_phantom: 3,
     leaf: 4,
