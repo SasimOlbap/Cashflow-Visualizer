@@ -136,6 +136,18 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     col.forEach(n => { n.y += isFinite(off) ? off : 0; });
   });
 
+  // Ensure passive node doesn't visually overlap the deficit phantom space in col1
+  if (deficitCarryAmt > 0) {
+    const passiveN  = nodeMap["__passive"];
+    const phantomN  = nodeMap["__col1_deficit_phantom"];
+    if (passiveN && phantomN) {
+      const maxBottom = phantomN.y - gap;
+      if (passiveN.y + passiveN.h > maxBottom) {
+        passiveN.h = Math.max(4, maxBottom - passiveN.y);
+      }
+    }
+  }
+
   const srcOff = {}, tgtOff = {};
   const srcRem = {}, tgtRem = {};
   nodes.forEach(n => { srcOff[n.id] = 0; tgtOff[n.id] = 0; srcRem[n.id] = n.h; tgtRem[n.id] = n.h; });
