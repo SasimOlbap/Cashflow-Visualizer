@@ -85,17 +85,31 @@ export const translations = {
     tooltip_flow: "Flow",
 
     // Categories
-    cat_payroll: "Payroll",
-    cat_living: "Living",
-    cat_longterm: "Long-Term",
-    cat_flexible: "Flexible",
-    cat_payroll_label: "Payroll Deductions",
-    cat_living_label: "Living Costs",
-    cat_longterm_label: "Long-Term Planning",
-    cat_flexible_label: "Flexible Spending",
+    cat_debt:                 "Debt & Credit",
+    cat_education:            "Education",
+    cat_flexible:             "Flexible",
+    cat_healthcare:           "Healthcare",
+    cat_household:            "Household Goods",
+    cat_kids:                 "Kids",
+    cat_living:               "Living Costs",
+    cat_longterm:             "Long-term Planning",
+    cat_subscriptions:        "Subscriptions",
+    cat_taxes:                "Taxes",
+    cat_transportation:       "Transportation",
+    cat_debt_label:           "Debt & Credit",
+    cat_education_label:      "Education",
+    cat_flexible_label:       "Flexible Spending",
+    cat_healthcare_label:     "Healthcare",
+    cat_household_label:      "Household Goods",
+    cat_kids_label:           "Kids & Childcare",
+    cat_living_label:         "Living Costs",
+    cat_longterm_label:       "Long-term Planning",
+    cat_subscriptions_label:  "Subscriptions",
+    cat_taxes_label:          "Taxes",
+    cat_transportation_label: "Transportation",
     cat_surplus: "Surplus",
     cat_deficit: "Deficit",
-    cat_active: "Active Income",
+    cat_active:  "Active Income",
     cat_passive: "Passive Income",
 
     // Auth
@@ -113,10 +127,12 @@ export const translations = {
   },
 
   es: {
+    // Nav
     nav_features: "Funciones",
     nav_pricing: "Precios",
     nav_login: "Iniciar sesión",
 
+    // Hero
     hero_badge: "Finanzas Personales · Visual",
     hero_title1: "Visualiza tu dinero,",
     hero_title2: "mes a mes.",
@@ -125,8 +141,10 @@ export const translations = {
     hero_secondary: "Ver cómo funciona",
     hero_note: "Sin tarjeta de crédito · Plan gratuito para siempre",
 
+    // Demo card
     demo_overview: "Resumen Financiero",
 
+    // Features section
     features_label: "Funciones",
     features_heading1: "Todo lo que necesitas para",
     features_heading2: "entender tus finanzas",
@@ -137,6 +155,7 @@ export const translations = {
       { title: "Sincronización en la Nube",    desc: "Tus datos se guardan de forma segura en la nube. Accede desde cualquier dispositivo, en cualquier momento." },
     ],
 
+    // Pricing
     pricing_label: "Precios",
     pricing_heading: "Precios simples y transparentes",
     pricing_coming_soon: "Próximamente",
@@ -158,11 +177,13 @@ export const translations = {
       },
     ],
 
+    // Footer CTA
     footer_cta_heading: "Empieza gratis hoy.",
     footer_cta_sub: "Sin tarjeta de crédito. Configúrate en menos de un minuto.",
     footer_cta_btn: "Comenzar gratis",
     footer_rights: "© 2026 · Todos los derechos reservados",
 
+    // App header
     app_overview: "Resumen Financiero",
     app_title: "Visualizador de Flujo de Caja",
     app_backup: "↓ Respaldar",
@@ -174,6 +195,7 @@ export const translations = {
     app_light: "☀️ Claro",
     app_copy_prev: "Copiar del mes anterior",
 
+    // App editor
     app_income: "Ingresos",
     app_expenses: "Gastos",
     app_active: "Activo",
@@ -181,6 +203,7 @@ export const translations = {
     app_add_placeholder: "Nuevo elemento…",
     app_add_btn: "+ Agregar",
 
+    // Tooltip bar
     tooltip_income: "Ingresos",
     tooltip_expenses: "Gastos",
     tooltip_surplus: "Superávit",
@@ -188,19 +211,35 @@ export const translations = {
     tooltip_hint: "Pasa el cursor sobre un elemento para ver detalles",
     tooltip_flow: "Flujo",
 
-    cat_payroll: "Nómina",
-    cat_living: "Vida",
-    cat_longterm: "Largo Plazo",
-    cat_flexible: "Flexible",
-    cat_payroll_label: "Deducciones de Nómina",
-    cat_living_label: "Costos de Vida",
-    cat_longterm_label: "Planificación a Largo Plazo",
-    cat_flexible_label: "Gastos Flexibles",
+    // Categories
+    cat_debt:                 "Deuda y Crédito",
+    cat_education:            "Educación",
+    cat_flexible:             "Flexible",
+    cat_healthcare:           "Salud",
+    cat_household:            "Hogar",
+    cat_kids:                 "Hijos",
+    cat_living:               "Costos de Vida",
+    cat_longterm:             "Planificación a Largo Plazo",
+    cat_subscriptions:        "Suscripciones",
+    cat_taxes:                "Impuestos",
+    cat_transportation:       "Transporte",
+    cat_debt_label:           "Deuda y Crédito",
+    cat_education_label:      "Educación",
+    cat_flexible_label:       "Gastos Flexibles",
+    cat_healthcare_label:     "Salud",
+    cat_household_label:      "Hogar",
+    cat_kids_label:           "Hijos y Cuidado",
+    cat_living_label:         "Costos de Vida",
+    cat_longterm_label:       "Planificación a Largo Plazo",
+    cat_subscriptions_label:  "Suscripciones",
+    cat_taxes_label:          "Impuestos",
+    cat_transportation_label: "Transporte",
     cat_surplus: "Superávit",
     cat_deficit: "Déficit",
-    cat_active: "Ingresos Activos",
+    cat_active:  "Ingresos Activos",
     cat_passive: "Ingresos Pasivos",
 
+    // Auth
     auth_email: "Correo electrónico",
     auth_password: "Contraseña",
     auth_login_btn: "Iniciar sesión",
@@ -210,14 +249,17 @@ export const translations = {
     auth_signup_link: "Regístrate",
     auth_login_link: "Inicia sesión",
 
+    // Months
     months: ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
   },
 
   de: {
+    // Nav
     nav_features: "Funktionen",
     nav_pricing: "Preise",
     nav_login: "Anmelden",
 
+    // Hero
     hero_badge: "Persönliche Finanzen · Visuell",
     hero_title1: "Visualisiere dein Geld,",
     hero_title2: "Monat für Monat.",
@@ -226,8 +268,10 @@ export const translations = {
     hero_secondary: "So funktioniert es",
     hero_note: "Keine Kreditkarte erforderlich · Kostenloser Plan für immer",
 
+    // Demo card
     demo_overview: "Finanzübersicht",
 
+    // Features section
     features_label: "Funktionen",
     features_heading1: "Alles was du brauchst, um",
     features_heading2: "deine Finanzen zu verstehen",
@@ -238,6 +282,7 @@ export const translations = {
       { title: "Cloud-Synchronisation",         desc: "Deine Daten werden sicher in der Cloud gespeichert. Greife von jedem Gerät jederzeit darauf zu." },
     ],
 
+    // Pricing
     pricing_label: "Preise",
     pricing_heading: "Einfache, transparente Preise",
     pricing_coming_soon: "Demnächst",
@@ -259,11 +304,13 @@ export const translations = {
       },
     ],
 
+    // Footer CTA
     footer_cta_heading: "Starte noch heute kostenlos.",
     footer_cta_sub: "Keine Kreditkarte erforderlich. In unter einer Minute eingerichtet.",
     footer_cta_btn: "Kostenlos starten",
     footer_rights: "© 2026 · Alle Rechte vorbehalten",
 
+    // App header
     app_overview: "Finanzübersicht",
     app_title: "Geldfluss-Visualisierer",
     app_backup: "↓ Sichern",
@@ -275,6 +322,7 @@ export const translations = {
     app_light: "☀️ Hell",
     app_copy_prev: "Vom Vormonat kopieren",
 
+    // App editor
     app_income: "Einnahmen",
     app_expenses: "Ausgaben",
     app_active: "Aktiv",
@@ -282,6 +330,7 @@ export const translations = {
     app_add_placeholder: "Neuer Eintrag…",
     app_add_btn: "+ Hinzufügen",
 
+    // Tooltip bar
     tooltip_income: "Einnahmen",
     tooltip_expenses: "Ausgaben",
     tooltip_surplus: "Überschuss",
@@ -289,19 +338,35 @@ export const translations = {
     tooltip_hint: "Bewege die Maus über einen Eintrag für Details",
     tooltip_flow: "Fluss",
 
-    cat_payroll: "Gehalt",
-    cat_living: "Leben",
-    cat_longterm: "Langfristig",
-    cat_flexible: "Flexibel",
-    cat_payroll_label: "Gehaltsabzüge",
-    cat_living_label: "Lebenshaltungskosten",
-    cat_longterm_label: "Langfristige Planung",
-    cat_flexible_label: "Flexible Ausgaben",
+    // Categories
+    cat_debt:                 "Schulden & Kredit",
+    cat_education:            "Bildung",
+    cat_flexible:             "Flexibel",
+    cat_healthcare:           "Gesundheit",
+    cat_household:            "Haushalt",
+    cat_kids:                 "Kinder",
+    cat_living:               "Lebenskosten",
+    cat_longterm:             "Langfristige Planung",
+    cat_subscriptions:        "Abonnements",
+    cat_taxes:                "Steuern",
+    cat_transportation:       "Transport",
+    cat_debt_label:           "Schulden & Kredit",
+    cat_education_label:      "Bildung",
+    cat_flexible_label:       "Flexible Ausgaben",
+    cat_healthcare_label:     "Gesundheitskosten",
+    cat_household_label:      "Haushalt",
+    cat_kids_label:           "Kinder & Betreuung",
+    cat_living_label:         "Lebenshaltungskosten",
+    cat_longterm_label:       "Langfristige Planung",
+    cat_subscriptions_label:  "Abonnements",
+    cat_taxes_label:          "Steuern",
+    cat_transportation_label: "Transportkosten",
     cat_surplus: "Überschuss",
     cat_deficit: "Defizit",
-    cat_active: "Aktive Einnahmen",
+    cat_active:  "Aktive Einnahmen",
     cat_passive: "Passive Einnahmen",
 
+    // Auth
     auth_email: "E-Mail",
     auth_password: "Passwort",
     auth_login_btn: "Anmelden",
@@ -311,6 +376,7 @@ export const translations = {
     auth_signup_link: "Registrieren",
     auth_login_link: "Anmelden",
 
+    // Months
     months: ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],
   },
 };

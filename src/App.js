@@ -93,6 +93,20 @@ class ErrorBoundary extends Component {
   }
 }
 
+// ── category migration ────────────────────────────────────────────────────────
+// Maps old category keys → new keys so existing Supabase data loads correctly
+const CATEGORY_MIGRATION = {
+  "Living":    "Living Costs",
+  "Payroll":   "Taxes",
+  "Long-Term": "Long-term Planning",
+  "Housing":   "Household Goods",
+};
+const migrateExpenses = (expenses) =>
+  expenses.map(e => ({
+    ...e,
+    category: CATEGORY_MIGRATION[e.category] ?? e.category,
+  }));
+
 // ── month helpers ─────────────────────────────────────────────────────────────
 const toKey  = (y, m) => `${y}-${String(m).padStart(2, "0")}`;
 const today   = new Date();
@@ -305,7 +319,7 @@ function CashFlow({ session, lang, setLang }) {
   const [niLabel,   setNiLabel]   = useState("");
   const [niType,    setNiType]    = useState("active");
   const [neLabel,   setNeLabel]   = useState("");
-  const [neCat,     setNeCat]     = useState("Living");
+  const [neCat,     setNeCat]     = useState("Living Costs");
 
   // ── cloud sync ────────────────────────────────────────────────────────────
   // Load all months from Supabase on mount
@@ -332,7 +346,7 @@ function CashFlow({ session, lang, setLang }) {
       // Overlay with cloud data if any exists, otherwise seed January with defaults
       if (data?.length) {
         data.forEach(row => {
-          freshMonths[toKey(year, row.month)] = { income: row.income, expenses: row.expenses };
+          freshMonths[toKey(year, row.month)] = { income: row.income, expenses: migrateExpenses(row.expenses) };
         });
       } else {
         freshMonths[initKey] = { income: INIT_INCOME, expenses: INIT_EXPENSES };
