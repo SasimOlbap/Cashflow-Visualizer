@@ -13,6 +13,7 @@ import {
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
   GROUP_COLORS, LINK_LEFT, LINK_RIGHT,
 } from "./constants";
+import { useTranslation } from "./i18n";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -252,7 +253,23 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   );
 }
 
+// ── category key map for i18n ─────────────────────────────────────────────────
+const CAT_I18N_KEY = {
+  "Debt & Credit":      "cat_debt",
+  "Education":          "cat_education",
+  "Flexible":           "cat_flexible",
+  "Healthcare":         "cat_healthcare",
+  "Household Goods":    "cat_household",
+  "Kids":               "cat_kids",
+  "Living Costs":       "cat_living",
+  "Long-term Planning": "cat_longterm",
+  "Subscriptions":      "cat_subscriptions",
+  "Taxes":              "cat_taxes",
+  "Transportation":     "cat_transportation",
+};
+
 function CashFlow({ session, lang, setLang }) {
+  const { t } = useTranslation(lang);
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
@@ -959,7 +976,7 @@ function CashFlow({ session, lang, setLang }) {
             {colHead("Expenses", totalExp, "#fbcfe8")}
             {CATS.map(cat => (
               <div key={cat}>
-                {subHead(cat)}
+                {subHead(t(CAT_I18N_KEY[cat]) || cat)}
                 {expenses.filter(e => e.category === cat).map(item => (
                   <ItemRow key={item.id} item={item} accent={CAT_COLORS[cat]} T={T}
                     onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} />
