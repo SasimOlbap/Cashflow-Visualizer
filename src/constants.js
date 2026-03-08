@@ -103,18 +103,18 @@ export const CAT_COLORS = {
 };
 
 export const GROUP_COLORS = {
-  source:            "#b39ddb",
-  agg:               "#9575cd",
-  total:             "#6a0dad",
+  source:            "#aecde8", // Col 0 · light blue
+  agg:               "#4e88b4", // Col 1 · mid blue
+  total:             "#1a5fa8", // Col 2 · dark blue
   category:          "#e57373",
   leaf:              "#f48fb1",
   surplus:           "#66bb6a",
   deficit:           "#f87171",
-  carryover_surplus: "#86efac",
+  carryover_surplus: "#aecde8",
   carryover_deficit: "#f87171",
 };
 
-export const LINK_LEFT  = ["#b39ddb", "#9575cd"];
+export const LINK_LEFT  = ["#aecde8", "#4e88b4"]; // light → mid blue
 export const LINK_RIGHT = [
   "#e57373", // Debt & Credit
   "#4db6ac", // Education
