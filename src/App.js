@@ -521,7 +521,7 @@ function CashFlow({ session, lang, setLang }) {
     const carryVal = getCarryoverValue(key);
     if (carryVal === null || carryVal <= 0) return base;
     // Only surplus carryover goes into income
-    return [...base, { id: "__carryover", label: "↩ Surplus Carryover", value: carryVal, type: "passive", _isCarryover: true }];
+    return [...base, { id: "__carryover", label: tr("cat_surplus_carryover"), value: carryVal, type: "passive", _isCarryover: true }];
   };
 
   const getExpensesWithCarryover = (key) => {
@@ -529,7 +529,7 @@ function CashFlow({ session, lang, setLang }) {
     const carryVal = getCarryoverValue(key);
     if (carryVal === null || carryVal >= 0) return base;
     // Deficit carryover injected as special expense - buildLayout handles it on left side
-    return [...base, { id: "__carryover_exp", label: "↩ Deficit Carryover", value: Math.abs(carryVal), category: "Carryover", _isCarryover: true }];
+    return [...base, { id: "__carryover_exp", label: tr("cat_deficit_carryover"), value: Math.abs(carryVal), category: "Carryover", _isCarryover: true }];
   };
 
 
@@ -591,12 +591,22 @@ function CashFlow({ session, lang, setLang }) {
   } catch {}
   const { nodes, links, nodeWidth, grand, totalExp, surplus, colX } = layoutResult;
 
-  // Translate category and leaf node labels for current language
+  // Translate node labels for current language
+  const NODE_I18N = {
+    "__active":           "cat_active",
+    "__passive":          "cat_passive",
+    "__carryover":        "cat_surplus_carryover",
+    "__carryover_deficit":"cat_deficit_carryover",
+    "__surplus":          "cat_surplus",
+    "__deficit_cat":      "cat_deficit",
+  };
   nodes.forEach(n => {
     if (n.id.startsWith("__cat_")) {
       const cat = n.id.replace("__cat_", "");
       const key = CAT_I18N_KEY[cat];
       if (key) n.label = tr(key) || n.label;
+    } else if (NODE_I18N[n.id]) {
+      n.label = tr(NODE_I18N[n.id]) || n.label;
     }
   });
 
@@ -930,7 +940,7 @@ function CashFlow({ session, lang, setLang }) {
               if (carryVal === null) return null;
               const isPos = carryVal > 0;
               const color = isPos ? "#86efac" : "#f87171";
-              const label = isPos ? "↩ Surplus Carryover" : "↩ Deficit Carryover";
+              const label = isPos ? tr("cat_surplus_carryover") : tr("cat_deficit_carryover");
               const absVal = Math.abs(carryVal);
               const isManual = isCarryoverManual(curKey);
               return (
