@@ -183,13 +183,20 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     }
   }
 
-  // Clamp passive link ty1 so it doesn't overlap deficit carryover ribbon
+  // Clamp passive link so it doesn't overlap deficit carryover ribbon on either side
   if (deficitCarryAmt > 0) {
     const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
     const passiveLink  = links.find(l => l.source === "__passive" && l.target === "__total");
-    if (defCarryLink && passiveLink && defCarryLink.ty0 !== undefined) {
+    const passiveNode  = nodeMap["__passive"];
+    if (defCarryLink && passiveLink && passiveNode && defCarryLink.ty0 !== undefined) {
+      // Clamp target side
       if (passiveLink.ty1 > defCarryLink.ty0) {
         passiveLink.ty1 = defCarryLink.ty0;
+      }
+      // Clamp source side to match node bottom
+      const maxSy1 = passiveNode.y + passiveNode.h;
+      if (passiveLink.sy1 > maxSy1) {
+        passiveLink.sy1 = maxSy1;
       }
     }
   }
