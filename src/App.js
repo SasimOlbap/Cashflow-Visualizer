@@ -55,7 +55,7 @@ function MobileOnly({ onBack }) {
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
       <div style={{ position: "relative", maxWidth: 320 }}>
         <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Financial Overview</div>
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>{tr("app_overview")}</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff" }}>Cash Flow Visualizer</div>
         </div>
         <div style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}>
@@ -220,7 +220,7 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
       <div style={{ position: "absolute", bottom: "-10%", left: "10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 1, background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
         <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{tr("app_title")}</h1>
         <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -665,9 +665,9 @@ function CashFlow({ session, lang, setLang }) {
                 <input ref={importRef} type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
                 <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
                   {[
-                    { label: "↓ Back-up", onClick: handleSave },
-                    { label: "↑ Restore", onClick: () => importRef.current?.click() },
-                    { label: "⊕ Share",  onClick: handleShare, active: shareCopied },
+                    { label: tr("app_backup"), onClick: handleSave },
+                    { label: tr("app_restore"), onClick: () => importRef.current?.click() },
+                    { label: tr("app_share"), onClick: handleShare, active: shareCopied },
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick} style={{
                       background: btn.active ? "#16a34a" : T.bgCard,
@@ -680,7 +680,7 @@ function CashFlow({ session, lang, setLang }) {
                       whiteSpace: "nowrap",
                       transition: "background 0.2s",
                     }}>
-                      {btn.active ? "✓ Copied!" : btn.label}
+                      {btn.active ? tr("app_share_copied") : btn.label}
                     </button>
                   ))}
                 </div>
@@ -689,7 +689,7 @@ function CashFlow({ session, lang, setLang }) {
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
                   fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
                 }}>
-                  Log Out
+                  {tr("app_sign_out")}
                 </button>
                 <button onClick={() => setDarkMode(d => !d)} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
@@ -697,7 +697,7 @@ function CashFlow({ session, lang, setLang }) {
                   fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
                   transition: "all 0.2s", flexShrink: 0,
                 }}>
-                  {darkMode ? "☀️ Light" : "🌙 Dark"}
+                  {darkMode ? tr("app_light") : tr("app_dark")}
                 </button>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <select value={lang} onChange={e => setLang(e.target.value)} style={{
@@ -719,7 +719,7 @@ function CashFlow({ session, lang, setLang }) {
                 fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
                 visibility: (isEmpty && hasPrev) ? "visible" : "hidden",
               }}>
-                Copy from previous month
+                {tr("app_copy_prev")}
               </button>
             </div>
           </div>
@@ -758,7 +758,7 @@ function CashFlow({ session, lang, setLang }) {
                   </button>
                 </div>
                 <div style={{ display: "flex", flex: 1, gap: 2 }} onClick={() => setCtxMenu(null)}>
-                  {MONTH_NAMES.map((name, i) => {
+                  {(tr("months") || MONTH_NAMES).map((name, i) => {
                     const key = toKey(today.getFullYear(), i + 1);
                     const isSelected = key === curKey;
                     const isHovered  = key === hovMonth;
@@ -822,7 +822,7 @@ function CashFlow({ session, lang, setLang }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 Copy data from {MONTH_NAMES[i - 1]}</button>
+                          >📋 {tr("app_copy_prev")} ({(tr("months") || MONTH_NAMES)[i - 1]})</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -872,12 +872,12 @@ function CashFlow({ session, lang, setLang }) {
               {/* Tooltip bar */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ color: T.textMuted }}>Income: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
-                  <span style={{ color: T.textMuted }}>Expenses: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>
                     {surplus >= 0
-                      ? <><strong style={{ color: "#86efac" }}>Surplus</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                      : <><strong style={{ color: "#f87171" }}>Deficit</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
+                      ? <><strong style={{ color: "#86efac" }}>{tr("tooltip_surplus")}</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                      : <><strong style={{ color: "#f87171" }}>{tr("tooltip_deficit")}</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                   </span>
                   {(() => {
                     const cv = getCarryoverValue(displayKey);
@@ -894,12 +894,12 @@ function CashFlow({ session, lang, setLang }) {
                 <div>
                   {hovLink ? (
                     <span>
-                      <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>Flow · </span>
+                      <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>{tr("tooltip_flow")} · </span>
                       <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
                       <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
                     </span>
                   ) : (
-                    <span style={{ color: T.textFaint }}>Hover over an item to see details</span>
+                    <span style={{ color: T.textFaint }}>{tr("tooltip_hint")}</span>
                   )}
                 </div>
               </div>
@@ -913,13 +913,13 @@ function CashFlow({ session, lang, setLang }) {
 
           {/* Income */}
           <div style={{ ...cardSt, flex: 1, minWidth: 240 }}>
-            {colHead("Income", grand, "#c4b5fd")}
-            {subHead("Active")}
+            {colHead(tr("app_income"), grand, "#c4b5fd")}
+            {subHead(tr("app_active"))}
             {income.filter(i => i.type === "active").map(item => (
               <ItemRow key={item.id} item={item} accent="#818cf8" T={T}
                 onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
             ))}
-            {subHead("Passive")}
+            {subHead(tr("app_passive"))}
             {income.filter(i => i.type === "passive").map(item => (
               <ItemRow key={item.id} item={item} accent="#a78bfa" T={T}
                 onLabel={v => updInLabel(item.id, v)} onValue={v => updInValue(item.id, v)} onRemove={() => remIn(item.id)} />
@@ -970,19 +970,19 @@ function CashFlow({ session, lang, setLang }) {
               );
             })()}
             <div style={{ display: "flex", gap: 5, marginTop: 12, flexWrap: "wrap" }}>
-              <input placeholder="New item…" value={niLabel} onChange={e => setNiLabel(e.target.value)}
+              <input placeholder={tr("app_add_placeholder")} value={niLabel} onChange={e => setNiLabel(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addIn()} style={inpSt} />
               <select value={niType} onChange={e => setNiType(e.target.value)} style={selSt}>
-                <option value="active">Active</option>
-                <option value="passive">Passive</option>
+                <option value="active">{tr("app_active")}</option>
+                <option value="passive">{tr("app_passive")}</option>
               </select>
-              <button onClick={addIn} style={btnSt}>+ Add</button>
+              <button onClick={addIn} style={btnSt}>{tr("app_add_btn")}</button>
             </div>
           </div>
 
           {/* Expenses */}
           <div style={{ ...cardSt, flex: 1, minWidth: 240 }}>
-            {colHead("Expenses", totalExp, "#fbcfe8")}
+            {colHead(tr("app_expenses"), totalExp, "#fbcfe8")}
             {CATS.map(cat => (
               <div key={cat}>
                 {subHead(tr(CAT_I18N_KEY[cat]) || cat)}
@@ -993,12 +993,12 @@ function CashFlow({ session, lang, setLang }) {
               </div>
             ))}
             <div style={{ display: "flex", gap: 5, marginTop: 12, flexWrap: "wrap" }}>
-              <input placeholder="New item…" value={neLabel} onChange={e => setNeLabel(e.target.value)}
+              <input placeholder={tr("app_add_placeholder")} value={neLabel} onChange={e => setNeLabel(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addEx()} style={selSt} />
               <select value={neCat} onChange={e => setNeCat(e.target.value)} style={selSt}>
                 {CATS.map(c => <option key={c} value={c}>{tr(CAT_I18N_KEY[c]) || c}</option>)}
               </select>
-              <button onClick={addEx} style={btnSt}>+ Add</button>
+              <button onClick={addEx} style={btnSt}>{tr("app_add_btn")}</button>
             </div>
           </div>
 
