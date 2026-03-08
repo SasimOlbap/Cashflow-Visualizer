@@ -591,6 +591,15 @@ function CashFlow({ session, lang, setLang }) {
   } catch {}
   const { nodes, links, nodeWidth, grand, totalExp, surplus, colX } = layoutResult;
 
+  // Translate category and leaf node labels for current language
+  nodes.forEach(n => {
+    if (n.id.startsWith("__cat_")) {
+      const cat = n.id.replace("__cat_", "");
+      const key = CAT_I18N_KEY[cat];
+      if (key) n.label = tr(key) || n.label;
+    }
+  });
+
   const nodeMapD = {};
   nodes.forEach(n => { nodeMapD[n.id] = n; });
   links.forEach(l => {
@@ -987,7 +996,7 @@ function CashFlow({ session, lang, setLang }) {
               <input placeholder="New item…" value={neLabel} onChange={e => setNeLabel(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addEx()} style={selSt} />
               <select value={neCat} onChange={e => setNeCat(e.target.value)} style={selSt}>
-                {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                {CATS.map(c => <option key={c} value={c}>{tr(CAT_I18N_KEY[c]) || c}</option>)}
               </select>
               <button onClick={addEx} style={btnSt}>+ Add</button>
             </div>
