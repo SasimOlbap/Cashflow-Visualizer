@@ -63,12 +63,11 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
   passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
 
-  // Col1 -> Col2 + carryover
-  // deficit carryover added FIRST so tgtOff claims bottom of __total before passive/active fill it
-  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
+  // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
   if (activeSum       > 0) addLink("__active",   "__total", activeSum);
   if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
   if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
+  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
@@ -157,14 +156,29 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  // Anchor deficit carryover source side only (sy) to bottom of col0 node
+  // Anchor deficit carryover ribbon: match the deficit ribbon height exactly, both sides
   if (deficitCarryAmt > 0) {
     const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
+    const total = nodeMap["__total"];
     const srcNode = nodeMap["__carryover_deficit"];
-    if (defCarryLink && srcNode) {
-      const sourceH = defCarryLink.sy1 - defCarryLink.sy0;
+    if (defCarryLink && total && srcNode && totalExp > 0) {
+      const targetH = (deficitCarryAmt / totalExp) * total.h;
+      const sourceH = Math.min(targetH, srcNode.h);
+      defCarryLink.ty1 = total.y + total.h;
+      defCarryLink.ty0 = defCarryLink.ty1 - targetH;
       defCarryLink.sy1 = srcNode.y + srcNode.h;
       defCarryLink.sy0 = defCarryLink.sy1 - sourceH;
+    }
+  }
+
+  // Clamp passive link ty1 so it doesn't overlap deficit carryover ribbon
+  if (deficitCarryAmt > 0) {
+    const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
+    const passiveLink  = links.find(l => l.source === "__passive" && l.target === "__total");
+    if (defCarryLink && passiveLink && defCarryLink.ty0 !== undefined) {
+      if (passiveLink.ty1 > defCarryLink.ty0) {
+        passiveLink.ty1 = defCarryLink.ty0;
+      }
     }
   }
 
