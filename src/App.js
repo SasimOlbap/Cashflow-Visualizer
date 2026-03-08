@@ -13,7 +13,7 @@ import {
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
   GROUP_COLORS, LINK_LEFT, LINK_RIGHT,
 } from "./constants";
-import { useTranslation } from "./i18n";
+import { translations } from "./i18n";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -269,7 +269,7 @@ const CAT_I18N_KEY = {
 };
 
 function CashFlow({ session, lang, setLang }) {
-  const { t: tr } = useTranslation(lang);
+  const tr = (key) => (translations[lang] || translations.en)[key] || key;
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
