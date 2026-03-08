@@ -55,7 +55,7 @@ function MobileOnly({ onBack }) {
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
       <div style={{ position: "relative", maxWidth: 320 }}>
         <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>{tr("app_overview")}</div>
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>Financial Overview</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#fff" }}>Cash Flow Visualizer</div>
         </div>
         <div style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}>
@@ -220,7 +220,7 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
       <div style={{ position: "absolute", bottom: "-10%", left: "10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 1, background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
         <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{tr("app_title")}</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
         <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
