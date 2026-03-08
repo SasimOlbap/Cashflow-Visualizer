@@ -269,7 +269,7 @@ const CAT_I18N_KEY = {
 };
 
 function CashFlow({ session, lang, setLang }) {
-  const { t } = useTranslation(lang);
+  const { t: tr } = useTranslation(lang);
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
@@ -976,7 +976,7 @@ function CashFlow({ session, lang, setLang }) {
             {colHead("Expenses", totalExp, "#fbcfe8")}
             {CATS.map(cat => (
               <div key={cat}>
-                {subHead(t(CAT_I18N_KEY[cat]) || cat)}
+                {subHead(tr(CAT_I18N_KEY[cat]) || cat)}
                 {expenses.filter(e => e.category === cat).map(item => (
                   <ItemRow key={item.id} item={item} accent={CAT_COLORS[cat]} T={T}
                     onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} />
