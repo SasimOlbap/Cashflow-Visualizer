@@ -874,12 +874,15 @@ function CashFlow({ session, lang, setLang }) {
               {/* SVG */}
               <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
                 <svg key={curKey} width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-                  {links.map(l => (
+                  {links.filter(l => l.source !== "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
                       GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
+                  ))}
+                  {links.filter(l => l.source === "__carryover_deficit").map(l => (
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
                 </svg>
               </div>
