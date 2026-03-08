@@ -67,11 +67,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (activeSum       > 0) addLink("__active",   "__total", activeSum);
   if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
   if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
-  // Route deficit carryover through col1 phantom so ribbon follows column structure
-  if (deficitCarryAmt > 0) {
-    addLink("__carryover_deficit", "__col1_deficit_phantom", deficitCarryAmt);
-    addLink("__col1_deficit_phantom", "__total", deficitCarryAmt);
-  }
+  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
 
   // Col2 -> Col3 (cats only)
   CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
@@ -160,7 +156,22 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     } catch {}
   });
 
-  // Anchor deficit ribbon to bottom of __total: overlaps last expense unit
+  // Anchor deficit carryover ribbon to bottom of __total on both sides
+  if (deficitCarryAmt > 0) {
+    const defCarryLink = links.find(l => l.source === "__carryover_deficit" && l.target === "__total");
+    const total = nodeMap["__total"];
+    const srcNode = nodeMap["__carryover_deficit"];
+    if (defCarryLink && total && srcNode && totalExp > 0) {
+      const targetH = (deficitCarryAmt / totalExp) * total.h;
+      const sourceH = Math.min(targetH, srcNode.h);
+      defCarryLink.ty1 = total.y + total.h;
+      defCarryLink.ty0 = defCarryLink.ty1 - targetH;
+      defCarryLink.sy1 = srcNode.y + srcNode.h;
+      defCarryLink.sy0 = defCarryLink.sy1 - sourceH;
+    }
+  }
+
+  // Anchor deficit ribbon to bottom of __total
   if (deficit > 0) {
     const defLink = links.find(l => l.source === "__total" && l.target === "__deficit_cat");
     const total = nodeMap["__total"];

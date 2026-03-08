@@ -619,7 +619,7 @@ function CashFlow({ session, lang, setLang }) {
 
   const getLinkColor = link => {
     const col = link.sourceNode?.col ?? 0;
-    if (link.source === "__col1_deficit_phantom") return "#f87171";
+    if (link.source === "__col1_deficit_phantom") return "transparent";
     if (link.source === "__total" && link.target === "__deficit_cat") return "#f87171";
     if (link.source === "__total" && link.target === "__surplus")     return "#86efac";
     if (link.source === "__carryover") return "#86efac";
@@ -874,10 +874,7 @@ function CashFlow({ session, lang, setLang }) {
               {/* SVG */}
               <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
                 <svg key={curKey} width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
-                  {[...links].sort((a, b) => {
-                    const priority = l => (l.source === "__carryover_deficit" || l.source === "__col1_deficit_phantom") ? 1 : 0;
-                    return priority(a) - priority(b);
-                  }).map(l => (
+                  {links.map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
                   ))}
                   {nodes.map(n => (
