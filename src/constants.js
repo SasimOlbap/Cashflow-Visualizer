@@ -7,7 +7,7 @@ export const uid = () => String(Date.now() + Math.random()).replace(".", "");
 // ── initial data ───────────────────────────────────────────────────────────
 export const INIT_INCOME = [
   { id: uid(), label: "Monthly Salary",     value: 1500, type: "active"  },
-  { id: uid(), label: "Rental Income",      value: 400,  type: "passive" },
+  { id: uid(), label: "Rental Income",      value: 500,  type: "passive" },
   { id: uid(), label: "Stock Dividends",    value: 250,  type: "passive" },
 ];
 
