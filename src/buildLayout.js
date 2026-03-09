@@ -111,7 +111,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     labelPad - 0.03 * inner,
     labelPad + 0.235 * inner,
     labelPad + 0.50 * inner,
-    labelPad + 0.760 * inner,
+    labelPad + 0.800 * inner,
     labelPad + 1.02 * inner,
   ];
   const actualColX = baseColX.map((x, i) => {
