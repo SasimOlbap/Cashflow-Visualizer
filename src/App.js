@@ -277,12 +277,11 @@ function CashFlow({ session, lang, setLang }) {
   const [svgW, setSvgW] = useState(600);
   const [svgH, setSvgH] = useState(440);
 
-  useEffect(() => {
-    const CHROME_H = 156; // header + month bar + bottom bar + padding
-
-    const compute = (containerW) => {
+  useEffect(() => {    const compute = (containerW) => {
       const w = Math.min(1200, Math.max(320, containerW));
-      const maxH = Math.max(280, window.innerHeight - CHROME_H);
+      const svgTop = svgRef.current ? svgRef.current.getBoundingClientRect().top : 160;
+      const bottomBarH = 60; // bottom card height + breathing room
+      const maxH = Math.max(280, window.innerHeight - svgTop - bottomBarH);
       const h = Math.min(700, Math.max(280, Math.min(w * 0.57, maxH)));
       setSvgW(w);
       setSvgH(h);
