@@ -278,7 +278,7 @@ function CashFlow({ session, lang, setLang }) {
   const [svgH, setSvgH] = useState(440);
 
   useEffect(() => {
-    const CHROME_H = 184; // header + month bar + bottom bar + padding
+    const CHROME_H = 156; // header + month bar + bottom bar + padding
 
     const compute = (containerW) => {
       const w = Math.min(1200, Math.max(320, containerW));
