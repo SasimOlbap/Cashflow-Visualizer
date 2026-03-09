@@ -632,8 +632,13 @@ function CashFlow({ session, lang, setLang }) {
       if (grp === "source_passive" || grp === "agg_passive") return LINK_LEFT_PASSIVE[Math.min(col, 1)];
       return LINK_LEFT[Math.min(col, 1)];
     }
-    const idx = CATS.findIndex(c => link.source === "__cat_" + c);
-    return idx >= 0 ? LINK_RIGHT[idx] : "#9575cd";
+    // col3->col4: source is __cat_X — color by source category
+    const srcIdx = CATS.findIndex(c => link.source === "__cat_" + c);
+    if (srcIdx >= 0) return LINK_RIGHT[srcIdx];
+    // col2->col3: source is __total — color by target category
+    const tgtIdx = CATS.findIndex(c => link.target === "__cat_" + c);
+    if (tgtIdx >= 0) return LINK_RIGHT[tgtIdx];
+    return "#9575cd";
   };
 
   const hovLink = hovered ? links.find(l => l.source + "-" + l.target === hovered) : null;
