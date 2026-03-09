@@ -59,24 +59,31 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
-  // Col0 -> Col1 (chainId = income item id)
-  active.forEach(i => { if (activeSum > 0) links.push({ source: i.id, target: "__active", value: Number(i.value) || 0, chainId: "active" }); });
-  passiveRegular.forEach(i => { if (passiveSum > 0) links.push({ source: i.id, target: "__passive", value: Number(i.value) || 0, chainId: "passive" }); });
+  // Col0 -> Col1: each income item gets its own chainId
+  active.forEach(i => { if (activeSum > 0) links.push({ source: i.id, target: "__active", value: Number(i.value) || 0, chainId: i.id }); });
+  passiveRegular.forEach(i => { if (passiveSum > 0) links.push({ source: i.id, target: "__passive", value: Number(i.value) || 0, chainId: i.id }); });
 
-  // Col1 -> Col2
-  if (activeSum       > 0) links.push({ source: "__active",  target: "__total", value: activeSum,  chainId: "active" });
-  if (passiveSum      > 0) links.push({ source: "__passive", target: "__total", value: passiveSum, chainId: "passive" });
-  if (surplusCarryAmt > 0) links.push({ source: "__carryover", target: "__total", value: surplusCarryAmt, chainId: "carryover" });
-  if (deficitCarryAmt > 0) links.push({ source: "__carryover_deficit", target: "__total", value: deficitCarryAmt, chainId: "deficit_carry" });
+  // Col1 -> Col2: chainIds = array of all source item ids in that group
+  const activeIds   = active.map(i => i.id);
+  const passiveIds  = passiveRegular.map(i => i.id);
+  if (activeSum  > 0) links.push({ source: "__active",  target: "__total", value: activeSum,  chainIds: activeIds });
+  if (passiveSum > 0) links.push({ source: "__passive", target: "__total", value: passiveSum, chainIds: passiveIds });
+  if (surplusCarryAmt > 0) links.push({ source: "__carryover",         target: "__total", value: surplusCarryAmt, chainId: "__carryover" });
+  if (deficitCarryAmt > 0) links.push({ source: "__carryover_deficit", target: "__total", value: deficitCarryAmt, chainId: "__carryover_deficit" });
 
-  // Col2 -> Col3 (chainId = category)
-  CATS.forEach(c => { if (catSums[c] > 0) links.push({ source: "__total", target: "__cat_" + c, value: catSums[c], chainId: "cat_" + c }); });
+  // Col2 -> Col3: chainIds = array of all expense item ids in that category
+  const catExpIds = {};
+  expenses.forEach(e => {
+    if (e.category === "Carryover") return;
+    if (Number(e.value) > 0) { catExpIds[e.category] = catExpIds[e.category] || []; catExpIds[e.category].push(e.id); }
+  });
+  CATS.forEach(c => { if (catSums[c] > 0) links.push({ source: "__total", target: "__cat_" + c, value: catSums[c], chainIds: catExpIds[c] || [] }); });
 
-  // Col3 -> Col4 (chainId = category)
+  // Col3 -> Col4: each expense item gets its own chainId
   expenses.forEach(e => {
     if (e.category === "Carryover") return;
     const v = Number(e.value) || 0;
-    if (v > 0 && catSums[e.category] > 0) links.push({ source: "__cat_" + e.category, target: e.id, value: v, chainId: "cat_" + e.category });
+    if (v > 0 && catSums[e.category] > 0) links.push({ source: "__cat_" + e.category, target: e.id, value: v, chainId: e.id });
   });
 
   // Col2 -> Col4 direct (surplus and deficit skip col3, added last for z-order on top)

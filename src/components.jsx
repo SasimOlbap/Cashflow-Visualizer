@@ -6,7 +6,10 @@ export function LinkPath({ link, color, onHover, hoveredChain, colX }) {
   const { sx, tx, sy0, sy1, ty0, ty1 } = link;
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
-  const isHovered = hoveredChain && link.chainId && hoveredChain === link.chainId;
+  const isHovered = hoveredChain && (
+    (link.chainId && hoveredChain === link.chainId) ||
+    (link.chainIds && link.chainIds.includes(hoveredChain))
+  );
   // Standard bezier ribbon
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
