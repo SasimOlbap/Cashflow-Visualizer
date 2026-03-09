@@ -652,7 +652,7 @@ function CashFlow({ session, lang, setLang }) {
     return "#9575cd";
   };
 
-  const hovLink = hovered ? links.find(l => l.source + "-" + l.target === hovered) : null;
+  const hovLink = hovered ? links.find(l => l.chainId === hovered || l.source + "-" + l.target === hovered) : null;
 
   // ── shared styles ─────────────────────────────────────────────────────────
   const cardSt  = { background: T.bgCard, borderRadius: 14, padding: "14px 16px",
@@ -893,14 +893,14 @@ function CashFlow({ session, lang, setLang }) {
               <div ref={svgRef} style={{ padding: "12px 8px", minHeight: 320, maxHeight: 750, overflow: "hidden" }}>
                 <svg key={curKey} width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
                   {links.filter(l => l.source !== "__carryover_deficit").map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} hoveredLinks={links.filter(l => l.chainId === hovered)} />
                   ))}
                   {links.filter(l => l.source === "__carryover_deficit").map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
                   ))}
                 </svg>
               </div>

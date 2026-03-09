@@ -59,24 +59,24 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const links = [];
   const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
-  // Col0 -> Col1
-  active.forEach(i => { if (activeSum > 0) addLink(i.id, "__active", Number(i.value) || 0); });
-  passiveRegular.forEach(i => { if (passiveSum > 0) addLink(i.id, "__passive", Number(i.value) || 0); });
+  // Col0 -> Col1 (chainId = income item id)
+  active.forEach(i => { if (activeSum > 0) links.push({ source: i.id, target: "__active", value: Number(i.value) || 0, chainId: "active" }); });
+  passiveRegular.forEach(i => { if (passiveSum > 0) links.push({ source: i.id, target: "__passive", value: Number(i.value) || 0, chainId: "passive" }); });
 
-  // Col1 -> Col2 + carryover (ordered so tgtOff fills __total continuously, no gap)
-  if (activeSum       > 0) addLink("__active",   "__total", activeSum);
-  if (passiveSum      > 0) addLink("__passive",  "__total", passiveSum);
-  if (surplusCarryAmt > 0) addLink("__carryover","__total", surplusCarryAmt);
-  if (deficitCarryAmt > 0) addLink("__carryover_deficit","__total", deficitCarryAmt);
+  // Col1 -> Col2
+  if (activeSum       > 0) links.push({ source: "__active",  target: "__total", value: activeSum,  chainId: "active" });
+  if (passiveSum      > 0) links.push({ source: "__passive", target: "__total", value: passiveSum, chainId: "passive" });
+  if (surplusCarryAmt > 0) links.push({ source: "__carryover", target: "__total", value: surplusCarryAmt, chainId: "carryover" });
+  if (deficitCarryAmt > 0) links.push({ source: "__carryover_deficit", target: "__total", value: deficitCarryAmt, chainId: "deficit_carry" });
 
-  // Col2 -> Col3 (cats only)
-  CATS.forEach(c => { if (catSums[c] > 0) addLink("__total", "__cat_" + c, catSums[c]); });
+  // Col2 -> Col3 (chainId = category)
+  CATS.forEach(c => { if (catSums[c] > 0) links.push({ source: "__total", target: "__cat_" + c, value: catSums[c], chainId: "cat_" + c }); });
 
-  // Col3 -> Col4
+  // Col3 -> Col4 (chainId = category)
   expenses.forEach(e => {
     if (e.category === "Carryover") return;
     const v = Number(e.value) || 0;
-    if (v > 0 && catSums[e.category] > 0) addLink("__cat_" + e.category, e.id, v);
+    if (v > 0 && catSums[e.category] > 0) links.push({ source: "__cat_" + e.category, target: e.id, value: v, chainId: "cat_" + e.category });
   });
 
   // Col2 -> Col4 direct (surplus and deficit skip col3, added last for z-order on top)

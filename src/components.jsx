@@ -2,16 +2,17 @@ import React from 'react';
 // ── subcomponents ──────────────────────────────────────────────────────────
 
 // ── LinkPath ──────────────────────────────────────────────────────────────
-export function LinkPath({ link, color, onHover, hovered, colX }) {
+export function LinkPath({ link, color, onHover, hoveredChain, colX }) {
   const { sx, tx, sy0, sy1, ty0, ty1 } = link;
   const mx  = (sx + tx) / 2;
   const key = link.source + "-" + link.target;
+  const isHovered = hoveredChain && link.chainId && hoveredChain === link.chainId;
   // Standard bezier ribbon
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
-    <path d={d} fill={color} opacity={hovered === key ? 0.6 : 0.3}
+    <path d={d} fill={color} opacity={isHovered ? 0.6 : 0.3}
       style={{ transition: "opacity 0.15s", cursor: "pointer" }}
-      onMouseEnter={() => onHover(key)} onMouseLeave={() => onHover(null)} />
+      onMouseEnter={() => onHover(link.chainId || key)} onMouseLeave={() => onHover(null)} />
   );
 }
 
@@ -40,7 +41,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey, hoveredLinks }) {
   // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
@@ -75,10 +76,9 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   // Col1, col3: always show % only
   const isPctOnly = n.col === 1 || n.col === 3;
 
-  // hoveredKey is "sourceId-targetId" — show label if this node is source or target
-  const isRibbonHovered = hoveredKey && (
-    hoveredKey.startsWith(n.id + "-") ||
-    hoveredKey.endsWith("-" + n.id)
+  // Show label if this node is source or target of any link in the hovered chain
+  const isRibbonHovered = hoveredLinks && hoveredLinks.length > 0 && hoveredLinks.some(l =>
+    l.source === n.id || l.target === n.id
   );
   const showLabel = isHoverOnly ? !!isRibbonHovered : true;
 
