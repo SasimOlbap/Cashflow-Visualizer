@@ -9,7 +9,7 @@ export function LinkPath({ link, color, onHover, hovered, colX }) {
   // Standard bezier ribbon
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
-    <path d={d} fill={color} opacity={hovered === key ? 0.85 : 0.4}
+    <path d={d} fill={color} opacity={hovered === key ? 0.6 : 0.3}
       style={{ transition: "opacity 0.15s", cursor: "pointer" }}
       onMouseEnter={() => onHover(key)} onMouseLeave={() => onHover(null)} />
   );
