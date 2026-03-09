@@ -1,3 +1,4 @@
+import React from 'react';
 // ── subcomponents ──────────────────────────────────────────────────────────
 
 // ── LinkPath ──────────────────────────────────────────────────────────────
@@ -39,7 +40,8 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredLink }) {
+  const [hovered, setHovered] = React.useState(false);
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
   const isPhantom  = n.id === "__surplus_phantom"
@@ -70,18 +72,30 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   const valCol  = T.textNode;
   const sepCol  = isDark ? "#ffffff" : "#000000";
 
+  // Col0, col4: hover-only labels
+  const isHoverOnly = n.col === 0 || n.col === 4;
+  // Col1, col3: always show % only
+  const isPctOnly = n.col === 1 || n.col === 3;
+
+  const isRibbonHovered = hoveredLink && (
+    hoveredLink.source === n.id || hoveredLink.target === n.id
+  );
+  const showLabel = isHoverOnly ? (hovered || isRibbonHovered) : true;
+
   const rect = (
     <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
         style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
-        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
+        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
+        onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
         style={{ cursor: "ew-resize" }}
-        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
+        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
+        onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} />
     </>
   );
 
-  // Col2 total node: dual labels — Total Income left, Total Expenses right
+  // Col2: show label + total value only, no %
   if (n.col === 2) {
     const lxLeft  = n.x - 6;
     const lxRight = n.x + nw + 6;
@@ -89,32 +103,43 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
       <g key={n.id}>
         {rect}
         <text x={lxLeft} y={my - 6} textAnchor="end" fill={valCol} fontSize={fs} fontWeight={600}>Total Income</text>
-        <text x={lxLeft} y={my + 8} textAnchor="end" fontSize={fs2}>
-          <tspan fill={valCol}>${fmt(grand)}</tspan>
-          <tspan fill={sepCol} fontSize={fs3}> / </tspan>
-          <tspan fill={sepCol} fontSize={fs3}>100%</tspan>
-        </text>
+        <text x={lxLeft} y={my + 8} textAnchor="end" fill={valCol} fontSize={fs2}>${fmt(grand)}</text>
         <text x={lxRight} y={my - 6} textAnchor="start" fill={valCol} fontSize={fs} fontWeight={600}>Total Expenses</text>
-        <text x={lxRight} y={my + 8} textAnchor="start" fontSize={fs2}>
-          <tspan fill={valCol}>${fmt(totalExp)}</tspan>
-          <tspan fill={sepCol} fontSize={fs3}> / </tspan>
-          <tspan fill={sepCol} fontSize={fs3}>{pct(totalExp, grand)}</tspan>
-        </text>
+        <text x={lxRight} y={my + 8} textAnchor="start" fill={valCol} fontSize={fs2}>${fmt(totalExp)}</text>
       </g>
     );
   }
 
   const lx     = right ? n.x + nw + 6 : n.x - 6;
   const anchor = right ? "start" : "end";
+
+  // Col1 and col3: show label + % only on one line
+  if (isPctOnly) {
+    return (
+      <g key={n.id}>
+        {rect}
+        <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}>{n.label}</text>
+        <text x={lx} y={my + 8} textAnchor={anchor} fill={valCol} fontSize={fs2}>{pct(n.value, grand)}</text>
+      </g>
+    );
+  }
+
+  // Col0, col4: hover-only full label + value / %
   return (
     <g key={n.id}>
       {rect}
-      <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}>{n.label}</text>
-      <text x={lx} y={my + 8} textAnchor={anchor} fontSize={fs2}>
-        <tspan fill={valCol}>${fmt(n.value)}</tspan>
-        <tspan fill={sepCol} fontSize={fs3}> / </tspan>
-        <tspan fill={sepCol} fontSize={fs3}>{pct(n.value, grand)}</tspan>
-      </text>
+      {showLabel && (
+        <>
+          <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}
+            style={{ pointerEvents: "none" }}>{n.label}</text>
+          <text x={lx} y={my + 8} textAnchor={anchor} fontSize={fs2}
+            style={{ pointerEvents: "none" }}>
+            <tspan fill={valCol}>${fmt(n.value)}</tspan>
+            <tspan fill={sepCol} fontSize={fs3}> / </tspan>
+            <tspan fill={sepCol} fontSize={fs3}>{pct(n.value, grand)}</tspan>
+          </text>
+        </>
+      )}
     </g>
   );
 }
