@@ -87,8 +87,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   });
 
   // Col2 -> Col4 direct (surplus and deficit skip col3, added last for z-order on top)
-  if (surplus > 0) addLink("__total", "__surplus",      surplus);
-  if (deficit  > 0) addLink("__total", "__deficit_cat", deficit);
+  if (surplus > 0) links.push({ source: "__total", target: "__surplus",      value: surplus, chainId: "__surplus" });
+  if (deficit  > 0) links.push({ source: "__total", target: "__deficit_cat", value: deficit,  chainId: "__deficit_cat" });
 
   const colMap = {
     source: 0, source_active: 0, source_passive: 0, source_phantom: 0, carryover_surplus: 0, carryover_deficit: 0,
