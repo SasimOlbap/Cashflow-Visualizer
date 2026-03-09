@@ -105,7 +105,7 @@ export const GROUP_COLORS = {
   surplus:           "#4cef5a",
   deficit:           "#ff4444",
   carryover_surplus: "#4cef5a",
-  carryover_deficit: "#f87171",
+  carryover_deficit: "#ff4444",
 };
 
 export const LINK_LEFT        = ["#aecde8", "#4e88b4"]; // fallback
