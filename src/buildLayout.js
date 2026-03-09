@@ -90,7 +90,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     category: 3, category_phantom: 3,
     leaf: 4,
   };
-  const colWidths = [20, 20, 20, 20, 20];
+  const colWidths = [20, 12, 20, 12, 20];
   const nodeWidth = 20;
   const nodeMap   = {};
   nodes.forEach(n => { n.col = colMap[n.group] ?? 0; n.w = colWidths[n.col]; nodeMap[n.id] = n; });

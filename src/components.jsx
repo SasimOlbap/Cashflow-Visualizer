@@ -103,10 +103,14 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
     return (
       <g key={n.id}>
         {rect}
-        <text x={lxLeft} y={my - 6} textAnchor="end" fill={valCol} fontSize={fs} fontWeight={600}>Total Income</text>
-        <text x={lxLeft} y={my + 8} textAnchor="end" fill={valCol} fontSize={fs2}>${fmt(grand)}</text>
-        <text x={lxRight} y={my - 6} textAnchor="start" fill={valCol} fontSize={fs} fontWeight={600}>Total Expenses</text>
-        <text x={lxRight} y={my + 8} textAnchor="start" fill={valCol} fontSize={fs2}>${fmt(totalExp)}</text>
+        <text x={lxLeft} y={my + fs/2} textAnchor="end" fontSize={fs} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>Total Income</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${fmt(grand)}</tspan>
+        </text>
+        <text x={lxRight} y={my + fs/2} textAnchor="start" fontSize={fs} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>Total Expenses</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${fmt(totalExp)}</tspan>
+        </text>
       </g>
     );
   }
@@ -119,8 +123,10 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
     return (
       <g key={n.id}>
         {rect}
-        <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}>{n.label}</text>
-        <text x={lx} y={my + 8} textAnchor={anchor} fill={valCol} fontSize={fs2}>{pct(n.value, grand)}</text>
+        <text x={lx} y={my + fs/2} textAnchor={anchor} fontSize={fs} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>{n.label}</tspan>
+          <tspan fill={valCol} fontSize={fs2}> {pct(n.value, grand)}</tspan>
+        </text>
       </g>
     );
   }
@@ -131,11 +137,9 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
       {rect}
       {showLabel && (
         <>
-          <text x={lx} y={my - 6} textAnchor={anchor} fill={valCol} fontSize={fs} fontWeight={600}
-            style={{ pointerEvents: "none" }}>{n.label}</text>
-          <text x={lx} y={my + 8} textAnchor={anchor} fontSize={fs2}
-            style={{ pointerEvents: "none" }}>
-            <tspan fill={valCol}>${fmt(n.value)}</tspan>
+          <text x={lx} y={my + fs/2} textAnchor={anchor} fontSize={fs} style={{pointerEvents:"none"}}>
+            <tspan fill={valCol} fontWeight={600}>{n.label}</tspan>
+            <tspan fill={valCol} fontSize={fs2}> ${fmt(n.value)}</tspan>
             <tspan fill={sepCol} fontSize={fs3}> / </tspan>
             <tspan fill={sepCol} fontSize={fs3}>{pct(n.value, grand)}</tspan>
           </text>
