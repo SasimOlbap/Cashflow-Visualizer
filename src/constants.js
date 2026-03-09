@@ -102,9 +102,9 @@ export const GROUP_COLORS = {
   total:             "#4e88b4", // Col 2 · mid blue
   category:          "#e57373",
   leaf:              "#f48fb1",
-  surplus:           "#66bb6a",
-  deficit:           "#f87171",
-  carryover_surplus: "#66bb6a",
+  surplus:           "#4cef5a",
+  deficit:           "#ff4444",
+  carryover_surplus: "#4cef5a",
   carryover_deficit: "#f87171",
 };
 
