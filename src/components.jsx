@@ -40,7 +40,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredLink }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey }) {
   // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
@@ -77,12 +77,10 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   // Col1, col3: always show % only
   const isPctOnly = n.col === 1 || n.col === 3;
 
-  // Check if any link connected to this node is hovered
-  const isRibbonHovered = hoveredLink && (
-    hoveredLink.source === n.id ||
-    hoveredLink.target === n.id ||
-    hoveredLink.sourceNode?.id === n.id ||
-    hoveredLink.targetNode?.id === n.id
+  // hoveredKey is "sourceId-targetId" — show label if this node is source or target
+  const isRibbonHovered = hoveredKey && (
+    hoveredKey.startsWith(n.id + "-") ||
+    hoveredKey.endsWith("-" + n.id)
   );
   const showLabel = isHoverOnly ? !!isRibbonHovered : true;
 

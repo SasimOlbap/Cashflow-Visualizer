@@ -897,7 +897,7 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} />
                   ))}
                   {links.filter(l => l.source === "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} colX={colX} />
