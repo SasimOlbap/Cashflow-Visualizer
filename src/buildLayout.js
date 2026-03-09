@@ -57,7 +57,6 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   if (deficit  > 0) push("__deficit_cat", "Deficit", deficit, "leaf");
 
   const links = [];
-  const addLink = (s, t, v) => { if (v > 0) links.push({ source: s, target: t, value: v }); };
 
   // Col0 -> Col1: each income item gets its own chainId
   active.forEach(i => { if (activeSum > 0) links.push({ source: i.id, target: "__active", value: Number(i.value) || 0, chainId: i.id }); });
