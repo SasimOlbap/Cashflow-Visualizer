@@ -1,4 +1,4 @@
-import { fmt, CATS, CAT_LABELS } from "./constants";
+import { fmt, CATS, CAT_LABELS, CAT_COLORS } from "./constants";
 
 export function buildLayout(income, expenses, width, height, colOffsets = [0, 0, 0, 0, 0]) {
   const active          = income.filter(i => i.type === "active");
@@ -134,6 +134,17 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     });
     const off = (safeH - (y - gap)) / 2;
     col.forEach(n => { n.y += isFinite(off) ? off : 0; });
+  });
+
+  // Assign per-category colors to expense nodes
+  nodes.forEach(n => {
+    if (n.group === "category") {
+      const cat = n.id.replace("__cat_", "");
+      n.color = CAT_COLORS[cat] || null;
+    } else if (n.group === "leaf") {
+      // leaf node id is expense id — find category via expense lookup not available here
+      // color will be set in App.js via node mutation after buildLayout
+    }
   });
 
   const srcOff = {}, tgtOff = {};

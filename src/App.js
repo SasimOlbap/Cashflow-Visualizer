@@ -612,6 +612,17 @@ function CashFlow({ session, lang, setLang }) {
     }
   });
 
+  // Assign category color to leaf nodes
+  nodes.forEach(n => {
+    if (n.group === "leaf") {
+      const parentLink = links.find(l => l.target === n.id);
+      if (parentLink) {
+        const catNode = nodes.find(nd => nd.id === parentLink.source);
+        if (catNode?.color) n.color = catNode.color;
+      }
+    }
+  });
+
   const nodeMapD = {};
   nodes.forEach(n => { nodeMapD[n.id] = n; });
   links.forEach(l => {

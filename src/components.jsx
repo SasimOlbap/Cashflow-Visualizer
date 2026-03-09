@@ -59,7 +59,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
     ? GROUP_COLORS.deficit
     : isSurplus
       ? GROUP_COLORS.surplus
-      : GROUP_COLORS[n.group] || GROUP_COLORS.category;
+      : n.color || GROUP_COLORS[n.group] || GROUP_COLORS.category;
 
   const nw      = n.w || nodeWidth;
   const right   = n.col <= 1;
