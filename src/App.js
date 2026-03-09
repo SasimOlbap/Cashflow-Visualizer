@@ -97,10 +97,14 @@ class ErrorBoundary extends Component {
 // ── category migration ────────────────────────────────────────────────────────
 // Maps old category keys → new keys so existing Supabase data loads correctly
 const CATEGORY_MIGRATION = {
-  "Living":    "Living Costs",
-  "Payroll":   "Taxes",
-  "Long-Term": "Long-term Planning",
-  "Housing":   "Household Goods",
+  "Living":          "Living & Household",
+  "Payroll":         "Taxes",
+  "Long-Term":       "Long-term Planning",
+  "Housing":         "Living & Household",
+  "Household Goods": "Living & Household",
+  "Living Costs":    "Living & Household",
+  "Education":       "Education & Kids",
+  "Kids":            "Education & Kids",
 };
 const migrateExpenses = (expenses) =>
   expenses.map(e => ({
@@ -255,17 +259,15 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
 
 // ── category key map for i18n ─────────────────────────────────────────────────
 const CAT_I18N_KEY = {
-  "Debt & Credit":      "cat_debt",
-  "Education":          "cat_education",
-  "Flexible":           "cat_flexible",
-  "Healthcare":         "cat_healthcare",
-  "Household Goods":    "cat_household",
-  "Kids":               "cat_kids",
-  "Living Costs":       "cat_living",
-  "Long-term Planning": "cat_longterm",
-  "Subscriptions":      "cat_subscriptions",
-  "Taxes":              "cat_taxes",
-  "Transportation":     "cat_transportation",
+  "Living & Household":  "cat_living_household",
+  "Education & Kids":    "cat_education_kids",
+  "Healthcare":          "cat_healthcare",
+  "Transportation":      "cat_transportation",
+  "Subscriptions":       "cat_subscriptions",
+  "Flexible":            "cat_flexible",
+  "Long-term Planning":  "cat_longterm",
+  "Debt & Credit":       "cat_debt",
+  "Taxes":               "cat_taxes",
 };
 
 function CashFlow({ session, lang, setLang }) {
@@ -336,7 +338,7 @@ function CashFlow({ session, lang, setLang }) {
   const [niLabel,   setNiLabel]   = useState("");
   const [niType,    setNiType]    = useState("active");
   const [neLabel,   setNeLabel]   = useState("");
-  const [neCat,     setNeCat]     = useState("Living Costs");
+  const [neCat,     setNeCat]     = useState("Living & Household");
 
   // ── cloud sync ────────────────────────────────────────────────────────────
   // Load all months from Supabase on mount
