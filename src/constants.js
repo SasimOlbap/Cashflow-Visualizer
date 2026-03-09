@@ -104,7 +104,7 @@ export const GROUP_COLORS = {
   leaf:              "#f48fb1",
   surplus:           "#66bb6a",
   deficit:           "#f87171",
-  carryover_surplus: "#aecde8",
+  carryover_surplus: "#66bb6a",
   carryover_deficit: "#f87171",
 };
 
