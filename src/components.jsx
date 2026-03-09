@@ -72,7 +72,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   const my      = n.y + n.h / 2;
   const fs      = Math.min(16, Math.max(12, n.h * 0.30));
   const fs2     = Math.max(12, fs - 1);
-  const valCol  = (isDeficit || n.group === "carryover_deficit") ? "#ffffff" : T.textNode;
+  const valCol  = (isDeficit || n.id === "__carryover_deficit") ? "#ffffff" : T.textNode;
 
   // Col0, col4: hover-only labels
   const isHoverOnly = n.col === 0 || n.col === 4;
