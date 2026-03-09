@@ -41,7 +41,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
 export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredLink }) {
-  const [hovered, setHovered] = React.useState(false);
+  // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
   const isPhantom  = n.id === "__surplus_phantom"
@@ -77,21 +77,24 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   // Col1, col3: always show % only
   const isPctOnly = n.col === 1 || n.col === 3;
 
+  // Check if any link connected to this node is hovered
   const isRibbonHovered = hoveredLink && (
-    hoveredLink.source === n.id || hoveredLink.target === n.id
+    hoveredLink.source === n.id ||
+    hoveredLink.target === n.id ||
+    hoveredLink.sourceNode?.id === n.id ||
+    hoveredLink.targetNode?.id === n.id
   );
-  const showLabel = isHoverOnly ? (hovered || isRibbonHovered) : true;
+  const showLabel = isHoverOnly ? !!isRibbonHovered : true;
 
   const rect = (
     <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
         style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
-        onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} />
+        />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
         style={{ cursor: "ew-resize" }}
-        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
-        onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} />
+        onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)} />
     </>
   );
 
