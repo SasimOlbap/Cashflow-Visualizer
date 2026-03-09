@@ -66,9 +66,9 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   const nw      = n.w || nodeWidth;
   const right   = n.col <= 1;
   const my      = n.y + n.h / 2;
-  const fs      = Math.min(14, Math.max(9, n.h * 0.30));
-  const fs2     = Math.max(9, fs - 1);
-  const fs3     = Math.max(8, fs - 2);
+  const fs      = Math.min(16, Math.max(12, n.h * 0.30));
+  const fs2     = Math.max(12, fs - 1);
+  const fs3     = Math.max(12, fs - 2);
   const valCol  = T.textNode;
   const sepCol  = isDark ? "#ffffff" : "#000000";
 
@@ -140,8 +140,6 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
           <text x={lx} y={my + fs/2} textAnchor={anchor} fontSize={fs} style={{pointerEvents:"none"}}>
             <tspan fill={valCol} fontWeight={600}>{n.label}</tspan>
             <tspan fill={valCol} fontSize={fs2}> ${fmt(n.value)}</tspan>
-            <tspan fill={sepCol} fontSize={fs3}> / </tspan>
-            <tspan fill={sepCol} fontSize={fs3}>{pct(n.value, grand)}</tspan>
           </text>
         </>
       )}
