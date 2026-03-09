@@ -278,12 +278,28 @@ function CashFlow({ session, lang, setLang }) {
   const [svgH, setSvgH] = useState(440);
 
   useEffect(() => {
+    const CHROME_H = 184; // header + month bar + bottom bar + padding
+
+    const compute = (containerW) => {
+      const w = Math.min(1200, Math.max(320, containerW));
+      const maxH = Math.max(280, window.innerHeight - CHROME_H);
+      const h = Math.min(700, Math.max(280, Math.min(w * 0.57, maxH)));
+      setSvgW(w);
+      setSvgH(h);
+    };
+
     const obs = new ResizeObserver(entries => {
-      const w = Math.min(1200, Math.max(320, entries[0].contentRect.width));
-      setSvgW(w); setSvgH(Math.min(700, Math.max(320, w * 0.57)));
+      compute(entries[0].contentRect.width);
     });
     if (svgRef.current) obs.observe(svgRef.current);
-    return () => obs.disconnect();
+
+    // Also recompute on window resize (catches viewport height changes)
+    const onResize = () => {
+      if (svgRef.current) compute(svgRef.current.getBoundingClientRect().width);
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => { obs.disconnect(); window.removeEventListener("resize", onResize); };
   }, []);
 
   // ── state ─────────────────────────────────────────────────────────────────
