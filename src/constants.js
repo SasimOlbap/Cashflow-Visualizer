@@ -6,20 +6,20 @@ export const uid = () => String(Date.now() + Math.random()).replace(".", "");
 
 // ── initial data ───────────────────────────────────────────────────────────
 export const INIT_INCOME = [
-  { id: uid(), label: "Monthly Salary",     value: 925, type: "active"  },
-  { id: uid(), label: "Rental Income",      value: 540, type: "passive" },
-  { id: uid(), label: "Stock Dividends",    value: 184, type: "passive" },
+  { id: uid(), label: "Monthly Salary",  value: 900, type: "active"  },
+  { id: uid(), label: "Rental Income",   value: 500, type: "passive" },
+  { id: uid(), label: "Stock Dividends", value: 255, type: "passive" },
 ];
 
 export const INIT_EXPENSES = [
   // Living & Household
-  { id: uid(), label: "Rent",               value: 325,  category: "Living & Household"  },
-  { id: uid(), label: "Groceries",          value: 185,  category: "Living & Household"  },
+  { id: uid(), label: "Rent",               value: 400,  category: "Living & Household"  },
+  { id: uid(), label: "Groceries",          value: 140,  category: "Living & Household"  },
   { id: uid(), label: "Electricity",        value: 80,   category: "Living & Household"  },
   // Education & Kids
-  { id: uid(), label: "Childcare",          value: 120,  category: "Education & Kids"    },
+  { id: uid(), label: "Childcare",          value: 90,   category: "Education & Kids"    },
   { id: uid(), label: "School Fees",        value: 110,  category: "Education & Kids"    },
-  { id: uid(), label: "Tenis classes",      value: 50,   category: "Education & Kids"    },
+  { id: uid(), label: "Tennis classes",     value: 50,   category: "Education & Kids"    },
   // Healthcare
   { id: uid(), label: "Health Insurance",   value: 200,  category: "Healthcare"          },
   { id: uid(), label: "Medicines",          value: 130,  category: "Healthcare"          },
@@ -30,6 +30,7 @@ export const INIT_EXPENSES = [
   { id: uid(), label: "Streaming Services", value: 50,   category: "Subscriptions"       },
 ];
 
+// Single source of truth for all category names — used by buildLayout, App, editor dropdown
 export const CATS = [
   "Living & Household",
   "Education & Kids",
@@ -69,13 +70,13 @@ export const CAT_COLORS = {
 };
 
 export const GROUP_COLORS = {
-  source:            "#aecde8", // fallback
-  source_active:     "#aecde8", // Col 0 · active sources · light blue
-  source_passive:    "#1a5fa8", // Col 0 · passive sources · dark blue
-  agg:               "#4e88b4", // fallback
-  agg_active:        "#aecde8", // Col 1 · Active Income · light blue
-  agg_passive:       "#1a5fa8", // Col 1 · Passive Income · dark blue
-  total:             "#4e88b4", // Col 2 · mid blue
+  source:            "#aecde8",
+  source_active:     "#aecde8",
+  source_passive:    "#1a5fa8",
+  agg:               "#4e88b4",
+  agg_active:        "#aecde8",
+  agg_passive:       "#1a5fa8",
+  total:             "#4e88b4",
   category:          "#e57373",
   leaf:              "#f48fb1",
   surplus:           "#4cef5a",
@@ -84,9 +85,9 @@ export const GROUP_COLORS = {
   carryover_deficit: "#ff4444",
 };
 
-export const LINK_LEFT        = ["#aecde8", "#4e88b4"]; // fallback
-export const LINK_LEFT_ACTIVE  = ["#aecde8", "#aecde8"]; // active: light blue throughout
-export const LINK_LEFT_PASSIVE = ["#1a5fa8", "#1a5fa8"]; // passive: dark blue throughout
+export const LINK_LEFT         = ["#aecde8", "#4e88b4"];
+export const LINK_LEFT_ACTIVE  = ["#aecde8", "#aecde8"];
+export const LINK_LEFT_PASSIVE = ["#1a5fa8", "#1a5fa8"];
 export const LINK_RIGHT = [
   "#f48fb1", // Living & Household
   "#4db6ac", // Education & Kids
