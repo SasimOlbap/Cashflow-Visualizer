@@ -49,7 +49,7 @@ const STEPS = [
   {
     id: "surplus-node",
     title: "Surplus & Deficit",
-    desc: "A positive surplus means you spent less than you earned — that extra is saved and carried forward. A deficit means you overspent; it rolls into next month as a negative balance. Keep an eye on this to stay on track.",
+    desc: "Quick view of financial data for the selected month.",
     icon: "💚",
     placement: "above-center",  // above the tooltipBar, horizontally centered on it
   },
@@ -161,7 +161,11 @@ export default function TourOverlay({
 
   const handleDone = () => {
     setExiting(true);
-    setTimeout(() => { localStorage.setItem(TOUR_KEY, "1"); onDone(); }, 400);
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      localStorage.setItem(TOUR_KEY, "1");
+      onDone();
+    }, 400);
   };
 
   const progress  = ((step + 1) / STEPS.length) * 100;
