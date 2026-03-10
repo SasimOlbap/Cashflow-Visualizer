@@ -275,9 +275,11 @@ function CashFlow({ session, lang, setLang }) {
   const tr = (key) => (translations[lang] || translations.en)[key] || key;
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef        = useRef(null);
-  const monthStripRef = useRef(null);
-  const tooltipBarRef = useRef(null);
-  const editorRef     = useRef(null);
+  const monthStripRef  = useRef(null);
+  const tooltipBarRef  = useRef(null);
+  const editorRef      = useRef(null);
+  const backupBtnsRef  = useRef(null);
+  const settingsBtnsRef = useRef(null);
   const [svgW, setSvgW] = useState(600);
   const [svgH, setSvgH] = useState(440);
 
@@ -722,7 +724,7 @@ function CashFlow({ session, lang, setLang }) {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
               <div style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
                 <input ref={importRef} type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
-                <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
+                <div ref={backupBtnsRef} style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
                   {[
                     { label: tr("app_backup"), onClick: handleSave },
                     { label: tr("app_restore"), onClick: () => importRef.current?.click() },
@@ -743,6 +745,7 @@ function CashFlow({ session, lang, setLang }) {
                     </button>
                   ))}
                 </div>
+                <div ref={settingsBtnsRef} style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <button onClick={async () => { setLoggingOut(true); await supabase.auth.signOut(); window.location.reload(); }} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
@@ -771,6 +774,7 @@ function CashFlow({ session, lang, setLang }) {
                   </select>
                   <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: T.textMuted, fontSize: 10, pointerEvents: "none" }}>▾</span>
                 </div>
+                </div>{/* /settingsBtnsRef */}
               </div>
               <button onClick={copyFromPrev} style={{
                 background: "#7c3aed", border: "none", borderRadius: 20,
@@ -1108,6 +1112,8 @@ function CashFlow({ session, lang, setLang }) {
       {/* Tour overlay */}
       {showTour && (
         <TourOverlay
+          backupBtnsRef={backupBtnsRef}
+          settingsBtnsRef={settingsBtnsRef}
           monthStripRef={monthStripRef}
           svgRef={svgRef}
           tooltipBarRef={tooltipBarRef}
