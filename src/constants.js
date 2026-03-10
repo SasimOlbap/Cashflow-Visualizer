@@ -6,52 +6,28 @@ export const uid = () => String(Date.now() + Math.random()).replace(".", "");
 
 // ── initial data ───────────────────────────────────────────────────────────
 export const INIT_INCOME = [
-  { id: uid(), label: "Monthly Wage",    value: 4500, type: "active"  },
-  { id: uid(), label: "Bank Interest",   value: 350,  type: "passive" },
-  { id: uid(), label: "Cashback Reward", value: 287,  type: "passive" },
-  { id: uid(), label: "Rental Income",   value: 1100, type: "passive" },
-  { id: uid(), label: "Stock Dividends", value: 462,  type: "passive" },
+  { id: uid(), label: "Monthly Salary",     value: 925, type: "active"  },
+  { id: uid(), label: "Rental Income",      value: 540, type: "passive" },
+  { id: uid(), label: "Stock Dividends",    value: 184, type: "passive" },
 ];
 
 export const INIT_EXPENSES = [
   // Living & Household
-  { id: uid(), label: "Mortgage / Rent",    value: 1400, category: "Living & Household"  },
-  { id: uid(), label: "Groceries",          value: 900,  category: "Living & Household"  },
-  { id: uid(), label: "Electricity",        value: 200,  category: "Living & Household"  },
-  { id: uid(), label: "Household Supplies", value: 150,  category: "Living & Household"  },
-  { id: uid(), label: "Internet & TV",      value: 95,   category: "Living & Household"  },
-  { id: uid(), label: "Mobile Service",     value: 75,   category: "Living & Household"  },
+  { id: uid(), label: "Rent",               value: 425,  category: "Living & Household"  },
+  { id: uid(), label: "Groceries",          value: 185,  category: "Living & Household"  },
+  { id: uid(), label: "Electricity",        value: 80,   category: "Living & Household"  },
   // Education & Kids
-  { id: uid(), label: "Tuition & Courses",  value: 200,  category: "Education & Kids"    },
-  { id: uid(), label: "Childcare",          value: 400,  category: "Education & Kids"    },
-  { id: uid(), label: "School Fees",        value: 150,  category: "Education & Kids"    },
-  { id: uid(), label: "Kids Activities",    value: 100,  category: "Education & Kids"    },
-  { id: uid(), label: "Books & Supplies",   value: 80,   category: "Education & Kids"    },
+  { id: uid(), label: "Childcare",          value: 120,  category: "Education & Kids"    },
+  { id: uid(), label: "School Fees",        value: 110,  category: "Education & Kids"    },
+  { id: uid(), label: "Tenis classes",      value: 50,   category: "Education & Kids"    },
   // Healthcare
-  { id: uid(), label: "Health Insurance",   value: 320,  category: "Healthcare"          },
-  { id: uid(), label: "Pharmacy & Medical", value: 150,  category: "Healthcare"          },
+  { id: uid(), label: "Health Insurance",   value: 200,  category: "Healthcare"          },
+  { id: uid(), label: "Medicines",          value: 130,  category: "Healthcare"          },
   // Transportation
-  { id: uid(), label: "Commuting",          value: 300,  category: "Transportation"      },
   { id: uid(), label: "Car Insurance",      value: 180,  category: "Transportation"      },
-  { id: uid(), label: "Fuel",               value: 150,  category: "Transportation"      },
+  { id: uid(), label: "Fuel",               value: 90,   category: "Transportation"      },
   // Subscriptions
   { id: uid(), label: "Streaming Services", value: 50,   category: "Subscriptions"       },
-  { id: uid(), label: "Gym Membership",     value: 40,   category: "Subscriptions"       },
-  { id: uid(), label: "Software & Apps",    value: 30,   category: "Subscriptions"       },
-  // Flexible
-  { id: uid(), label: "Eating Out",         value: 280,  category: "Flexible"            },
-  { id: uid(), label: "Clothing & Shoes",   value: 180,  category: "Flexible"            },
-  { id: uid(), label: "Entertainment",      value: 130,  category: "Flexible"            },
-  // Long-term Planning
-  { id: uid(), label: "Retirement Fund",    value: 450,  category: "Long-term Planning"  },
-  { id: uid(), label: "Investment Account", value: 300,  category: "Long-term Planning"  },
-  { id: uid(), label: "Real Estate Fund",   value: 200,  category: "Long-term Planning"  },
-  // Debt & Credit
-  { id: uid(), label: "Credit Card",        value: 300,  category: "Debt & Credit"       },
-  { id: uid(), label: "Personal Loan",      value: 200,  category: "Debt & Credit"       },
-  // Taxes
-  { id: uid(), label: "Federal Tax",        value: 500,  category: "Taxes"               },
-  { id: uid(), label: "Public Welfare",     value: 350,  category: "Taxes"               },
 ];
 
 export const CATS = [
@@ -60,36 +36,36 @@ export const CATS = [
   "Healthcare",
   "Transportation",
   "Subscriptions",
-  "Flexible",
-  "Long-term Planning",
+  "Discretionary",
+  "Savings & Investments",
   "Debt & Credit",
   "Taxes",
 ];
 
 export const CAT_LABELS = {
-  "Living & Household":  "Living & Household",
-  "Education & Kids":    "Education & Kids",
-  "Healthcare":          "Healthcare",
-  "Transportation":      "Transportation",
-  "Subscriptions":       "Subscriptions",
-  "Flexible":            "Flexible",
-  "Long-term Planning":  "Long-term Planning",
-  "Debt & Credit":       "Debt & Credit",
-  "Taxes":               "Taxes",
-  "Carryover":           "Deficit Carryover",
+  "Living & Household":    "Living & Household",
+  "Education & Kids":      "Education & Kids",
+  "Healthcare":            "Healthcare",
+  "Transportation":        "Transportation",
+  "Subscriptions":         "Subscriptions",
+  "Discretionary":         "Discretionary",
+  "Savings & Investments": "Savings & Investments",
+  "Debt & Credit":         "Debt & Credit",
+  "Taxes":                 "Taxes",
+  "Carryover":             "Deficit Carryover",
 };
 
 export const CAT_COLORS = {
-  "Living & Household":  "#f48fb1",
-  "Education & Kids":    "#4db6ac",
-  "Healthcare":          "#81c784",
-  "Transportation":      "#ffd54f",
-  "Subscriptions":       "#a5d6a7",
-  "Flexible":            "#ff8a65",
-  "Long-term Planning":  "#ce93d8",
-  "Debt & Credit":       "#e57373",
-  "Taxes":               "#ef9a9a",
-  "Carryover":           "#f87171",
+  "Living & Household":    "#f48fb1",
+  "Education & Kids":      "#4db6ac",
+  "Healthcare":            "#81c784",
+  "Transportation":        "#ffd54f",
+  "Subscriptions":         "#a5d6a7",
+  "Discretionary":         "#ff8a65",
+  "Savings & Investments": "#ce93d8",
+  "Debt & Credit":         "#e57373",
+  "Taxes":                 "#ef9a9a",
+  "Carryover":             "#f87171",
 };
 
 export const GROUP_COLORS = {
@@ -117,8 +93,8 @@ export const LINK_RIGHT = [
   "#81c784", // Healthcare
   "#ffd54f", // Transportation
   "#a5d6a7", // Subscriptions
-  "#ff8a65", // Flexible
-  "#ce93d8", // Long-term Planning
+  "#ff8a65", // Discretionary
+  "#ce93d8", // Savings & Investments
   "#e57373", // Debt & Credit
   "#ef9a9a", // Taxes
 ];
