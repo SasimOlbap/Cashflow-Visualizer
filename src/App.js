@@ -247,7 +247,7 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
           />
           {!isLogin && (
             <Turnstile
-              siteKey="YOUR_SITE_KEY_HERE"
+              siteKey="0x4AAAAAACoz0vl4zffyhzPf"
               onSuccess={token => setCaptchaToken(token)}
               options={{ theme: "dark" }}
             />
