@@ -13,7 +13,7 @@ export const INIT_INCOME = [
 
 export const INIT_EXPENSES = [
   // Living & Household
-  { id: uid(), label: "Rent",               value: 425,  category: "Living & Household"  },
+  { id: uid(), label: "Rent",               value: 325,  category: "Living & Household"  },
   { id: uid(), label: "Groceries",          value: 185,  category: "Living & Household"  },
   { id: uid(), label: "Electricity",        value: 80,   category: "Living & Household"  },
   // Education & Kids

@@ -106,11 +106,11 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
         {rect}
         <text x={lxLeft} y={my + fs/2} textAnchor="end" fontSize={fs} style={{pointerEvents:"none"}}>
           <tspan fill={valCol} fontWeight={600}>Total Income</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${fmt(grand)}</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${Math.round(grand).toLocaleString()}</tspan>
         </text>
         <text x={lxRight} y={my + fs/2} textAnchor="start" fontSize={fs} style={{pointerEvents:"none"}}>
           <tspan fill={valCol} fontWeight={600}>Total Expenses</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${fmt(totalExp)}</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${Math.round(totalExp).toLocaleString()}</tspan>
         </text>
       </g>
     );
