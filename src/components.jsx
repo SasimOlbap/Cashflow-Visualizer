@@ -75,7 +75,9 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   const valCol  = (isDeficit || n.id === "__carryover_deficit") ? "#ffffff" : T.textNode;
 
   // Col0, col4: hover-only labels
-  const isHoverOnly = n.col === 0 || n.col === 4;
+  const isAlwaysVisible = n.id === "__surplus" || n.id === "__deficit_cat"
+    || n.id === "__carryover" || n.id === "__carryover_deficit";
+  const isHoverOnly = (n.col === 0 || n.col === 4) && !isAlwaysVisible;
   // Col1, col3: always show % only
   const isPctOnly = n.col === 1 || n.col === 3;
 
@@ -106,11 +108,11 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
         {rect}
         <text x={lxLeft} y={my + fs/2} textAnchor="end" fontSize={fs} style={{pointerEvents:"none"}}>
           <tspan fill={valCol} fontWeight={600}>Total Income</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${Math.round(grand).toLocaleString()}</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${fmt(grand)}</tspan>
         </text>
         <text x={lxRight} y={my + fs/2} textAnchor="start" fontSize={fs} style={{pointerEvents:"none"}}>
           <tspan fill={valCol} fontWeight={600}>Total Expenses</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${Math.round(totalExp).toLocaleString()}</tspan>
+          <tspan fill={valCol} fontSize={fs2}> ${fmt(totalExp)}</tspan>
         </text>
       </g>
     );
