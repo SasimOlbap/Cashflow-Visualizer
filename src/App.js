@@ -204,13 +204,11 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   const [captchaToken, setCaptchaToken] = useState("");
 
   const handleSubmit = async () => {
-    if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
+    if (!isLogin && !captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setError(""); setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email, password, options: { captchaToken }
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) setError(error.message);
       } else {
         const { error } = await supabase.auth.signUp({
@@ -247,17 +245,19 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
             style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
           />
-          <Turnstile
-            siteKey="0x4AAAAAACoz0vl4zffyhzPf"
-            onSuccess={token => setCaptchaToken(token)}
-            options={{ theme: "dark" }}
-          />
+          {!isLogin && (
+            <Turnstile
+              siteKey="YOUR_SITE_KEY_HERE"
+              onSuccess={token => setCaptchaToken(token)}
+              options={{ theme: "dark" }}
+            />
+          )}
           {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
-          <button onClick={handleSubmit} disabled={loading || !captchaToken} style={{
-            background: captchaToken ? "#7c3aed" : "#3d2b6e",
+          <button onClick={handleSubmit} disabled={loading || (!isLogin && !captchaToken)} style={{
+            background: (!isLogin && !captchaToken) ? "#3d2b6e" : "#7c3aed",
             border: "none", borderRadius: 8, color: "#fff",
             fontSize: 15, fontWeight: 600, padding: "11px",
-            cursor: captchaToken ? "pointer" : "not-allowed", marginTop: 4,
+            cursor: (!isLogin && !captchaToken) ? "not-allowed" : "pointer", marginTop: 4,
           }}>
             {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
           </button>
