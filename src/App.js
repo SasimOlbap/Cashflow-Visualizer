@@ -403,15 +403,19 @@ function CashFlow({ session, lang, setLang }) {
 
   // Save current month to Supabase whenever it changes
   const saveMonth = async (key, data) => {
-    if (!cloudLoaded.current) return;
+    if (!cloudLoaded.current) {
+      console.warn("saveMonth blocked — cloud not yet loaded");
+      return;
+    }
     const [y, m] = key.split("-").map(Number);
-    await supabase.from("cashflow").upsert({
+    const { error } = await supabase.from("cashflow").upsert({
       user_id: session.user.id,
       year: y, month: m,
       income: data.income,
       expenses: data.expenses,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,year,month" });
+    if (error) console.error("saveMonth failed:", error);
   };
 
   // Auto-save to localStorage as fallback
