@@ -316,6 +316,7 @@ function CashFlow({ session, lang, setLang }) {
   const [ctxMenu,   setCtxMenu]   = useState(null);
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
+  const saveTimer   = useRef(null);  // debounce timer for Supabase saves
   // eslint-disable-next-line no-unused-vars
   const ctxMenuTimer = useRef(null);
 
@@ -425,14 +426,19 @@ function CashFlow({ session, lang, setLang }) {
   const expenses   = curData.expenses;
   const isEmpty    = income.length === 0 && expenses.length === 0;
 
+  const debouncedSave = (key, data) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveMonth(key, data), 800);
+  };
+
   const setIncome   = (fn) => setMonths(p => {
     const updated = { ...p[curKey], income: fn(p[curKey]?.income || []) };
-    saveMonth(curKey, updated);
+    debouncedSave(curKey, updated);
     return { ...p, [curKey]: updated };
   });
   const setExpenses = (fn) => setMonths(p => {
     const updated = { ...p[curKey], expenses: fn(p[curKey]?.expenses || []) };
-    saveMonth(curKey, updated);
+    debouncedSave(curKey, updated);
     return { ...p, [curKey]: updated };
   });
 
