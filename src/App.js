@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Component } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { buildLayout } from "./buildLayout";
 import { LinkPath, ItemRow, SankeyNode } from "./components";
 import { useDrag } from "./useDrag";
@@ -195,20 +196,26 @@ export default function App() {
 
 // ── auth screen ───────────────────────────────────────────────────────────────
 function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [isLogin,  setIsLogin]  = useState(mode !== "signup");
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
+  const [email,        setEmail]        = useState("");
+  const [password,     setPassword]     = useState("");
+  const [isLogin,      setIsLogin]      = useState(mode !== "signup");
+  const [error,        setError]        = useState("");
+  const [loading,      setLoading]      = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const handleSubmit = async () => {
+    if (!captchaToken) { setError("Please complete the CAPTCHA."); return; }
     setError(""); setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email, password, options: { captchaToken }
+        });
         if (error) setError(error.message);
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({
+          email, password, options: { captchaToken }
+        });
         if (error) setError(error.message);
         else { onNewSignup(); onCheckEmail(email); }
       }
@@ -240,10 +247,17 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
             style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
           />
+          <Turnstile
+            siteKey="YOUR_SITE_KEY_HERE"
+            onSuccess={token => setCaptchaToken(token)}
+            options={{ theme: "dark" }}
+          />
           {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
-          <button onClick={handleSubmit} disabled={loading} style={{
-            background: "#7c3aed", border: "none", borderRadius: 8, color: "#fff",
-            fontSize: 15, fontWeight: 600, padding: "11px", cursor: "pointer", marginTop: 4,
+          <button onClick={handleSubmit} disabled={loading || !captchaToken} style={{
+            background: captchaToken ? "#7c3aed" : "#3d2b6e",
+            border: "none", borderRadius: 8, color: "#fff",
+            fontSize: 15, fontWeight: 600, padding: "11px",
+            cursor: captchaToken ? "pointer" : "not-allowed", marginTop: 4,
           }}>
             {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
           </button>
