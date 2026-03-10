@@ -259,15 +259,15 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
 
 // ── category key map for i18n ─────────────────────────────────────────────────
 const CAT_I18N_KEY = {
-  "Living & Household":  "cat_living_household",
-  "Education & Kids":    "cat_education_kids",
-  "Healthcare":          "cat_healthcare",
-  "Transportation":      "cat_transportation",
-  "Subscriptions":       "cat_subscriptions",
-  "Flexible":            "cat_flexible",
-  "Long-term Planning":  "cat_longterm",
-  "Debt & Credit":       "cat_debt",
-  "Taxes":               "cat_taxes",
+  "Living & Household":    "cat_living_household",
+  "Education & Kids":      "cat_education_kids",
+  "Healthcare":            "cat_healthcare",
+  "Transportation":        "cat_transportation",
+  "Subscriptions":         "cat_subscriptions",
+  "Discretionary":         "cat_discretionary",
+  "Savings & Investments": "cat_savings",
+  "Debt & Credit":         "cat_debt",
+  "Taxes":                 "cat_taxes",
 };
 
 function CashFlow({ session, lang, setLang }) {
@@ -403,19 +403,15 @@ function CashFlow({ session, lang, setLang }) {
 
   // Save current month to Supabase whenever it changes
   const saveMonth = async (key, data) => {
-    if (!cloudLoaded.current) {
-      console.warn("saveMonth blocked — cloud not yet loaded");
-      return;
-    }
+    if (!cloudLoaded.current) return;
     const [y, m] = key.split("-").map(Number);
-    const { error } = await supabase.from("cashflow").upsert({
+    await supabase.from("cashflow").upsert({
       user_id: session.user.id,
       year: y, month: m,
       income: data.income,
       expenses: data.expenses,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,year,month" });
-    if (error) console.error("saveMonth failed:", error);
   };
 
   // Auto-save to localStorage as fallback
