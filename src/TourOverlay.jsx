@@ -14,28 +14,28 @@ const STEPS = [
     id: "svg-area",
     title: "Your money flow",
     desc: "This Sankey diagram shows exactly where your money comes from and where it goes — every single month.",
-    position: "center",
+    position: "bottom",
     icon: "🌊",
   },
   {
     id: "col2-node",
     title: "Income vs Expenses",
     desc: "The center column shows your total income on the left and total expenses on the right.",
-    position: "center",
+    position: "bottom",
     icon: "⚖️",
   },
   {
     id: "ribbon-hover",
     title: "Hover to explore",
     desc: "Hover over any ribbon or node to highlight its full chain and see detailed flow information.",
-    position: "center",
+    position: "bottom",
     icon: "✨",
   },
   {
     id: "surplus-node",
     title: "Surplus & Deficit",
     desc: "Green means you saved money this month. Red means you spent more than you earned — it carries over to next month.",
-    position: "center",
+    position: "bottom",
     icon: "💚",
   },
   {
@@ -57,6 +57,7 @@ const STEPS = [
 export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, editorRef, darkMode, onDone }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
+  const [spotlightRect, setSpotlightRect] = useState(null);
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
   const tooltipRef = useRef(null);
@@ -66,16 +67,37 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, edit
   // Measure target element
   useEffect(() => {
     const measure = () => {
-      let el = null;
-      if (current.id === "month-strip" && monthStripRef?.current) el = monthStripRef.current;
-      else if (current.id === "tooltip-bar" && tooltipBarRef?.current) el = tooltipBarRef.current;
-      else if (current.id === "editor" && editorRef?.current) el = editorRef.current;
-      else if (svgRef?.current) el = svgRef.current;
+      // spotlightEl: what gets the purple highlight border
+      // anchorEl: what the tooltip positions relative to
+      let spotlightEl = null;
+      let anchorEl = null;
 
-      if (el) {
-        // Scroll element into view smoothly
-        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        setTimeout(() => setRect(el.getBoundingClientRect()), 150);
+      if (current.id === "month-strip" && monthStripRef?.current) {
+        spotlightEl = monthStripRef.current;
+        anchorEl = monthStripRef.current;
+      } else if (current.id === "tooltip-bar" && tooltipBarRef?.current) {
+        spotlightEl = tooltipBarRef.current;
+        anchorEl = tooltipBarRef.current;
+      } else if (current.id === "editor" && editorRef?.current) {
+        spotlightEl = editorRef.current;
+        anchorEl = editorRef.current;
+      } else if (svgRef?.current) {
+        spotlightEl = svgRef.current;
+        // For SVG steps, anchor tooltip to month strip so it stays at top
+        anchorEl = monthStripRef?.current || svgRef.current;
+      }
+
+      if (anchorEl) {
+        anchorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        setTimeout(() => {
+          setRect(anchorEl.getBoundingClientRect());
+          // Store spotlight rect separately
+          if (spotlightEl && spotlightEl !== anchorEl) {
+            setSpotlightRect(spotlightEl.getBoundingClientRect());
+          } else {
+            setSpotlightRect(null);
+          }
+        }, 150);
       }
     };
     measure();
@@ -150,11 +172,12 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, edit
   };
 
   // Spotlight rect (with padding)
-  const spotlight = rect ? {
-    x: rect.left - 6,
-    y: rect.top - 6,
-    w: rect.width + 12,
-    h: rect.height + 12,
+  const spotlightSrc = spotlightRect || rect;
+  const spotlight = spotlightSrc ? {
+    x: spotlightSrc.left - 6,
+    y: spotlightSrc.top - 6,
+    w: spotlightSrc.width + 12,
+    h: spotlightSrc.height + 12,
   } : null;
 
   const bg = darkMode ? "#0f0f1a" : "#ffffff";
