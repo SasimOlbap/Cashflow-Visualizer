@@ -37,16 +37,7 @@ const STEPS = [
     title: "Surplus & Deficit",
     desc: "Green means you saved money this month. Red means you spent more than you earned — it carries over to next month.",
     icon: "💚",
-    placement: "top-left",
-    scrollTo: "tooltip-bar", // scroll down before showing step 6
-  },
-  {
-    id: "tooltip-bar",
-    title: "Live summary",
-    desc: "Your income, expenses, and surplus or deficit are always visible here at a glance.",
-    icon: "📊",
-    placement: "below-strip", // below the live summary bar
-    scrollTo: "editor",
+    placement: "above-tooltip-bar", // position over the Income/Expenses/Surplus bar
   },
   {
     id: "editor",
@@ -70,6 +61,7 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, edit
   const getSpotlightEl = (id) => {
     if (id === "month-strip") return monthStripRef?.current;
     if (id === "tooltip-bar") return tooltipBarRef?.current;
+    if (id === "surplus-node") return tooltipBarRef?.current; // spotlight on summary bar
     if (id === "editor") return editorRef?.current;
     return svgRef?.current;
   };
@@ -92,8 +84,14 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, edit
     } else if (current.placement === "top-left") {
       // Fixed top-left corner of viewport
       setTooltipPos({ top: 24, left: 24 });
+    } else if (current.placement === "above-tooltip-bar") {
+      // Above the tooltip bar (Income/Expenses/Surplus card)
+      setTooltipPos({
+        top: r.top - 210 - pad,
+        left: Math.min(Math.max(r.left + r.width / 2 - TIP_W / 2, 12), window.innerWidth - TIP_W - 12),
+      });
     } else if (current.placement === "left-of-editor") {
-      // Left side, vertically centered on editor
+      // Editor is already scrolled into view by useEffect — just measure
       setTooltipPos({
         top: Math.max(r.top, 80),
         left: Math.max(r.left - TIP_W - pad, 12),
@@ -103,9 +101,22 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, edit
 
   useEffect(() => {
     const el = getSpotlightEl(current.id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    if (current.placement === "above-tooltip-bar") {
+      // Step 5: scroll the summary bar into view, then position tooltip above it
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "end" });
+      const t = setTimeout(computePositions, 450);
+      return () => clearTimeout(t);
     }
+
+    if (current.placement === "left-of-editor") {
+      // Last step: scroll editor into view first, then compute
+      if (editorRef?.current) editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const t = setTimeout(computePositions, 500);
+      return () => clearTimeout(t);
+    }
+
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     const t = setTimeout(computePositions, 200);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
