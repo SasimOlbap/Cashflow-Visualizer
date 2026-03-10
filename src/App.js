@@ -248,7 +248,7 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
             style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
           />
           <Turnstile
-            siteKey="YOUR_SITE_KEY_HERE"
+            siteKey="0x4AAAAAACoz0vl4zffyhzPf"
             onSuccess={token => setCaptchaToken(token)}
             options={{ theme: "dark" }}
           />
