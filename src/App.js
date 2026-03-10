@@ -259,15 +259,15 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
 
 // ── category key map for i18n ─────────────────────────────────────────────────
 const CAT_I18N_KEY = {
-  "Living & Household":  "cat_living_household",
-  "Education & Kids":    "cat_education_kids",
-  "Healthcare":          "cat_healthcare",
-  "Transportation":      "cat_transportation",
-  "Subscriptions":       "cat_subscriptions",
-  "Flexible":            "cat_flexible",
-  "Long-term Planning":  "cat_longterm",
-  "Debt & Credit":       "cat_debt",
-  "Taxes":               "cat_taxes",
+  "Living & Household":    "cat_living_household",
+  "Education & Kids":      "cat_education_kids",
+  "Healthcare":            "cat_healthcare",
+  "Transportation":        "cat_transportation",
+  "Subscriptions":         "cat_subscriptions",
+  "Discretionary":         "cat_discretionary",
+  "Savings & Investments": "cat_savings",
+  "Debt & Credit":         "cat_debt",
+  "Taxes":                 "cat_taxes",
 };
 
 function CashFlow({ session, lang, setLang }) {
