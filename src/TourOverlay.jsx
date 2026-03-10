@@ -45,9 +45,16 @@ const STEPS = [
     position: "top",
     icon: "📊",
   },
+  {
+    id: "editor",
+    title: "Edit your data",
+    desc: "Add, edit, or remove income sources and expenses here. The diagram updates live as you type.",
+    position: "top",
+    icon: "✏️",
+  },
 ];
 
-export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, darkMode, onDone }) {
+export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, editorRef, darkMode, onDone }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [visible, setVisible] = useState(false);
@@ -62,16 +69,18 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
       let el = null;
       if (current.id === "month-strip" && monthStripRef?.current) el = monthStripRef.current;
       else if (current.id === "tooltip-bar" && tooltipBarRef?.current) el = tooltipBarRef.current;
+      else if (current.id === "editor" && editorRef?.current) el = editorRef.current;
       else if (svgRef?.current) el = svgRef.current;
 
       if (el) {
-        const r = el.getBoundingClientRect();
-        setRect(r);
+        // Scroll element into view smoothly
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        setTimeout(() => setRect(el.getBoundingClientRect()), 150);
       }
     };
     measure();
     setTimeout(measure, 50);
-  }, [step, monthStripRef, svgRef, tooltipBarRef, current.id]);
+  }, [step, monthStripRef, svgRef, tooltipBarRef, editorRef, current.id]);
 
   // Fade in on mount
   useEffect(() => {
@@ -84,6 +93,10 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
     } else {
       handleDone();
     }
+  };
+
+  const handleBack = () => {
+    if (step > 0) setStep(s => s - 1);
   };
 
   const handleDone = () => {
@@ -102,7 +115,7 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
 
     const pad = 16;
     const tipW = 320;
-    const tipH = 180;
+    const tipH = 210;
     const pos = current.position;
 
     if (pos === "bottom") {
@@ -125,7 +138,7 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
         width: tipW,
       };
     }
-    // center — float above the SVG area
+    // center — float over the SVG area
     return {
       top: rect.top + rect.height / 2 - tipH / 2,
       left: Math.min(
@@ -253,8 +266,29 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
           {current.desc}
         </p>
 
-        {/* Progress bar + Next button */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Progress bar + Back + Next buttons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Back button */}
+          <button
+            onClick={handleBack}
+            disabled={step === 0}
+            style={{
+              background: "none",
+              border: `1px solid ${border}`,
+              borderRadius: 8,
+              padding: "8px 14px", color: step === 0 ? (darkMode ? "#2e2b50" : "#ddd8f5") : textMuted,
+              fontSize: 13, fontWeight: 600, cursor: step === 0 ? "default" : "pointer",
+              fontFamily: "inherit",
+              transition: "color 0.15s, border-color 0.15s",
+              whiteSpace: "nowrap",
+            }}
+            onMouseEnter={e => { if (step > 0) e.currentTarget.style.color = text; }}
+            onMouseLeave={e => { e.currentTarget.style.color = step === 0 ? (darkMode ? "#2e2b50" : "#ddd8f5") : textMuted; }}
+          >
+            ← Back
+          </button>
+
+          {/* Progress bar */}
           <div style={{
             flex: 1, height: 3, borderRadius: 2,
             background: darkMode ? "#2e2b50" : "#ede9fc",
@@ -267,6 +301,8 @@ export default function TourOverlay({ monthStripRef, svgRef, tooltipBarRef, dark
               transition: "width 0.4s ease",
             }} />
           </div>
+
+          {/* Next button */}
           <button
             onClick={handleNext}
             style={{
