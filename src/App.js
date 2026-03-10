@@ -14,6 +14,7 @@ import {
   GROUP_COLORS, LINK_LEFT, LINK_LEFT_ACTIVE, LINK_LEFT_PASSIVE, LINK_RIGHT,
 } from "./constants";
 import { translations } from "./i18n";
+import TourOverlay, { shouldShowTour } from "./TourOverlay";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -273,7 +274,10 @@ const CAT_I18N_KEY = {
 function CashFlow({ session, lang, setLang }) {
   const tr = (key) => (translations[lang] || translations.en)[key] || key;
   // ── refs & size ───────────────────────────────────────────────────────────
-  const svgRef = useRef(null);
+  const svgRef        = useRef(null);
+  const monthStripRef = useRef(null);
+  const tooltipBarRef = useRef(null);
+  const editorRef     = useRef(null);
   const [svgW, setSvgW] = useState(600);
   const [svgH, setSvgH] = useState(440);
 
@@ -303,6 +307,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── state ─────────────────────────────────────────────────────────────────
   const [darkMode,  setDarkMode]  = useState(true);
+  const [showTour,  setShowTour]  = useState(() => shouldShowTour());
   const [loggingOut, setLoggingOut] = useState(false);
   const [hovEmpty,  setHovEmpty]  = useState(null); // key of hovered empty month
   const [hovered,   setHovered]   = useState(null);
@@ -800,7 +805,7 @@ function CashFlow({ session, lang, setLang }) {
             <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.3s", overflow: "hidden" }}>
 
               {/* Month strip */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
+              <div ref={monthStripRef} style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
                 {/* ← → grouped pill on the left */}
                 <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
                   <button onClick={goPrev} disabled={!canGoPrev} style={{ ...navBtnSt(canGoPrev), border: "none", borderRadius: 0 }}>
@@ -927,7 +932,7 @@ function CashFlow({ session, lang, setLang }) {
               </div>
 
               {/* Tooltip bar */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
+              <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
                   <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
@@ -1099,6 +1104,18 @@ function CashFlow({ session, lang, setLang }) {
         </div>
       )}
 
+
+      {/* Tour overlay */}
+      {showTour && (
+        <TourOverlay
+          monthStripRef={monthStripRef}
+          svgRef={svgRef}
+          tooltipBarRef={tooltipBarRef}
+          editorRef={editorRef}
+          darkMode={darkMode}
+          onDone={() => setShowTour(false)}
+        />
+      )}
 
       {/* Confirm delete dialog */}
       {confirmDel && (
