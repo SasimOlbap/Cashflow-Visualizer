@@ -23,35 +23,35 @@ const STEPS = [
     title: "Navigate months",
     desc: "Click any month to view or edit it. Use the arrows to jump between months with data.",
     icon: "📅",
-    placement: "left-top",      // left side, near top
+    placement: "below-center",  // below the month strip, centered
   },
   {
     id: "svg-area",
     title: "Your money flow",
     desc: "This Sankey diagram shows exactly where your money comes from and where it goes — every single month.",
     icon: "🌊",
-    placement: "left-top",
+    placement: "left-middle-screen", // fixed left side, vertically centred in viewport
   },
   {
     id: "col2-node",
     title: "Income vs Expenses",
     desc: "The center column shows your total income on the left and total expenses on the right.",
     icon: "⚖️",
-    placement: "left-top",
+    placement: "left-middle-screen",
   },
   {
     id: "ribbon-hover",
     title: "Hover to explore",
     desc: "Hover over any ribbon or node to highlight its full chain and see detailed flow information.",
     icon: "✨",
-    placement: "left-top",
+    placement: "left-middle-screen",
   },
   {
     id: "surplus-node",
     title: "Surplus & Deficit",
-    desc: "Green means you saved money this month. Red means you spent more than you earned — it carries over to next month.",
+    desc: "A positive surplus means you spent less than you earned — that extra is saved and carried forward. A deficit means you overspent; it rolls into next month as a negative balance. Keep an eye on this to stay on track.",
     icon: "💚",
-    placement: "left-top",
+    placement: "above-center",  // above the tooltipBar, horizontally centered on it
   },
   {
     id: "editor",
@@ -95,20 +95,29 @@ export default function TourOverlay({
 
     if (current.placement === "below-right") {
       // Below the element, right-aligned to it, clamped inside viewport
-      const left = Math.min(
-        Math.max(r.right - TIP_W, 12),
-        window.innerWidth - TIP_W - 12
-      );
+      const left = Math.min(Math.max(r.right - TIP_W, 12), window.innerWidth - TIP_W - 12);
       setTooltipPos({ top: r.bottom + PAD, left });
 
-    } else if (current.placement === "left-top") {
-      // Fixed left side, high up — steps 3-7
-      setTooltipPos({ top: 80, left: 24 });
+    } else if (current.placement === "below-center") {
+      // Below the element, horizontally centred on it
+      const left = Math.min(Math.max(r.left + r.width / 2 - TIP_W / 2, 12), window.innerWidth - TIP_W - 12);
+      setTooltipPos({ top: r.bottom + PAD, left });
+
+    } else if (current.placement === "left-middle-screen") {
+      // Fixed left side, vertically centred in the visible viewport (not the element)
+      const tipH = 230;
+      setTooltipPos({ top: Math.max((window.innerHeight - tipH) / 2, 20), left: 24 });
+
+    } else if (current.placement === "above-center") {
+      // Above the element, horizontally centred on it
+      const tipH = 240;
+      const left = Math.min(Math.max(r.left + r.width / 2 - TIP_W / 2, 12), window.innerWidth - TIP_W - 12);
+      setTooltipPos({ top: Math.max(r.top - tipH - PAD, 12), left });
 
     } else if (current.placement === "left-middle") {
       // Left side, vertically centred on the editor card
       const centreY = r.top + r.height / 2;
-      const tipH    = 220; // approximate card height
+      const tipH = 220;
       setTooltipPos({
         top:  Math.max(Math.min(centreY - tipH / 2, window.innerHeight - tipH - 20), 20),
         left: 24,
@@ -123,6 +132,13 @@ export default function TourOverlay({
       // Scroll editor into view first, then measure
       if (editorRef?.current) editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       const t = setTimeout(computePositions, 500);
+      return () => clearTimeout(t);
+    }
+
+    if (current.placement === "above-center") {
+      // Scroll tooltipBar into view, then position tooltip above it
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "end" });
+      const t = setTimeout(computePositions, 450);
       return () => clearTimeout(t);
     }
 
