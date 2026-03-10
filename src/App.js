@@ -469,8 +469,8 @@ function CashFlow({ session, lang, setLang }) {
     const prev = months[prevKey];
     if (!prev) return;
     const updated = {
-      income:   prev.income.map(i   => ({ ...i, id: uid() })),
-      expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
+      income:   prev.income.filter(i => !i._isCarryover).map(i => ({ ...i, id: uid() })),
+      expenses: prev.expenses.filter(e => !e._isCarryover && e.category !== "Carryover").map(e => ({ ...e, id: uid() })),
     };
     setMonths(p => ({ ...p, [curKey]: updated }));
     saveMonth(curKey, updated);
@@ -883,8 +883,8 @@ function CashFlow({ session, lang, setLang }) {
                           <button onClick={() => {
                             const prev = months[prevKey];
                             const copied = {
-                              income: prev.income.map(i => ({ ...i, id: uid() })),
-                              expenses: prev.expenses.map(e => ({ ...e, id: uid() })),
+                              income:   prev.income.filter(i => !i._isCarryover).map(i => ({ ...i, id: uid() })),
+                              expenses: prev.expenses.filter(e => !e._isCarryover && e.category !== "Carryover").map(e => ({ ...e, id: uid() })),
                             };
                             setMonths(p => ({ ...p, [key]: copied }));
                             saveMonth(key, copied);
