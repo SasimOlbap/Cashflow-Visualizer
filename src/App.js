@@ -587,13 +587,10 @@ function CashFlow({ session, lang, setLang }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = async ev => {
+    reader.onload = ev => {
       try {
         const parsed = JSON.parse(ev.target.result);
         setMonths(parsed);
-        for (const [key, data] of Object.entries(parsed)) {
-          await saveMonth(key, data);
-        }
       } catch { alert("Invalid file format."); }
     };
     reader.readAsText(file);
@@ -610,13 +607,13 @@ function CashFlow({ session, lang, setLang }) {
     } catch {}
   };
 
-  let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
+  let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, earnedIncome: 0, totalExp: 0, surplus: 0 };
   try {
     const incomeWithCarryover   = getIncomeWithCarryover(displayKey);
     const expensesWithCarryover = getExpensesWithCarryover(displayKey);
     layoutResult = buildLayout(incomeWithCarryover, expensesWithCarryover, svgW, svgH, colOffsets);
   } catch {}
-  const { nodes, links, nodeWidth, grand, totalExp, surplus, colX } = layoutResult;
+  const { nodes, links, nodeWidth, grand, earnedIncome, totalExp, surplus, colX } = layoutResult;
 
   // Translate node labels for current language
   const NODE_I18N = {
@@ -936,7 +933,7 @@ function CashFlow({ session, lang, setLang }) {
               {/* Tooltip bar */}
               <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(grand).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(earnedIncome).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>
                     {surplus >= 0
@@ -977,7 +974,7 @@ function CashFlow({ session, lang, setLang }) {
 
           {/* Income */}
           <div style={{ ...cardSt, flex: 1, minWidth: 240 }}>
-            {colHead(tr("app_income"), grand, "#c4b5fd")}
+            {colHead(tr("app_income"), earnedIncome, "#c4b5fd")}
             {subHead(tr("app_active"))}
             {income.filter(i => i.type === "active").map(item => (
               <ItemRow key={item.id} item={item} accent="#818cf8" T={T}

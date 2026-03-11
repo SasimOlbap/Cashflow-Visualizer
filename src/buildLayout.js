@@ -8,7 +8,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   const passiveSum      = passiveRegular.reduce((s, i) => s + (Number(i.value) || 0), 0);
   const surplusCarry    = passive.find(i => i.id === "__carryover");
   const surplusCarryAmt = surplusCarry ? (Number(surplusCarry.value) || 0) : 0;
-  const grand           = activeSum + passiveSum + surplusCarryAmt;
+  const earnedIncome    = activeSum + passiveSum;
+  const grand           = earnedIncome + surplusCarryAmt;
 
   // Deficit carryover comes in via expenses with category "Carryover"
   const deficitCarryItem = expenses.find(e => e.category === "Carryover");
@@ -41,7 +42,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   else if (deficit    > 0) push("__col1_deficit_phantom", "", deficit,          "agg_phantom");
 
   // COL 2: total node
-  push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(grand), totalNodeVal, "total");
+  push("__total", deficit > 0 ? "Expenses " + fmt(totalExp) : "Income " + fmt(earnedIncome), totalNodeVal, "total");
 
   // COL 3: expense categories + phantom spacers for surplus/deficit
   CATS.forEach(c => { if (catSums[c] > 0) push("__cat_" + c, CAT_LABELS[c] || c, catSums[c], "category"); });
@@ -199,5 +200,5 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     }
   }
 
-  return { nodes, links, nodeWidth, grand, totalExp, surplus, colX: actualColX };
+  return { nodes, links, nodeWidth, grand, earnedIncome, totalExp, surplus, colX: actualColX };
 }
