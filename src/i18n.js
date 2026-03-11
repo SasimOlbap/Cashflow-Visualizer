@@ -67,6 +67,7 @@ export const translations = {
     app_dark: "🌙 Dark",
     app_light: "☀️ Light",
     app_copy_prev: "Copy from previous month",
+    app_total: "Total",
 
     // App editor
     app_income: "Income",
@@ -183,6 +184,7 @@ export const translations = {
     app_dark: "🌙 Oscuro",
     app_light: "☀️ Claro",
     app_copy_prev: "Copiar del mes anterior",
+    app_total: "Total",
 
     // App editor
     app_income: "Ingresos",
@@ -299,6 +301,7 @@ export const translations = {
     app_dark: "🌙 Dunkel",
     app_light: "☀️ Hell",
     app_copy_prev: "Vom Vormonat kopieren",
+    app_total: "Gesamt",
 
     // App editor
     app_income: "Einnahmen",

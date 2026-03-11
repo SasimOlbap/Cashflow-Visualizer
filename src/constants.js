@@ -1,5 +1,5 @@
 // ── helpers ────────────────────────────────────────────────────────────────
-export function fmt(v) { return v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v)); }
+export function fmt(v) { return Math.round(v).toLocaleString(); }
 export function pct(v, total) { return total === 0 ? "0%" : Math.round((v / total) * 100) + "%"; }
 
 export const uid = () => String(Date.now() + Math.random()).replace(".", "");

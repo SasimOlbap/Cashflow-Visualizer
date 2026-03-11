@@ -44,7 +44,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey, hoveredLinks }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey, hoveredLinks, labelIncome, labelExpenses, labelTotal }) {
   // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
@@ -99,20 +99,34 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
     </>
   );
 
-  // Col2: show label + total value only, no %
+  // Col2: 3-line stacked labels — "Total" / "Income" or "Expenses" / value
   if (n.col === 2) {
     const lxLeft  = n.x - 6;
     const lxRight = n.x + nw + 6;
+    const lineH   = fs * 1.35;
+    const topY    = my - lineH;
     return (
       <g key={n.id}>
         {rect}
-        <text x={lxLeft} y={my + fs/2} textAnchor="end" fontSize={fs} style={{pointerEvents:"none"}}>
-          <tspan fill={valCol} fontWeight={600}>Total Income</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${Math.round(grand).toLocaleString()}</tspan>
+        {/* Left side: Total Income */}
+        <text x={lxLeft} y={topY} textAnchor="end" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>{labelTotal || "Total"}</tspan>
         </text>
-        <text x={lxRight} y={my + fs/2} textAnchor="start" fontSize={fs} style={{pointerEvents:"none"}}>
-          <tspan fill={valCol} fontWeight={600}>Total Expenses</tspan>
-          <tspan fill={valCol} fontSize={fs2}> ${Math.round(totalExp).toLocaleString()}</tspan>
+        <text x={lxLeft} y={topY + lineH} textAnchor="end" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>{labelIncome || "Income"}</tspan>
+        </text>
+        <text x={lxLeft} y={topY + lineH * 2} textAnchor="end" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol}>${Math.round(grand).toLocaleString()}</tspan>
+        </text>
+        {/* Right side: Total Expenses */}
+        <text x={lxRight} y={topY} textAnchor="start" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>{labelTotal || "Total"}</tspan>
+        </text>
+        <text x={lxRight} y={topY + lineH} textAnchor="start" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol} fontWeight={600}>{labelExpenses || "Expenses"}</tspan>
+        </text>
+        <text x={lxRight} y={topY + lineH * 2} textAnchor="start" fontSize={fs2} style={{pointerEvents:"none"}}>
+          <tspan fill={valCol}>${Math.round(totalExp).toLocaleString()}</tspan>
         </text>
       </g>
     );
