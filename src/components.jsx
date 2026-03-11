@@ -44,7 +44,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey, hoveredLinks, labelIncome, labelExpenses, labelTotal }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredLinks, labelIncome, labelExpenses, labelTotal }) {
   // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";

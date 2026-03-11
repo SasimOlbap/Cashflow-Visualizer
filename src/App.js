@@ -340,7 +340,6 @@ function CashFlow({ session, lang, setLang }) {
   const [confirmDel,setConfirmDel]= useState(null); // key to delete
   const cloudLoaded = useRef(false); // blocks saves until initial cloud load is done
   const saveTimer   = useRef(null);  // debounce timer for Supabase saves
-  // eslint-disable-next-line no-unused-vars
   const ctxMenuTimer = useRef(null);
 
   // ── carryover state ───────────────────────────────────────────────────────
@@ -510,24 +509,17 @@ function CashFlow({ session, lang, setLang }) {
     const prev = months[pk];
     if (!prev?.income?.length && !prev?.expenses?.length) return null;
 
-    // Reconstruct prev month exactly as buildLayout does:
-    // - surplus carryover boosts grand (flows into __total as income)
-    // - deficit carryover is a separate flow and NOT counted in totalExp
-    const prevCarry      = getCarryoverValue(pk);
-    const prevActiveSum  = prev.income.filter(i => i.type === "active").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    const prevPassiveSum = prev.income.filter(i => i.type === "passive").reduce((s, i) => s + (Number(i.value) || 0), 0);
-    const prevSurplusCarry = prevCarry !== null && prevCarry > 0 ? prevCarry : 0;
+    // Delegate entirely to buildLayout — single source of truth for surplus calculation
+    const prevCarry = getCarryoverValue(pk);
+    const prevIncomeWithCarryover = prevCarry !== null && prevCarry > 0
+      ? [...prev.income, { id: "__carryover", label: "", value: prevCarry, type: "passive" }]
+      : prev.income;
+    const prevExpensesWithCarryover = prevCarry !== null && prevCarry < 0
+      ? [...prev.expenses, { id: "__carryover_exp", label: "", value: Math.abs(prevCarry), category: "Carryover" }]
+      : prev.expenses;
 
-    // grand = active + passive + surplusCarry
-    const prevGrand = prevActiveSum + prevPassiveSum + prevSurplusCarry;
-
-    // totalExp = real expenses only (deficit carryover is a separate node, not in totalExp)
-    const prevRealExp = prev.expenses
-      .filter(e => e.category !== "Carryover")
-      .reduce((s, e) => s + (Number(e.value) || 0), 0);
-
-    // surplus = grand - realExp (matches what buildLayout shows on screen)
-    return prevGrand - prevRealExp;
+    const { surplus } = buildLayout(prevIncomeWithCarryover, prevExpensesWithCarryover, 600, 400);
+    return surplus;
   };
 
   const getCarryoverValue = (key) => {
@@ -615,20 +607,6 @@ function CashFlow({ session, lang, setLang }) {
     } catch {}
   };
 
-  // Load shared data from URL on mount
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const data = params.get("data");
-      const month = params.get("month");
-      if (data && month) {
-        const parsed = JSON.parse(decodeURIComponent(atob(data)));
-        setMonths(p => ({ ...p, [month]: parsed }));
-        setCurKey(month);
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-    } catch {}
-  }, []);
   let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
   try {
     const incomeWithCarryover   = getIncomeWithCarryover(displayKey);
@@ -943,7 +921,8 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
+                      labelTotal={tr("app_overview")} labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
                   ))}
                   {links.filter(l => l.source === "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
