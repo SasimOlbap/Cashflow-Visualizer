@@ -57,45 +57,45 @@ export const CAT_LABELS = {
 };
 
 export const CAT_COLORS = {
-  "Living & Household":    "#f48fb1",
-  "Education & Kids":      "#4db6ac",
-  "Healthcare":            "#81c784",
-  "Transportation":        "#ffd54f",
-  "Subscriptions":         "#a5d6a7",
-  "Discretionary":         "#ff8a65",
-  "Savings & Investments": "#ce93d8",
-  "Debt & Credit":         "#e57373",
-  "Taxes":                 "#ef9a9a",
+  "Living & Household":    "#d48000",
+  "Education & Kids":      "#d88e00",
+  "Healthcare":            "#dd9c00",
+  "Transportation":        "#e1aa00",
+  "Subscriptions":         "#e6b800",
+  "Discretionary":         "#d6b123",
+  "Savings & Investments": "#c7ab46",
+  "Debt & Credit":         "#b7a569",
+  "Taxes":                 "#a89f8c",
   "Carryover":             "#f87171",
 };
 
 export const GROUP_COLORS = {
-  source:            "#aecde8",
-  source_active:     "#aecde8",
-  source_passive:    "#1a5fa8",
-  agg:               "#4e88b4",
-  agg_active:        "#aecde8",
-  agg_passive:       "#1a5fa8",
+  source:            "#4aab96",
+  source_active:     "#4aab96",
+  source_passive:    "#0d5c45",
+  agg:               "#2a8a72",
+  agg_active:        "#4aab96",
+  agg_passive:       "#0d5c45",
   total:             "#4e88b4",
   category:          "#e57373",
-  leaf:              "#f48fb1",
+  leaf:              "#d48000",
   surplus:           "#4cef5a",
   deficit:           "#ff4444",
   carryover_surplus: "#4cef5a",
   carryover_deficit: "#ff4444",
 };
 
-export const LINK_LEFT         = ["#aecde8", "#4e88b4"];
-export const LINK_LEFT_ACTIVE  = ["#aecde8", "#aecde8"];
-export const LINK_LEFT_PASSIVE = ["#1a5fa8", "#1a5fa8"];
+export const LINK_LEFT         = ["#4aab96", "#2a8a72"];
+export const LINK_LEFT_ACTIVE  = ["#4aab96", "#4aab96"];
+export const LINK_LEFT_PASSIVE = ["#0d5c45", "#0d5c45"];
 export const LINK_RIGHT = [
-  "#f48fb1", // Living & Household
-  "#4db6ac", // Education & Kids
-  "#81c784", // Healthcare
-  "#ffd54f", // Transportation
-  "#a5d6a7", // Subscriptions
-  "#ff8a65", // Discretionary
-  "#ce93d8", // Savings & Investments
-  "#e57373", // Debt & Credit
-  "#ef9a9a", // Taxes
+  "#d48000", // Living & Household
+  "#d88e00", // Education & Kids
+  "#dd9c00", // Healthcare
+  "#e1aa00", // Transportation
+  "#e6b800", // Subscriptions
+  "#d6b123", // Discretionary
+  "#c7ab46", // Savings & Investments
+  "#b7a569", // Debt & Credit
+  "#a89f8c", // Taxes
 ];
