@@ -65,8 +65,8 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
   // Col1 -> Col2: chainIds = array of all source item ids in that group
   const activeIds   = active.map(i => i.id);
   const passiveIds  = passiveRegular.map(i => i.id);
-  if (activeSum  > 0) links.push({ source: "__active",  target: "__total", value: activeSum,  chainIds: activeIds });
-  if (passiveSum > 0) links.push({ source: "__passive", target: "__total", value: passiveSum, chainIds: passiveIds });
+  if (activeSum  > 0) links.push({ source: "__active",  target: "__total", value: activeSum,  chainId: "__active",  chainIds: activeIds });
+  if (passiveSum > 0) links.push({ source: "__passive", target: "__total", value: passiveSum, chainId: "__passive", chainIds: passiveIds });
   if (surplusCarryAmt > 0) links.push({ source: "__carryover",         target: "__total", value: surplusCarryAmt, chainId: "__carryover" });
   if (deficitCarryAmt > 0) links.push({ source: "__carryover_deficit", target: "__total", value: deficitCarryAmt, chainId: "__carryover_deficit" });
 
@@ -76,7 +76,7 @@ export function buildLayout(income, expenses, width, height, colOffsets = [0, 0,
     if (e.category === "Carryover") return;
     if (Number(e.value) > 0) { catExpIds[e.category] = catExpIds[e.category] || []; catExpIds[e.category].push(e.id); }
   });
-  CATS.forEach(c => { if (catSums[c] > 0) links.push({ source: "__total", target: "__cat_" + c, value: catSums[c], chainIds: catExpIds[c] || [] }); });
+  CATS.forEach(c => { if (catSums[c] > 0) links.push({ source: "__total", target: "__cat_" + c, value: catSums[c], chainId: "__cat_" + c, chainIds: catExpIds[c] || [] }); });
 
   // Col3 -> Col4: each expense item gets its own chainId
   expenses.forEach(e => {
