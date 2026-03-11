@@ -587,10 +587,13 @@ function CashFlow({ session, lang, setLang }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       try {
         const parsed = JSON.parse(ev.target.result);
         setMonths(parsed);
+        for (const [key, data] of Object.entries(parsed)) {
+          await saveMonth(key, data);
+        }
       } catch { alert("Invalid file format."); }
     };
     reader.readAsText(file);
