@@ -44,7 +44,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
 }
 
 // ── SankeyNode ────────────────────────────────────────────────────────────
-export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredLinks, labelIncome, labelExpenses, labelTotal }) {
+export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt, pct, startDrag, isDark, hoveredKey, hoveredLinks, labelIncome, labelExpenses, labelTotal }) {
   // No local state — label visibility driven purely by ribbon hover from parent
   const isSurplus  = n.id === "__surplus";
   const isDeficit  = n.id === "__deficit_cat";
@@ -90,7 +90,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, totalExp, fmt
   const rect = (
     <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
-        style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
+        style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
         />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
