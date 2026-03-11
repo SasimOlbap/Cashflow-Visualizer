@@ -868,7 +868,7 @@ function CashFlow({ session, lang, setLang }) {
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
                           fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
                           padding: "5px 2px", cursor: "pointer", textAlign: "center",
-                          opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.28,
+                          opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
                       {hovEmpty === key && prevHasData && (
@@ -943,8 +943,7 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
-                      labelTotal={tr("app_total")} labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
+                      GROUP_COLORS={GROUP_COLORS} grand={grand} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredKey={hovered} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))} />
                   ))}
                   {links.filter(l => l.source === "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
@@ -982,7 +981,7 @@ function CashFlow({ session, lang, setLang }) {
                       <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
                     </span>
                   ) : (
-                    <span style={{ color: T.textFaint }}>{tr("tooltip_hint")}</span>
+                    <span style={{ color: T.textMuted }}>{tr("tooltip_hint")}</span>
                   )}
                 </div>
               </div>
