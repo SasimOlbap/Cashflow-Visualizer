@@ -869,21 +869,6 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                   ))}
                 </div>
                 <div ref={settingsBtnsRef} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <button onClick={async () => { setLoggingOut(true); await onSignOut(); setLoggingOut(false); }} style={{
-                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
-                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
-                  fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
-                }}>
-                  {tr("app_sign_out")}
-                </button>
-                <button onClick={() => setDarkMode(d => !d)} style={{
-                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
-                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
-                  fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
-                  transition: "all 0.2s", flexShrink: 0,
-                }}>
-                  {darkMode ? tr("app_light") : tr("app_dark")}
-                </button>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <select value={lang} onChange={e => setLang(e.target.value)} style={{
                     background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
@@ -897,6 +882,21 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                   </select>
                   <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: T.textMuted, fontSize: 10, pointerEvents: "none" }}>▾</span>
                 </div>
+                <button onClick={() => setDarkMode(d => !d)} style={{
+                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
+                  fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
+                  transition: "all 0.2s", flexShrink: 0,
+                }}>
+                  {darkMode ? tr("app_light") : tr("app_dark")}
+                </button>
+                <button onClick={async () => { setLoggingOut(true); await onSignOut(); setLoggingOut(false); }} style={{
+                  background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
+                  padding: "6px 14px", cursor: "pointer", color: T.btnText,
+                  fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
+                }}>
+                  {tr("app_sign_out")}
+                </button>
                 </div>{/* /settingsBtnsRef */}
               </div>
               <button onClick={copyFromPrev} style={{
