@@ -850,7 +850,7 @@ function CashFlow({ session, lang, setLang }) {
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
-                          fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
+                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
                           padding: "5px 2px", cursor: "pointer", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
@@ -925,13 +925,13 @@ function CashFlow({ session, lang, setLang }) {
                   {links.filter(l => l.source !== "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
                   ))}
+                  {links.filter(l => l.source === "__carryover_deficit").map(l => (
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
+                  ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
                       GROUP_COLORS={GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
                       labelTotal="Total" labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
-                  ))}
-                  {links.filter(l => l.source === "__carryover_deficit").map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
                   ))}
                 </svg>
               </div>
