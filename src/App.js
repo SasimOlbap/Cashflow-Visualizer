@@ -868,7 +868,7 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                 </div>
                 <div ref={settingsBtnsRef} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <button onClick={async () => { setLoggingOut(true); await supabase.auth.signOut(); window.location.reload(); }} style={{
+                <button onClick={async () => { setLoggingOut(true); await supabase.auth.signOut(); setLoggingOut(false); }} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
                   fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
