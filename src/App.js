@@ -703,7 +703,7 @@ function CashFlow({ session, lang, setLang }) {
   );
 
   // ── render ────────────────────────────────────────────────────────────────
-  if (loggingOut) return null;
+  if (loggingOut) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0f0f1a" }}><div style={{ color: "#c4b5fd", fontSize: 18 }}>Signing out...</div></div>;
   return (
     <>
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
