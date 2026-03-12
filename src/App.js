@@ -16,6 +16,7 @@ import {
 } from "./constants";
 import { translations } from "./i18n";
 import TourOverlay, { shouldShowTour } from "./TourOverlay";
+import { TierContext } from "./TierContext";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -196,9 +197,13 @@ export default function App() {
 
   const isMobile = window.innerWidth < 768;
 
+  const tier = ["free", "pro", "business"].includes(process.env.REACT_APP_TIER)
+    ? process.env.REACT_APP_TIER
+    : "free";
+
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
   if (showResetPassword && session) return <ResetPasswordScreen onDone={() => { setShowResetPassword(false); supabase.auth.signOut(); }} />;
-  if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
+  if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <TierContext.Provider value={tier}><ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary></TierContext.Provider>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
