@@ -14,7 +14,7 @@ export function LinkPath({ link, color, onHover, hoveredChain, colX }) {
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={isHovered ? 0.6 : 0.3}
-      style={{ transition: "opacity 0.15s", cursor: "default" }}
+      style={{ transition: "opacity 0.15s", cursor: "pointer" }}
       onMouseEnter={() => onHover(link.chainId || key)} onMouseLeave={() => onHover(null)} />
   );
 }
@@ -33,8 +33,7 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
         <input type="number" min="0" value={item.value} onChange={e => onValue(e.target.value)}
           onFocus={e => e.target.select()}
           style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`,
-            borderRadius: 6, color: T.textVal, fontSize: 15, padding: "4px 6px 4px 18px", outline: "none",
-            appearance: "textfield", MozAppearance: "textfield", WebkitAppearance: "none" }} />
+            borderRadius: 6, color: T.textVal, fontSize: 15, padding: "4px 6px 4px 18px", outline: "none" }} />
       </div>
       <button onClick={onRemove}
         style={{ background: "none", border: "none", color: T.textFaint, cursor: "pointer", fontSize: 19, padding: "0 2px", lineHeight: 1 }}
@@ -73,7 +72,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, earnedIncome,
   const my      = n.y + n.h / 2;
   const fs      = Math.min(16, Math.max(12, n.h * 0.30));
   const fs2     = Math.max(12, fs - 1);
-  const valCol  = (isDeficit || n.id === "__carryover_deficit") ? "#ffffff" : T.textNode;
+  const valCol  = T.textNode;
 
   // Col0, col4: hover-only labels
   const isAlwaysVisible = n.id === "__surplus" || n.id === "__deficit_cat"
@@ -91,7 +90,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, earnedIncome,
   const rect = (
     <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
-        style={{ cursor: "ew-resize" }}
+        style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
         />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
