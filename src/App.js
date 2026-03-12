@@ -146,21 +146,14 @@ export default function App() {
     return null;
   })();
 
-  const [showResetPassword, setShowResetPassword] = useState(false);
-
   useEffect(() => {
     const hash = window.location.hash;
-    const hashParams = new URLSearchParams(hash.replace("#", "?"));
-    const type = hashParams.get("type");
-    const isRecovery = type === "recovery";
-    const isEmailVerification = (hash.includes("access_token") && !isRecovery) || new URLSearchParams(window.location.search).get("type") === "signup";
+    const params = new URLSearchParams(window.location.search);
+    const isEmailVerification = hash.includes("access_token") || params.get("type") === "signup";
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session && isRecovery) {
-        setShowResetPassword(true);
-        window.history.replaceState({}, "", window.location.pathname);
-      } else if (session && isEmailVerification) {
+      if (session && isEmailVerification) {
         setShowWelcome(true);
         window.history.replaceState({}, "", window.location.pathname);
       }
@@ -197,7 +190,6 @@ export default function App() {
   const isMobile = window.innerWidth < 768;
 
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
-  if (showResetPassword && session) return <ResetPasswordScreen onDone={() => { setShowResetPassword(false); supabase.auth.signOut(); }} />;
   if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
@@ -212,8 +204,6 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   const [error,        setError]        = useState("");
   const [loading,      setLoading]      = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
-  const [forgotSent,   setForgotSent]   = useState(false);
-  const [forgotEmail,  setForgotEmail]  = useState("");
 
   const handleSubmit = async () => {
     if (!isLogin && !captchaToken) { setError("Please complete the CAPTCHA."); return; }
@@ -233,18 +223,6 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
     setLoading(false);
   };
 
-  const handleForgot = async () => {
-    if (!email) { setError("Enter your email above first."); return; }
-    setError(""); setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin,
-    });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    setForgotEmail(email);
-    setForgotSent(true);
-  };
-
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "'DM Sans','Segoe UI',sans-serif", position: "relative", overflow: "hidden",
       background: "radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.35) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.2) 0%, transparent 50%), #0a0818"
@@ -255,122 +233,42 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
       <div style={{ position: "relative", zIndex: 1, background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
         <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
+        <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
 
-        {forgotSent ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 24 }}>
-            <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>Reset your password</p>
-            <div style={{ textAlign: "center", fontSize: 36, margin: "8px 0" }}>✉️</div>
-            <p style={{ color: "#a9a9b3", fontSize: 14, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
-              We sent a reset link to<br />
-              <strong style={{ color: "#a78bfa" }}>{forgotEmail}</strong>
-            </p>
-            <p style={{ color: "#6b7280", fontSize: 13, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
-              Click the link in the email to set a new password. Check your spam folder if you don't see it.
-            </p>
-            <button onClick={() => { setForgotSent(false); setError(""); }} style={{
-              background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4, marginTop: 8,
-            }}>← Back to login</button>
-          </div>
-        ) : (
-          <>
-            <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <input type="email" placeholder="Email" value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }} />
-              <div>
-                <input type="password" placeholder="Password" value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                  style={{ width: "100%", background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none", boxSizing: "border-box", marginBottom: 6 }} />
-                {isLogin && (
-                  <div style={{ textAlign: "right" }}>
-                    <span onClick={handleForgot} style={{ color: "#a78bfa", fontSize: 12, cursor: "pointer" }}
-                      onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
-                      onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
-                    >Forgot password?</span>
-                  </div>
-                )}
-              </div>
-              {!isLogin && (
-                <Turnstile siteKey="0x4AAAAAACoz0vl4zffyhzPf" onSuccess={token => setCaptchaToken(token)} options={{ theme: "dark" }} />
-              )}
-              {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
-              <button onClick={handleSubmit} disabled={loading || (!isLogin && !captchaToken)} style={{
-                background: (!isLogin && !captchaToken) ? "#3d2b6e" : "#7c3aed",
-                border: "none", borderRadius: 8, color: "#fff",
-                fontSize: 15, fontWeight: 600, padding: "11px",
-                cursor: (!isLogin && !captchaToken) ? "not-allowed" : "pointer", marginTop: 4,
-              }}>
-                {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
-              </button>
-              <button onClick={() => { setIsLogin(l => !l); setError(""); }} style={{
-                background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4,
-              }}>
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── reset password screen ─────────────────────────────────────────────────────
-function ResetPasswordScreen({ onDone }) {
-  const [password,  setPassword]  = useState("");
-  const [confirm,   setConfirm]   = useState("");
-  const [error,     setError]     = useState("");
-  const [loading,   setLoading]   = useState(false);
-  const [success,   setSuccess]   = useState(false);
-
-  const handleReset = async () => {
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
-    if (password !== confirm) { setError("Passwords don't match."); return; }
-    setError(""); setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    setSuccess(true);
-    setTimeout(() => onDone(), 2500);
-  };
-
-  return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh",
-      fontFamily: "'DM Sans','Segoe UI',sans-serif", position: "relative", overflow: "hidden",
-      background: "radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.35) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.2) 0%, transparent 50%), #0a0818"
-    }}>
-      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 1, background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
-        {success ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 28 }}>
-            <div style={{ fontSize: 36 }}>✅</div>
-            <p style={{ color: "#86efac", fontSize: 15, textAlign: "center", margin: 0 }}>Password updated! Redirecting to login...</p>
-          </div>
-        ) : (
-          <>
-            <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>Choose a new password</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <input type="password" placeholder="New password" value={password}
-                onChange={e => setPassword(e.target.value)}
-                style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }} />
-              <input type="password" placeholder="Confirm new password" value={confirm}
-                onChange={e => setConfirm(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleReset()}
-                style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }} />
-              {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
-              <button onClick={handleReset} disabled={loading} style={{
-                background: "#7c3aed", border: "none", borderRadius: 8, color: "#fff",
-                fontSize: 15, fontWeight: 600, padding: "11px", cursor: loading ? "not-allowed" : "pointer", marginTop: 4,
-              }}>
-                {loading ? "..." : "Set new password"}
-              </button>
-            </div>
-          </>
-        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <input
+            type="email" placeholder="Email" value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
+          />
+          <input
+            type="password" placeholder="Password" value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
+          />
+          {!isLogin && (
+            <Turnstile
+              siteKey="0x4AAAAAACoz0vl4zffyhzPf"
+              onSuccess={token => setCaptchaToken(token)}
+              options={{ theme: "dark" }}
+            />
+          )}
+          {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
+          <button onClick={handleSubmit} disabled={loading || (!isLogin && !captchaToken)} style={{
+            background: (!isLogin && !captchaToken) ? "#3d2b6e" : "#7c3aed",
+            border: "none", borderRadius: 8, color: "#fff",
+            fontSize: 15, fontWeight: 600, padding: "11px",
+            cursor: (!isLogin && !captchaToken) ? "not-allowed" : "pointer", marginTop: 4,
+          }}>
+            {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
+          </button>
+          <button onClick={() => { setIsLogin(l => !l); setError(""); }} style={{
+            background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4,
+          }}>
+            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -699,6 +597,10 @@ function CashFlow({ session, lang, setLang }) {
           ])
         );
         setMonths(migrated);
+        // Save all imported months to Supabase
+        Object.entries(migrated).forEach(([key, data]) => {
+          if (data.income?.length || data.expenses?.length) saveMonth(key, data);
+        });
       } catch { alert("Invalid file format."); }
     };
     reader.readAsText(file);
