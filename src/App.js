@@ -939,18 +939,18 @@ function CashFlow({ session, lang, setLang }) {
               {/* Tooltip bar */}
               <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(earnedIncome).toLocaleString()}</strong></span>
-                  <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: T.accent }}>${Number(earnedIncome).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: T.text }}>${Number(totalExp).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>
                     {surplus >= 0
-                      ? <><strong style={{ color: "#86efac" }}>{tr("tooltip_surplus")}</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
-                      : <><strong style={{ color: "#f87171" }}>{tr("tooltip_deficit")}</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
+                      ? <><strong style={{ color: darkMode ? "#86efac" : "#16a34a" }}>{tr("tooltip_surplus")}</strong>{": "}<strong style={{ color: darkMode ? "#86efac" : "#16a34a" }}>${surplus.toLocaleString()}</strong></>
+                      : <><strong style={{ color: darkMode ? "#f87171" : "#dc2626" }}>{tr("tooltip_deficit")}</strong>{": "}<strong style={{ color: darkMode ? "#f87171" : "#dc2626" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                   </span>
                   {(() => {
                     const cv = getCarryoverValue(displayKey);
                     if (cv === null) return null;
                     const isPos = cv >= 0;
-                    const color = isPos ? "#86efac" : "#f87171";
+                    const color = isPos ? (darkMode ? "#86efac" : "#16a34a") : (darkMode ? "#f87171" : "#dc2626");
                     return (
                       <span style={{ color: T.textMuted }}>
                         ↩ <strong style={{ color }}>{isPos ? "+" : "-"}${Math.abs(cv).toLocaleString()}</strong>
@@ -962,7 +962,7 @@ function CashFlow({ session, lang, setLang }) {
                   {hovLink ? (
                     <span>
                       <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>{tr("tooltip_flow")} · </span>
-                      <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                      <strong style={{ color: T.accent }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
                       <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
                     </span>
                   ) : (
