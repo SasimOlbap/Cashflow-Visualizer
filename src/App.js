@@ -204,6 +204,8 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
   const [error,        setError]        = useState("");
   const [loading,      setLoading]      = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [forgotSent,   setForgotSent]   = useState(false);
+  const [forgotEmail,  setForgotEmail]  = useState("");
 
   const handleSubmit = async () => {
     if (!isLogin && !captchaToken) { setError("Please complete the CAPTCHA."); return; }
@@ -223,6 +225,18 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
     setLoading(false);
   };
 
+  const handleForgot = async () => {
+    if (!email) { setError("Enter your email above first."); return; }
+    setError(""); setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setForgotEmail(email);
+    setForgotSent(true);
+  };
+
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "'DM Sans','Segoe UI',sans-serif", position: "relative", overflow: "hidden",
       background: "radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.35) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.2) 0%, transparent 50%), #0a0818"
@@ -233,42 +247,71 @@ function AuthScreen({ onCheckEmail, mode, onNewSignup }) {
       <div style={{ position: "relative", zIndex: 1, background: "#161625", border: "1px solid #2d2b55", borderRadius: 16, padding: "40px 36px", width: 360 }}>
         <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>Financial Overview</div>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Cash Flow Visualizer</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <input
-            type="email" placeholder="Email" value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
-          />
-          <input
-            type="password" placeholder="Password" value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
-          />
-          {!isLogin && (
-            <Turnstile
-              siteKey="0x4AAAAAACoz0vl4zffyhzPf"
-              onSuccess={token => setCaptchaToken(token)}
-              options={{ theme: "dark" }}
-            />
-          )}
-          {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
-          <button onClick={handleSubmit} disabled={loading || (!isLogin && !captchaToken)} style={{
-            background: (!isLogin && !captchaToken) ? "#3d2b6e" : "#7c3aed",
-            border: "none", borderRadius: 8, color: "#fff",
-            fontSize: 15, fontWeight: 600, padding: "11px",
-            cursor: (!isLogin && !captchaToken) ? "not-allowed" : "pointer", marginTop: 4,
-          }}>
-            {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
-          </button>
-          <button onClick={() => { setIsLogin(l => !l); setError(""); }} style={{
-            background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4,
-          }}>
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
-          </button>
-        </div>
+        {forgotSent ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 24 }}>
+            <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>Reset your password</p>
+            <div style={{ textAlign: "center", fontSize: 36, margin: "8px 0" }}>✉️</div>
+            <p style={{ color: "#a9a9b3", fontSize: 14, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
+              We sent a reset link to<br />
+              <strong style={{ color: "#a78bfa" }}>{forgotEmail}</strong>
+            </p>
+            <p style={{ color: "#6b7280", fontSize: 13, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
+              Click the link in the email to set a new password. Check your spam folder if you don't see it.
+            </p>
+            <button onClick={() => { setForgotSent(false); setError(""); }} style={{
+              background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4, marginTop: 8,
+            }}>← Back to login</button>
+          </div>
+        ) : (
+          <>
+            <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 28px" }}>{isLogin ? "Log in to your account" : "Create a new account"}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <input
+                type="email" placeholder="Email" value={email}
+                onChange={e => setEmail(e.target.value)}
+                style={{ background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none" }}
+              />
+              <div>
+                <input
+                  type="password" placeholder="Password" value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                  style={{ width: "100%", background: "#0f0f1a", border: "1px solid #2d2b55", borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px", outline: "none", boxSizing: "border-box", marginBottom: 6 }}
+                />
+                {isLogin && (
+                  <div style={{ textAlign: "right" }}>
+                    <span onClick={handleForgot} style={{ color: "#a78bfa", fontSize: 12, cursor: "pointer" }}
+                      onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+                      onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+                    >Forgot password?</span>
+                  </div>
+                )}
+              </div>
+              {!isLogin && (
+                <Turnstile
+                  siteKey="0x4AAAAAACoz0vl4zffyhzPf"
+                  onSuccess={token => setCaptchaToken(token)}
+                  options={{ theme: "dark" }}
+                />
+              )}
+              {error && <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>}
+              <button onClick={handleSubmit} disabled={loading || (!isLogin && !captchaToken)} style={{
+                background: (!isLogin && !captchaToken) ? "#3d2b6e" : "#7c3aed",
+                border: "none", borderRadius: 8, color: "#fff",
+                fontSize: 15, fontWeight: 600, padding: "11px",
+                cursor: (!isLogin && !captchaToken) ? "not-allowed" : "pointer", marginTop: 4,
+              }}>
+                {loading ? "..." : isLogin ? "Log In" : "Sign Up"}
+              </button>
+              <button onClick={() => { setIsLogin(l => !l); setError(""); }} style={{
+                background: "transparent", border: "none", color: "#9ca3af", fontSize: 13, cursor: "pointer", padding: 4,
+              }}>
+                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -684,7 +727,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── shared styles ─────────────────────────────────────────────────────────
   const cardSt  = { background: T.bgCard, borderRadius: 14, padding: "14px 16px",
-    border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 0, transition: "background 0.1s" };
+    border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 0, transition: "background 0.3s" };
   const inpSt   = { flex: 1, minWidth: 0, background: T.bgInput, border: `1px solid ${T.borderInput}`,
     borderRadius: 6, color: T.textNode, fontSize: 15, padding: "5px 7px", outline: "none" };
   const selSt   = { background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6,
@@ -709,7 +752,7 @@ function CashFlow({ session, lang, setLang }) {
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
         ? `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.12) 0%, transparent 50%), ${T.bg}`
         : `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), ${T.bg}`, minHeight: "100vh",
-      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.1s, color 0.1s", position: "relative" }}>
+      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s", position: "relative" }}>
       <div style={{ position: "fixed", inset: 0, backgroundImage: darkMode ? "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)" : "linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -806,7 +849,7 @@ function CashFlow({ session, lang, setLang }) {
             opacity: enabled ? 1 : 0.28, transition: "opacity 0.15s", flexShrink: 0,
           });
           return (
-            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.1s", overflow: "hidden" }}>
+            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.3s", overflow: "hidden" }}>
 
               {/* Month strip */}
               <div ref={monthStripRef} style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
@@ -850,7 +893,7 @@ function CashFlow({ session, lang, setLang }) {
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
-                          fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
+                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
                           padding: "5px 2px", cursor: "pointer", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
@@ -925,26 +968,26 @@ function CashFlow({ session, lang, setLang }) {
                   {links.filter(l => l.source !== "__carryover_deficit").map(l => (
                     <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
                   ))}
-                  {links.filter(l => l.source === "__carryover_deficit").map(l => (
-                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
-                  ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
                       GROUP_COLORS={GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
                       labelTotal="Total" labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
                   ))}
+                  {links.filter(l => l.source === "__carryover_deficit").map(l => (
+                    <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} colX={colX} />
+                  ))}
                 </svg>
               </div>
 
               {/* Tooltip bar */}
-              <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.1s" }}>
+              <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
-                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: T.accent }}>${Number(earnedIncome).toLocaleString()}</strong></span>
-                  <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: T.text }}>${Number(totalExp).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: "#c4b5fd" }}>${Number(earnedIncome).toLocaleString()}</strong></span>
+                  <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: "#fbcfe8" }}>${Number(totalExp).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>
                     {surplus >= 0
-                      ? <><strong style={{ color: darkMode ? "#86efac" : "#16a34a" }}>{tr("tooltip_surplus")}</strong>{": "}<strong style={{ color: darkMode ? "#86efac" : "#16a34a" }}>${surplus.toLocaleString()}</strong></>
-                      : <><strong style={{ color: darkMode ? "#f87171" : "#dc2626" }}>{tr("tooltip_deficit")}</strong>{": "}<strong style={{ color: darkMode ? "#f87171" : "#dc2626" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
+                      ? <><strong style={{ color: "#86efac" }}>{tr("tooltip_surplus")}</strong>{": "}<strong style={{ color: "#86efac" }}>${surplus.toLocaleString()}</strong></>
+                      : <><strong style={{ color: "#f87171" }}>{tr("tooltip_deficit")}</strong>{": "}<strong style={{ color: "#f87171" }}>${Math.abs(surplus).toLocaleString()}</strong></>}
                   </span>
                   {(() => {
                     const cv = getCarryoverValue(displayKey);
@@ -962,7 +1005,7 @@ function CashFlow({ session, lang, setLang }) {
                   {hovLink ? (
                     <span>
                       <span style={{ color: T.textDim, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.1em" }}>{tr("tooltip_flow")} · </span>
-                      <strong style={{ color: T.accent }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
+                      <strong style={{ color: "#c4b5fd" }}>{hovLink.sourceNode.label} → {hovLink.targetNode.label}</strong>
                       <span style={{ color: T.textDim }}> · ${hovLink.value.toLocaleString()} ({pct(hovLink.value, grand)})</span>
                     </span>
                   ) : (
