@@ -14,7 +14,7 @@ export function LinkPath({ link, color, onHover, hoveredChain, colX }) {
   const d = `M${sx},${sy0} C${mx},${sy0} ${mx},${ty0} ${tx},${ty0} L${tx},${ty1} C${mx},${ty1} ${mx},${sy1} ${sx},${sy1} Z`;
   return (
     <path d={d} fill={color} opacity={isHovered ? 0.6 : 0.3}
-      style={{ transition: "opacity 0.15s", cursor: "pointer" }}
+      style={{ transition: "opacity 0.15s", cursor: "default" }}
       onMouseEnter={() => onHover(link.chainId || key)} onMouseLeave={() => onHover(null)} />
   );
 }
@@ -33,7 +33,8 @@ export function ItemRow({ item, accent, onLabel, onValue, onRemove, T }) {
         <input type="number" min="0" value={item.value} onChange={e => onValue(e.target.value)}
           onFocus={e => e.target.select()}
           style={{ width: 86, background: T.bgInput, border: `1px solid ${T.borderInput}`,
-            borderRadius: 6, color: T.textVal, fontSize: 15, padding: "4px 6px 4px 18px", outline: "none" }} />
+            borderRadius: 6, color: T.textVal, fontSize: 15, padding: "4px 6px 4px 18px", outline: "none",
+            appearance: "textfield", MozAppearance: "textfield", WebkitAppearance: "none" }} />
       </div>
       <button onClick={onRemove}
         style={{ background: "none", border: "none", color: T.textFaint, cursor: "pointer", fontSize: 19, padding: "0 2px", lineHeight: 1 }}

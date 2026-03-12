@@ -20,8 +20,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
         html { scroll-behavior: smooth; }
         .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .cta-btn { transition: opacity 0.2s, transform 0.15s; }
-        .sec-btn:hover { background: rgba(255,255,255,0.12) !important; }
-        .sec-btn { transition: background 0.2s; }
+
         .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
         .feature-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .pricing-card:hover { transform: translateY(-6px); }
@@ -136,9 +135,7 @@ export default function Landing({ onGetStarted, onLogin, lang, setLang }) {
               <button onClick={() => scrollTo("pricing")} className="cta-btn" style={{ background: "#7c3aed", color: "#fff", border: "none", borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                 {t.hero_cta}
               </button>
-              <button className="sec-btn" style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "14px 28px", fontSize: 15, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-                {t.hero_secondary}
-              </button>
+
             </div>
             <p className="fade-in" style={{ animationDelay: "0.4s", marginTop: 18, fontSize: 13, color: "#6b7280", fontFamily: "'DM Sans', sans-serif" }}>
               {t.hero_note}

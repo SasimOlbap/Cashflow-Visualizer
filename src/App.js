@@ -850,7 +850,7 @@ function CashFlow({ session, lang, setLang }) {
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
-                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
+                          fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
                           padding: "5px 2px", cursor: "pointer", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
