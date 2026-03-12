@@ -538,6 +538,17 @@ function CashFlow({ session, lang, setLang }) {
     }, { onConflict: "user_id,year,month" });
   };
 
+  const forceSaveMonth = async (key, data) => {
+    const [y, m] = key.split("-").map(Number);
+    await supabase.from("cashflow").upsert({
+      user_id: session.user.id,
+      year: y, month: m,
+      income: data.income,
+      expenses: data.expenses,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,year,month" });
+  };
+
   // Auto-save to localStorage as fallback
   useEffect(() => {
     try { localStorage.setItem("cf_months", JSON.stringify(months)); } catch {}
@@ -699,6 +710,10 @@ function CashFlow({ session, lang, setLang }) {
           ])
         );
         setMonths(migrated);
+        cloudLoaded.current = true;
+        Object.entries(migrated).forEach(([key, data]) => {
+          if (data.income?.length || data.expenses?.length) forceSaveMonth(key, data);
+        });
       } catch { alert("Invalid file format."); }
     };
     reader.readAsText(file);
