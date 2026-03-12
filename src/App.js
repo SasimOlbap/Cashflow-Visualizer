@@ -590,7 +590,13 @@ function CashFlow({ session, lang, setLang }) {
     reader.onload = ev => {
       try {
         const parsed = JSON.parse(ev.target.result);
-        setMonths(parsed);
+        const migrated = Object.fromEntries(
+          Object.entries(parsed).map(([key, val]) => [
+            key,
+            { income: val.income || [], expenses: migrateExpenses(val.expenses || []) }
+          ])
+        );
+        setMonths(migrated);
       } catch { alert("Invalid file format."); }
     };
     reader.readAsText(file);

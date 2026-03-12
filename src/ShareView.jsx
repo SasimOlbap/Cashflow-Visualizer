@@ -27,7 +27,7 @@ export default function ShareView({ month, data, onGetStarted }) {
 
   let layoutResult = { nodes: [], links: [], nodeWidth: 14, grand: 0, totalExp: 0, surplus: 0 };
   try { layoutResult = buildLayout(income, expenses, svgW, svgH, colOffsets); } catch {}
-  const { nodes, links, nodeWidth, grand, totalExp, surplus } = layoutResult;
+  const { nodes, links, nodeWidth, grand, earnedIncome, totalExp, surplus } = layoutResult;
 
   const nodeMapD = {};
   nodes.forEach(n => { nodeMapD[n.id] = n; });
@@ -96,11 +96,12 @@ export default function ShareView({ month, data, onGetStarted }) {
         <div ref={svgRef} style={{ background: T.bgCard, borderRadius: 14, padding: "12px 8px", border: `1px solid ${T.border}`, marginBottom: 10 }}>
           <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: "visible" }}>
             {links.map(l => (
-              <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hovered={hovered} />
+              <LinkPath key={l.source + "-" + l.target} link={l} color={getLinkColor(l)} onHover={setHovered} hoveredChain={hovered} />
             ))}
             {nodes.map(n => (
               <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                GROUP_COLORS={GROUP_COLORS} grand={grand} fmt={fmt} pct={pct} startDrag={startDrag} />
+                GROUP_COLORS={GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp}
+                fmt={fmt} pct={pct} startDrag={startDrag} hoveredLinks={[]} />
             ))}
           </svg>
         </div>

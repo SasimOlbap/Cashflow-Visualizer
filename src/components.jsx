@@ -90,7 +90,7 @@ export function SankeyNode({ n, nodeWidth, T, GROUP_COLORS, grand, earnedIncome,
   const rect = (
     <>
       <rect x={n.x} y={n.y} width={nw} height={n.h} fill={c} rx={3}
-        style={{ filter: `drop-shadow(0 0 3px ${c}88)`, cursor: "ew-resize" }}
+        style={{ cursor: "ew-resize" }}
         onMouseDown={e => startDrag(n.col, e)} onTouchStart={e => startDrag(n.col, e)}
         />
       <rect x={n.x - 6} y={n.y} width={nw + 12} height={n.h} fill="transparent"
