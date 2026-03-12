@@ -203,7 +203,8 @@ export default function App() {
 
   if (showWelcome && session) return <Welcome onEnter={() => setShowWelcome(false)} />;
   if (showResetPassword && session) return <ResetPasswordScreen onDone={() => { setShowResetPassword(false); supabase.auth.signOut(); }} />;
-  if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <TierContext.Provider value={tier}><ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} /></ErrorBoundary></TierContext.Provider>;
+  const handleSignOut = async () => { setShowAuth(false); await supabase.auth.signOut(); };
+  if (session) return isMobile ? <MobileOnly onBack={async () => { await supabase.auth.signOut(); window.location.reload(); }} /> : <TierContext.Provider value={tier}><ErrorBoundary><CashFlow session={session} lang={lang} setLang={handleSetLang} onSignOut={handleSignOut} /></ErrorBoundary></TierContext.Provider>;
   if (checkEmail) return <CheckEmail email={checkEmail} />;
   if (showAuth) return <ErrorBoundary><AuthScreen mode={authMode} onCheckEmail={(email) => setCheckEmail(email)} onNewSignup={() => { isNewSignup.current = true; }} /></ErrorBoundary>;
   return <Landing onGetStarted={() => { setAuthMode("signup"); setShowAuth(true); }} onLogin={() => { setAuthMode("login"); setShowAuth(true); }} lang={lang} setLang={handleSetLang} />;
@@ -394,7 +395,7 @@ const CAT_I18N_KEY = {
   "Taxes":                 "cat_taxes",
 };
 
-function CashFlow({ session, lang, setLang }) {
+function CashFlow({ session, lang, setLang, onSignOut }) {
   const tr = (key) => (translations[lang] || translations.en)[key] || key;
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef        = useRef(null);
@@ -868,7 +869,7 @@ function CashFlow({ session, lang, setLang }) {
                   ))}
                 </div>
                 <div ref={settingsBtnsRef} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <button onClick={async () => { setLoggingOut(true); await supabase.auth.signOut(); setLoggingOut(false); }} style={{
+                <button onClick={async () => { setLoggingOut(true); await onSignOut(); setLoggingOut(false); }} style={{
                   background: T.btnBg, border: `1px solid ${T.border}`, borderRadius: 10,
                   padding: "6px 14px", cursor: "pointer", color: T.btnText,
                   fontSize: 13, fontWeight: 500, transition: "all 0.2s", flexShrink: 0,
