@@ -684,7 +684,7 @@ function CashFlow({ session, lang, setLang }) {
 
   // ── shared styles ─────────────────────────────────────────────────────────
   const cardSt  = { background: T.bgCard, borderRadius: 14, padding: "14px 16px",
-    border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 0, transition: "background 0.3s" };
+    border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 0, transition: "background 0.1s" };
   const inpSt   = { flex: 1, minWidth: 0, background: T.bgInput, border: `1px solid ${T.borderInput}`,
     borderRadius: 6, color: T.textNode, fontSize: 15, padding: "5px 7px", outline: "none" };
   const selSt   = { background: T.bgInput, border: `1px solid ${T.borderInput}`, borderRadius: 6,
@@ -709,7 +709,7 @@ function CashFlow({ session, lang, setLang }) {
     <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", background: darkMode
         ? `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(79,70,229,0.12) 0%, transparent 50%), ${T.bg}`
         : `radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.08) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), ${T.bg}`, minHeight: "100vh",
-      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.3s, color 0.3s", position: "relative" }}>
+      padding: "24px 18px", color: T.text, boxSizing: "border-box", transition: "background 0.1s, color 0.1s", position: "relative" }}>
       <div style={{ position: "fixed", inset: 0, backgroundImage: darkMode ? "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)" : "linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)", backgroundSize: "60px 60px", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -806,7 +806,7 @@ function CashFlow({ session, lang, setLang }) {
             opacity: enabled ? 1 : 0.28, transition: "opacity 0.15s", flexShrink: 0,
           });
           return (
-            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.3s", overflow: "hidden" }}>
+            <div style={{ background: T.bgCard, borderRadius: 14, border: `1px solid ${T.border}`, transition: "background 0.1s", overflow: "hidden" }}>
 
               {/* Month strip */}
               <div ref={monthStripRef} style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px", height: 44, borderBottom: `1px solid ${T.border}` }}>
@@ -850,7 +850,7 @@ function CashFlow({ session, lang, setLang }) {
                           border: isSelected ? `1px solid ${T.border}` : isHovered ? `1px solid ${T.accent}44` : "1px solid transparent",
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
-                          fontSize: 12, fontWeight: isSelected || isHovered ? 700 : 400,
+                          fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
                           padding: "5px 2px", cursor: "pointer", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
@@ -937,7 +937,7 @@ function CashFlow({ session, lang, setLang }) {
               </div>
 
               {/* Tooltip bar */}
-              <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.3s" }}>
+              <div ref={tooltipBarRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", height: 44, borderTop: `1px solid ${T.border}`, fontSize: 14, color: T.textNode, transition: "background 0.1s" }}>
                 <div style={{ display: "flex", gap: 18, alignItems: "baseline" }}>
                   <span style={{ color: T.textMuted }}>{tr("tooltip_income")}: <strong style={{ color: T.accent }}>${Number(earnedIncome).toLocaleString()}</strong></span>
                   <span style={{ color: T.textMuted }}>{tr("tooltip_expenses")}: <strong style={{ color: T.text }}>${Number(totalExp).toLocaleString()}</strong></span>
@@ -950,7 +950,7 @@ function CashFlow({ session, lang, setLang }) {
                     const cv = getCarryoverValue(displayKey);
                     if (cv === null) return null;
                     const isPos = cv >= 0;
-                    const color = isPos ? (darkMode ? "#86efac" : "#16a34a") : (darkMode ? "#f87171" : "#dc2626");
+                    const color = isPos ? "#86efac" : "#f87171";
                     return (
                       <span style={{ color: T.textMuted }}>
                         ↩ <strong style={{ color }}>{isPos ? "+" : "-"}${Math.abs(cv).toLocaleString()}</strong>
