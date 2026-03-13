@@ -34,7 +34,7 @@ export default async function handler(req, res) {
   try {
     const payload = JSON.stringify({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
+      max_tokens: 8096,
       system: `You are a bank statement parser. Extract transactions from the raw text and return ONLY a valid JSON array, no markdown, no explanation.
 
 Each transaction object must have:
@@ -59,7 +59,7 @@ Categorization rules:
 For German statements: amounts use comma as decimal separator (e.g. -39,80 € = 39.80). Negative = expense, positive = income.
 
 Return ONLY the JSON array.`,
-      messages: [{ role: "user", content: `Parse this bank statement:\n\n${text.slice(0, 15000)}` }],
+      messages: [{ role: "user", content: `Parse this bank statement:\n\n${text.slice(0, 8000)}` }],
     });
 
     const result = await httpsPost(
