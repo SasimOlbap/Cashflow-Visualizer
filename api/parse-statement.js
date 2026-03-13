@@ -43,18 +43,58 @@ Each transaction object must have:
 - "amount": positive number (always positive, no currency symbols)
 - "type": "income" or "expense"
 - "category": one of exactly these for expenses: "Living & Household", "Education & Kids", "Healthcare", "Transportation", "Subscriptions", "Discretionary", "Savings & Investments", "Debt & Credit", "Taxes". For income use "income".
+- "group": one of the allowed groups for the chosen category (see list below). For income leave as empty string "".
+
+Allowed groups per category (you MUST pick exactly one from the list for each expense):
+- "Living & Household":    "Rent/Mortgage", "Groceries", "Household Goods", "Utilities", "Internet & TV", "Mobile", "Drugstore", "Home & Garden", "Insurance"
+- "Education & Kids":      "Childcare", "School Fees", "Sport Classes", "Allowance", "Books & Supplies"
+- "Healthcare":            "Doctor & Hospital", "Pharmacy", "Dentistry", "Gym & Wellness", "Health Insurance"
+- "Transportation":        "Fuel", "Public Transport", "Train Tickets", "Parking & Tolls", "Car Insurance", "Car Maintenance"
+- "Subscriptions":         "Streaming", "Music", "Software", "News & Magazines", "Real Estate Portals", "Other Subscription"
+- "Discretionary":         "Dining Out", "Clothing", "Shopping", "Appliances", "Recreation", "Renovation", "Pets", "Beauty & Care", "Gifts", "Cash Withdrawal"
+- "Savings & Investments": "Emergency Fund", "Investments", "Pension", "Savings Transfer"
+- "Debt & Credit":         "Loan Repayment", "Credit Card", "Financial Services", "Bank Charges"
+- "Taxes":                 "Income Tax", "VAT", "Government Fee", "Consular Services"
 
 Categorization rules:
-- Salary, wages, freelance, government benefits → income
-- Rent, mortgage, utilities, groceries, supermarkets, home supplies, drugstores → Living & Household
+- Salary, wages, freelance, government benefits → income (group: "")
+- Rent, mortgage → Living & Household / Rent/Mortgage
+- Supermarkets, grocery stores (ALDI, REWE, Lidl, Edeka, etc.) → Living & Household / Groceries
+- Utilities (electricity, gas, water) → Living & Household / Utilities
+- Internet, TV, landline → Living & Household / Internet & TV
+- Mobile phone carriers → Living & Household / Mobile
+- Drugstores (DM, Rossmann, etc.) → Living & Household / Drugstore
+- Insurance (dental, general, home) → Living & Household / Insurance
 - Schools, childcare, kids activities → Education & Kids
-- Doctor, pharmacy, gym, health insurance → Healthcare
-- Fuel, petrol, public transport, car insurance, parking → Transportation
-- Netflix, Spotify, Apple, Amazon Prime, software subscriptions → Subscriptions
-- Restaurants, bars, cafes, shopping, entertainment, hobbies, beauty → Discretionary
-- Loan repayments, credit card payments, bank transfers → Debt & Credit
-- Tax payments, government fees → Taxes
-- Savings transfers, investments, pension → Savings & Investments
+- Sport classes, extracurriculars → Education & Kids / Sport Classes
+- Doctor, hospital → Healthcare / Doctor & Hospital
+- Pharmacy → Healthcare / Pharmacy
+- Dentist → Healthcare / Dentistry
+- Gym, fitness, wellness → Healthcare / Gym & Wellness
+- Health insurance → Healthcare / Health Insurance
+- Fuel, petrol stations (Aral, Shell, BP, tank) → Transportation / Fuel
+- Public transport, bus, tram → Transportation / Public Transport
+- Train, Deutsche Bahn, rail → Transportation / Train Tickets
+- Parking → Transportation / Parking & Tolls
+- Car insurance → Transportation / Car Insurance
+- Netflix, Spotify, Apple, Amazon Prime, streaming → Subscriptions / Streaming
+- Software, app subscriptions → Subscriptions / Software
+- ImmobilienScout, WG-Gesucht, real estate portals → Subscriptions / Real Estate Portals
+- Restaurants, cafes, fast food, bakeries → Discretionary / Dining Out
+- Clothing stores (Deichmann, Zara, H&M, etc.) → Discretionary / Clothing
+- Cash withdrawals (Geldautomat, ATM) → Discretionary / Cash Withdrawal
+- Pets, vet, pet supplies → Discretionary / Pets
+- Home renovation, building supplies → Discretionary / Renovation
+- Electronics, appliances → Discretionary / Appliances
+- Savings, transfers to savings → Savings & Investments / Savings Transfer
+- Investments, ETF, broker → Savings & Investments / Investments
+- Pension → Savings & Investments / Pension
+- Loan repayment → Debt & Credit / Loan Repayment
+- Credit card payment → Debt & Credit / Credit Card
+- Bank charges, account fees → Debt & Credit / Bank Charges
+- Financial advisors, financial services → Debt & Credit / Financial Services
+- Tax payments → Taxes / Income Tax
+- Consulate, embassy fees → Taxes / Consular Services
 
 For German statements: amounts use comma as decimal separator (e.g. -39,80 € = 39.80). Negative = expense, positive = income.
 
