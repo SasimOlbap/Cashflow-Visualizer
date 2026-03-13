@@ -937,24 +937,23 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                 </button>
                 </div>{/* /settingsBtnsRef */}
               </div>
-              {/* Copy/Import split button — only visible on empty months with a prev month */}
               {(isEmpty && hasPrev) && (
-                <div style={{ position: "relative", display: "inline-flex", borderRadius: 20, overflow: "visible" }}>
+                <div style={{ display: "inline-flex", borderRadius: 20, overflow: "hidden" }}>
                   <button onClick={copyFromPrev} style={{
                     background: "#7c3aed", border: "none", borderRadius: "20px 0 0 20px",
                     padding: "6px 14px", cursor: "pointer", color: "#fff",
                     fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                    borderRight: "1px solid rgba(255,255,255,0.2)",
+                    borderRight: "1px solid rgba(255,255,255,0.25)",
                   }}>
                     {tr("app_copy_prev")}
                   </button>
                   <button onClick={() => setShowImport(true)} style={{
                     background: "#7c3aed", border: "none", borderRadius: "0 20px 20px 0",
-                    padding: "6px 12px", cursor: "pointer", color: "#fff",
+                    padding: "6px 14px", cursor: "pointer", color: "#fff",
                     fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                  }}
-                    title="Import data"
-                  >📥 Import</button>
+                  }}>
+                    📥 Import data
+                  </button>
                 </div>
               )}
             </div>
@@ -1058,7 +1057,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 {tr("app_copy_prev")} ({(tr("months") || MONTH_NAMES)[i - 1]})</button>
+                          >📋 Copy data from previous month</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -1076,7 +1075,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}>
                           <button onClick={() => { setCurKey(ctxMenu.key); setShowImport(true); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
-                            borderRadius: 6, color: T.textMuted, fontSize: 11, padding: "6px 8px",
+                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
                             cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
                             fontFamily: "inherit", display: "flex", alignItems: "center",
                             justifyContent: "center", gap: 6,
