@@ -624,18 +624,38 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   };
 
   // ── import from bank statement ────────────────────────────────────────────
-  const handleImportTransactions = (transactions) => {
-    const newIncome   = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
-    const newExpenses = transactions.filter(t => t.type === "expense").map(t => ({ id: uid(), label: t.description, value: t.amount, category: t.category }));
+  const [importConfirm, setImportConfirm] = useState(null); // holds pending transactions
+
+  const applyImport = (transactions) => {
+    const newIncome = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
+
+    // Aggregate expenses by group+category — each unique group becomes one leaf node,
+    // summing amounts of all transactions that share the same group and category.
+    const expenseMap = {};
+    transactions.filter(t => t.type === "expense").forEach(t => {
+      const key = `${t.category}||${t.group || t.description}`;
+      if (expenseMap[key]) {
+        expenseMap[key].value += t.amount;
+      } else {
+        expenseMap[key] = { id: uid(), label: t.group || t.description, value: t.amount, category: t.category };
+      }
+    });
+    const newExpenses = Object.values(expenseMap);
     setMonths(p => {
-      const cur = p[curKey] || { income: [], expenses: [] };
-      const updated = {
-        income:   [...(cur.income || []),   ...newIncome],
-        expenses: [...(cur.expenses || []), ...newExpenses],
-      };
+      const updated = { income: newIncome, expenses: newExpenses };
       saveMonth(curKey, updated);
       return { ...p, [curKey]: updated };
     });
+  };
+
+  const handleImportTransactions = (transactions) => {
+    const cur = months[curKey] || { income: [], expenses: [] };
+    const hasData = (cur.income?.length || 0) + (cur.expenses?.length || 0) > 0;
+    if (hasData) {
+      setImportConfirm(transactions);
+      return;
+    }
+    applyImport(transactions);
   };
 
   // ── carryover helpers ─────────────────────────────────────────────────────
@@ -917,14 +937,26 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                 </button>
                 </div>{/* /settingsBtnsRef */}
               </div>
-              <button onClick={copyFromPrev} style={{
-                background: "#7c3aed", border: "none", borderRadius: 20,
-                padding: "6px 14px", cursor: "pointer", color: "#fff",
-                fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                visibility: (isEmpty && hasPrev) ? "visible" : "hidden",
-              }}>
-                {tr("app_copy_prev")}
-              </button>
+              {/* Copy/Import split button — only visible on empty months with a prev month */}
+              {(isEmpty && hasPrev) && (
+                <div style={{ position: "relative", display: "inline-flex", borderRadius: 20, overflow: "visible" }}>
+                  <button onClick={copyFromPrev} style={{
+                    background: "#7c3aed", border: "none", borderRadius: "20px 0 0 20px",
+                    padding: "6px 14px", cursor: "pointer", color: "#fff",
+                    fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
+                    borderRight: "1px solid rgba(255,255,255,0.2)",
+                  }}>
+                    {tr("app_copy_prev")}
+                  </button>
+                  <button onClick={() => setShowImport(true)} style={{
+                    background: "#7c3aed", border: "none", borderRadius: "0 20px 20px 0",
+                    padding: "6px 12px", cursor: "pointer", color: "#fff",
+                    fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
+                  }}
+                    title="Import data"
+                  >📥 Import</button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1042,6 +1074,16 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             borderRadius: 8, padding: "4px", zIndex: 999,
                             boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
                           }}>
+                          <button onClick={() => { setCurKey(ctxMenu.key); setShowImport(true); setCtxMenu(null); }} style={{
+                            width: "100%", background: "transparent", border: "none",
+                            borderRadius: 6, color: T.textMuted, fontSize: 11, padding: "6px 8px",
+                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: 6,
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >📥 Import data</button>
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
@@ -1259,6 +1301,36 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
           T={T}
           darkMode={darkMode}
         />
+      )}
+
+      {/* Import overwrite confirmation */}
+      {importConfirm && (
+        <div onClick={() => setImportConfirm(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 16, padding: "28px 32px", maxWidth: 380, width: "90%",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)", textAlign: "center",
+            fontFamily: "'DM Sans','Segoe UI',sans-serif",
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ color: T.text, fontSize: 17, fontWeight: 700, marginBottom: 10, margin: "0 0 10px" }}>Replace existing data?</h3>
+            <p style={{ color: T.textMuted, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+              This month already has data. Importing will <strong style={{ color: "#f87171" }}>erase all current entries</strong> and replace them with the imported transactions.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setImportConfirm(null)} style={{
+                flex: 1, background: T.btnBg, border: `1px solid ${T.border}`,
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: T.text, fontSize: 14, fontWeight: 600,
+              }}>Cancel</button>
+              <button onClick={() => { applyImport(importConfirm); setImportConfirm(null); setShowImport(false); }} style={{
+                flex: 1, background: "#ef4444", border: "none",
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: "#fff", fontSize: 14, fontWeight: 600,
+              }}>Yes, replace</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Tour overlay */}
