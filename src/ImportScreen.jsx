@@ -13,9 +13,21 @@ const CATS = [
   "Taxes",
 ];
 
-// ── Claude API call ───────────────────────────────────────────────────────────
+// ── Claude API call (via serverless proxy) ────────────────────────────────────
 async function parseStatementWithClaude(rawText) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await fetch("/api/parse-statement", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: rawText }),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Failed to parse statement.");
+  }
+  const { transactions } = await response.json();
+  if (!Array.isArray(transactions)) throw new Error("Unexpected response from parser.");
+  return transactions;
+}
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
