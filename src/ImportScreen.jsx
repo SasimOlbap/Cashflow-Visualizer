@@ -133,7 +133,6 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
 
   const accent     = "#7c3aed";
   const accentSoft = "rgba(124,58,237,0.12)";
-  const bg         = darkMode ? "#0f0f1a" : "#f8f7ff";
   const card       = darkMode ? "#161625" : "#ffffff";
   const border     = darkMode ? "#2d2b55" : "#e5e7eb";
   const text       = darkMode ? "#e2e8f0" : "#111827";
