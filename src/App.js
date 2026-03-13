@@ -937,25 +937,14 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                 </button>
                 </div>{/* /settingsBtnsRef */}
               </div>
-              {(isEmpty && hasPrev) && (
-                <div style={{ display: "inline-flex", borderRadius: 20, overflow: "hidden" }}>
-                  <button onClick={copyFromPrev} style={{
-                    background: "#7c3aed", border: "none", borderRadius: "20px 0 0 20px",
-                    padding: "6px 14px", cursor: "pointer", color: "#fff",
-                    fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                    borderRight: "1px solid rgba(255,255,255,0.25)",
-                  }}>
-                    {tr("app_copy_prev")}
-                  </button>
-                  <button onClick={() => setShowImport(true)} style={{
-                    background: "#7c3aed", border: "none", borderRadius: "0 20px 20px 0",
-                    padding: "6px 14px", cursor: "pointer", color: "#fff",
-                    fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-                  }}>
-                    📥 Import data
-                  </button>
-                </div>
-              )}
+              <button onClick={copyFromPrev} style={{
+                background: "#7c3aed", border: "none", borderRadius: 20,
+                padding: "6px 14px", cursor: "pointer", color: "#fff",
+                fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
+                visibility: (isEmpty && hasPrev) ? "visible" : "hidden",
+              }}>
+                {tr("app_copy_prev")}
+              </button>
             </div>
           </div>
         </div>
@@ -1023,7 +1012,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
                           fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
-                          padding: "5px 2px", cursor: "pointer", textAlign: "center",
+                          padding: "5px 2px", cursor: hasData ? "pointer" : "default", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
@@ -1035,7 +1024,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                           border: `1px solid ${T.accent}59`,
                           borderRadius: 8, padding: "4px", zIndex: 999,
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 200,
                         }}>
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
                           <button onClick={() => {
@@ -1051,13 +1040,21 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
-                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 6,
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                           >📋 Copy data from previous month</button>
+                          <button onClick={() => { setCurKey(key); setShowImport(true); setHovEmpty(null); }} style={{
+                            width: "100%", background: "transparent", border: "none",
+                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >📥 Import data</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -1073,16 +1070,6 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             borderRadius: 8, padding: "4px", zIndex: 999,
                             boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
                           }}>
-                          <button onClick={() => { setCurKey(ctxMenu.key); setShowImport(true); setCtxMenu(null); }} style={{
-                            width: "100%", background: "transparent", border: "none",
-                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
-                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 6,
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
-                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📥 Import data</button>
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
