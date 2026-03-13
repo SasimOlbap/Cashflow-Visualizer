@@ -1,3 +1,25 @@
+const https = require("https");
+
+function httpsPost(url, headers, body) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname,
+      method: "POST",
+      headers: { ...headers, "Content-Length": Buffer.byteLength(body) },
+    };
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", chunk => { data += chunk; });
+      res.on("end", () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on("error", reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -10,17 +32,10 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: "API key not configured" });
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
-        system: `You are a bank statement parser. Extract transactions from the raw text and return ONLY a valid JSON array, no markdown, no explanation.
+    const payload = JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
+      system: `You are a bank statement parser. Extract transactions from the raw text and return ONLY a valid JSON array, no markdown, no explanation.
 
 Each transaction object must have:
 - "date": "YYYY-MM-DD"
@@ -44,16 +59,24 @@ Categorization rules:
 For German statements: amounts use comma as decimal separator (e.g. -39,80 € = 39.80). Negative = expense, positive = income.
 
 Return ONLY the JSON array.`,
-        messages: [{ role: "user", content: `Parse this bank statement:\n\n${text.slice(0, 15000)}` }],
-      }),
+      messages: [{ role: "user", content: `Parse this bank statement:\n\n${text.slice(0, 15000)}` }],
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      return res.status(502).json({ error: `Claude API error: ${err}` });
+    const result = await httpsPost(
+      "https://api.anthropic.com/v1/messages",
+      {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      payload
+    );
+
+    if (result.status !== 200) {
+      return res.status(502).json({ error: `Claude API error: ${result.body}` });
     }
 
-    const data = await response.json();
+    const data = JSON.parse(result.body);
     const raw = data.content?.map(b => b.text || "").join("") || "[]";
     const clean = raw.replace(/```json|```/g, "").trim();
     const transactions = JSON.parse(clean);
