@@ -17,6 +17,7 @@ import {
 import { translations } from "./i18n";
 import TourOverlay, { shouldShowTour } from "./TourOverlay";
 import { TierContext } from "./TierContext";
+import ImportScreen from "./ImportScreen";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -435,6 +436,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const [darkMode,  setDarkMode]  = useState(true);
   const [showTour,  setShowTour]  = useState(() => shouldShowTour());
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [hovEmpty,  setHovEmpty]  = useState(null); // key of hovered empty month
   const [hovered,   setHovered]   = useState(null);
   const [months,    setMonths]    = useState(() => {
@@ -619,6 +621,21 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
     if (!neLabel.trim()) return;
     setExpenses(p => [...p, { id: uid(), label: neLabel.trim(), value: 0, category: neCat }]);
     setNeLabel("");
+  };
+
+  // ── import from bank statement ────────────────────────────────────────────
+  const handleImportTransactions = (transactions) => {
+    const newIncome   = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
+    const newExpenses = transactions.filter(t => t.type === "expense").map(t => ({ id: uid(), label: t.description, value: t.amount, category: t.category }));
+    setMonths(p => {
+      const cur = p[curKey] || { income: [], expenses: [] };
+      const updated = {
+        income:   [...(cur.income || []),   ...newIncome],
+        expenses: [...(cur.expenses || []), ...newExpenses],
+      };
+      saveMonth(curKey, updated);
+      return { ...p, [curKey]: updated };
+    });
   };
 
   // ── carryover helpers ─────────────────────────────────────────────────────
@@ -852,6 +869,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                     { label: tr("app_backup"), onClick: handleSave },
                     { label: tr("app_restore"), onClick: () => importRef.current?.click() },
                     { label: tr("app_share"), onClick: handleShare, active: shareCopied },
+                    { label: "Import Statement", onClick: () => setShowImport(true) },
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick} style={{
                       background: btn.active ? "#16a34a" : T.bgCard,
@@ -1232,6 +1250,16 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
         </div>
       )}
 
+
+      {/* Import screen */}
+      {showImport && (
+        <ImportScreen
+          onClose={() => setShowImport(false)}
+          onImport={(txns) => { handleImportTransactions(txns); }}
+          T={T}
+          darkMode={darkMode}
+        />
+      )}
 
       {/* Tour overlay */}
       {showTour && (
