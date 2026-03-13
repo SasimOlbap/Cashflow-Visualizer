@@ -627,7 +627,16 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const [importConfirm, setImportConfirm] = useState(null); // holds pending transactions
 
   const applyImport = (transactions) => {
-    const newIncome = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
+    // Aggregate income by description — same source gets summed into one node.
+    const incomeMap = {};
+    transactions.filter(t => t.type === "income").forEach(t => {
+      if (incomeMap[t.description]) {
+        incomeMap[t.description].value += t.amount;
+      } else {
+        incomeMap[t.description] = { id: uid(), label: t.description, value: t.amount, type: t.incomeType || "active" };
+      }
+    });
+    const newIncome = Object.values(incomeMap);
 
     // Aggregate expenses by group+category — each unique group becomes one leaf node,
     // summing amounts of all transactions that share the same group and category.

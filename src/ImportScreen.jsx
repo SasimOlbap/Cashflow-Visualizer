@@ -41,7 +41,6 @@ async function parseStatementWithClaude(rawText) {
   if (!Array.isArray(transactions)) throw new Error("Unexpected response from parser.");
   return transactions;
 }
-
 // ── PDF text extraction ───────────────────────────────────────────────────────
 function loadPdfJs() {
   return new Promise((resolve, reject) => {
@@ -116,7 +115,7 @@ function Steps({ current }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ImportScreen({ onClose, onImport, T, darkMode }) {
-  const [step, setStep]               = useState(0);
+  const [step, setStep]               = useState(0); // 0=upload 1=processing 2=review 3=done
   const [dragOver, setDragOver]       = useState(false);
   const [error, setError]             = useState("");
   const [transactions, setTransactions] = useState([]);
@@ -145,12 +144,13 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
       if (!Array.isArray(parsed) || parsed.length === 0)
         throw new Error("No transactions found in the statement.");
 
+      // Add include flag and auto flag for UI
       setTransactions(parsed.map(t => ({
         ...t,
         id: uid(),
         include: true,
         auto: true,
-        // Validate group against the hardcoded list; clear if not valid
+        incomeType: t.incomeType || "active",
         group: (GROUPS_BY_CAT[t.category] || []).includes(t.group) ? t.group : "",
       })));
       setStep(2);
@@ -173,7 +173,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
   };
 
   const toggleInclude = (id) =>
-    setTransactions(p => p.map(t => t.id === id ? { ...t, include: !t.include } : t));
+    setTransactions(p => p.map(t => t.id === id ? { ...t, include: false === t.include ? true : false } : t));
 
   const setCategory = (id, cat) =>
     setTransactions(p => p.map(t => t.id === id ? { ...t, category: cat, group: "", auto: false } : t));
@@ -181,10 +181,11 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
   const setGroup = (id, grp) =>
     setTransactions(p => p.map(t => t.id === id ? { ...t, group: grp } : t));
 
-  // Selected expense rows missing a group
+  const setIncomeType = (id, incomeType) =>
+    setTransactions(p => p.map(t => t.id === id ? { ...t, incomeType } : t));
+
   const missingGroup = transactions.filter(t => t.include && t.type === "expense" && !t.group);
   const canImport = transactions.filter(t => t.include).length > 0 && missingGroup.length === 0;
-  const includedCount = transactions.filter(t => t.include).length;
 
   const handleConfirm = () => {
     if (!canImport) return;
@@ -192,6 +193,8 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
     onImport(included);
     setStep(3);
   };
+
+  const includedCount = transactions.filter(t => t.include).length;
 
   // ── overlay shell
   return (
@@ -211,10 +214,9 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
       }}>
         {/* Close */}
         <button onClick={onClose} style={{
-          position: "absolute", top: 16, right: 16,
-          background: "none", border: "none", color: muted,
-          fontSize: 20, cursor: "pointer", lineHeight: 1,
-        }}>×</button>
+          position: "absolute", top: 16, right: 16, background: "none",
+          border: "none", color: muted, fontSize: 20, cursor: "pointer", lineHeight: 1,
+        }}>✕</button>
 
         {/* Title */}
         <div style={{ marginBottom: 28 }}>
@@ -279,11 +281,6 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
               <p style={{ margin: 0, fontSize: 13, color: muted }}>
                 Found <strong style={{ color: text }}>{transactions.length}</strong> transactions.
                 {" "}<span style={{ color: accent }}>{includedCount} selected</span> for import.
-                {missingGroup.length > 0 && (
-                  <span style={{ marginLeft: 10, color: "#f87171", fontSize: 12 }}>
-                    ⚠ {missingGroup.length} row{missingGroup.length !== 1 ? "s" : ""} missing a group
-                  </span>
-                )}
               </p>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setTransactions(p => p.map(t => ({ ...t, include: true })))}
@@ -312,13 +309,13 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                 <div>Date</div>
                 <div>Description</div>
                 <div style={{ textAlign: "right" }}>Amount</div>
-                <div>Category</div>
+                <div>Category / Type</div>
                 <div>Group</div>
                 <div></div>
               </div>
 
               {/* Rows */}
-              <div style={{ maxHeight: 400, overflow: "auto" }}>
+              <div style={{ maxHeight: 380, overflow: "auto" }}>
                 {transactions.map((t, i) => {
                   const groupOptions = GROUPS_BY_CAT[t.category] || [];
                   const isMissingGroup = t.include && t.type === "expense" && !t.group;
@@ -329,9 +326,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                       borderBottom: i < transactions.length - 1 ? `1px solid ${border}` : "none",
                       background: isMissingGroup
                         ? (darkMode ? "rgba(239,68,68,0.07)" : "rgba(239,68,68,0.04)")
-                        : !t.include
-                          ? (darkMode ? "rgba(0,0,0,0.2)" : "#f9fafb")
-                          : "transparent",
+                        : !t.include ? (darkMode ? "rgba(0,0,0,0.2)" : "#f9fafb") : "transparent",
                       opacity: t.include ? 1 : 0.45,
                       transition: "opacity 0.15s, background 0.15s",
                     }}>
@@ -358,7 +353,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                         {t.type === "income" ? "+" : "-"}${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
 
-                      {/* Category */}
+                      {/* Category (expenses) or Income Type (income) */}
                       {t.type === "expense" ? (
                         <select value={t.category} onChange={e => setCategory(t.id, e.target.value)} style={{
                           background: darkMode ? "#0f0f1a" : "#f3f4f6",
@@ -368,26 +363,29 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                           {CATS.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       ) : (
-                        <div style={{ fontSize: 12, color: "#86efac" }}>Income</div>
+                        <select value={t.incomeType || "active"} onChange={e => setIncomeType(t.id, e.target.value)} style={{
+                          background: darkMode ? "#0f0f1a" : "#f3f4f6",
+                          border: `1px solid ${border}`, borderRadius: 6,
+                          color: "#86efac", fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
+                        }}>
+                          <option value="active">Active</option>
+                          <option value="passive">Passive</option>
+                        </select>
                       )}
 
-                      {/* Group */}
+                      {/* Group (expenses only) */}
                       {t.type === "expense" ? (
-                        <select
-                          value={t.group || ""}
-                          onChange={e => setGroup(t.id, e.target.value)}
-                          style={{
-                            background: darkMode ? "#0f0f1a" : "#f3f4f6",
-                            border: `1px solid ${isMissingGroup ? "#f87171" : border}`,
-                            borderRadius: 6, color: t.group ? text : "#f87171",
-                            fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
-                          }}
-                        >
+                        <select value={t.group || ""} onChange={e => setGroup(t.id, e.target.value)} style={{
+                          background: darkMode ? "#0f0f1a" : "#f3f4f6",
+                          border: `1px solid ${isMissingGroup ? "#f87171" : border}`,
+                          borderRadius: 6, color: t.group ? text : "#f87171",
+                          fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
+                        }}>
                           <option value="">— pick group —</option>
                           {groupOptions.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                       ) : (
-                        <div></div>
+                        <div />
                       )}
 
                       {/* Type indicator */}
@@ -399,23 +397,22 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
             </div>
 
             {/* Confirm */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, alignItems: "center" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button onClick={onClose} style={{
+                background: "none", border: `1px solid ${border}`, borderRadius: 10,
+                padding: "10px 20px", cursor: "pointer", color: muted, fontSize: 14,
+              }}>Cancel</button>
               {missingGroup.length > 0 && (
                 <span style={{ fontSize: 12, color: "#f87171", marginRight: 8 }}>
                   Assign a group to all selected rows before importing.
                 </span>
               )}
-              <button onClick={onClose} style={{
-                background: "none", border: `1px solid ${border}`, borderRadius: 10,
-                padding: "10px 20px", cursor: "pointer", color: muted, fontSize: 14,
-              }}>Cancel</button>
               <button onClick={handleConfirm} disabled={!canImport} style={{
                 background: !canImport ? (darkMode ? "#3d2b6e" : "#c4b5fd") : accent,
                 border: "none", borderRadius: 10, padding: "10px 24px",
                 cursor: !canImport ? "not-allowed" : "pointer",
                 color: "#fff", fontSize: 14, fontWeight: 600,
                 opacity: !canImport ? 0.6 : 1,
-                transition: "opacity 0.2s",
               }}>
                 Import {includedCount} transaction{includedCount !== 1 ? "s" : ""}
               </button>
