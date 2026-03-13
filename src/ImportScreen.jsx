@@ -28,41 +28,6 @@ async function parseStatementWithClaude(rawText) {
   if (!Array.isArray(transactions)) throw new Error("Unexpected response from parser.");
   return transactions;
 }
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: `You are a bank statement parser. Extract transactions from the raw text and return ONLY a valid JSON array, no markdown, no explanation.
-
-Each transaction object must have:
-- "date": "YYYY-MM-DD"
-- "description": string (merchant or description, keep it short)
-- "amount": positive number (always positive)
-- "type": "income" or "expense"
-- "category": one of exactly these categories for expenses: "Living & Household", "Education & Kids", "Healthcare", "Transportation", "Subscriptions", "Discretionary", "Savings & Investments", "Debt & Credit", "Taxes". For income use "income".
-
-Categorization rules:
-- Salary, wages, freelance payments → income
-- Rent, mortgage, utilities, groceries, home supplies → Living & Household
-- Schools, childcare, kids activities → Education & Kids
-- Doctor, pharmacy, gym, health insurance → Healthcare
-- Fuel, public transport, car insurance, parking → Transportation
-- Netflix, Spotify, Apple, Amazon Prime, software → Subscriptions
-- Restaurants, bars, shopping, entertainment, hobbies → Discretionary
-- Loan repayments, credit card payments → Debt & Credit
-- Tax payments, government fees → Taxes
-- Transfers to savings, investments, pension → Savings & Investments
-
-Return ONLY the JSON array. Example: [{"date":"2026-01-15","description":"Spotify","amount":9.99,"type":"expense","category":"Subscriptions"}]`,
-      messages: [{ role: "user", content: `Parse this bank statement:\n\n${rawText.slice(0, 12000)}` }],
-    }),
-  });
-  const data = await response.json();
-  const text = data.content?.map(b => b.text || "").join("") || "[]";
-  return JSON.parse(text.replace(/```json|```/g, "").trim());
-}
-
 // ── PDF text extraction ───────────────────────────────────────────────────────
 function loadPdfJs() {
   return new Promise((resolve, reject) => {
