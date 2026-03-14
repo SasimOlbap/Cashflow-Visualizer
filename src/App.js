@@ -1053,11 +1053,10 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
                             cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
+                            fontFamily: "inherit", display: isPro ? "flex" : "none", alignItems: "center", gap: 6,
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          style={{ display: isPro ? "flex" : "none" }}
                           >Import data</button>
                         </div>
                       )}
