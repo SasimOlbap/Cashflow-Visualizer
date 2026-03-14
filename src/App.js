@@ -473,14 +473,11 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
       return next;
     });
     if (curKey === key) {
-      // Find months that still have data after deletion
       const withData = Object.keys(months).filter(k => k !== key && (months[k]?.income?.length || months[k]?.expenses?.length)).sort();
       if (withData.length > 0) {
-        // Go to nearest previous month with data, or the first one with data
         const before = withData.filter(k => k < key);
         setCurKey(before.length > 0 ? before[before.length - 1] : withData[0]);
       } else {
-        // No months with data — fall back to January
         setCurKey(toKey(today.getFullYear(), 1));
       }
     }
@@ -1049,7 +1046,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 Copy data from previous month</button>
+                          >Copy data from previous month</button>
                           <button onClick={() => { setCurKey(key); setShowImport(true); setHovEmpty(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
@@ -1058,7 +1055,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📥 Import data</button>
+                          >Import data</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
