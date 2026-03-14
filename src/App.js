@@ -473,11 +473,12 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
       return next;
     });
     if (curKey === key) {
-      const remaining = Object.keys(months).filter(k => k !== key).sort();
-      if (remaining.length > 0) {
-        // Go to the nearest previous month, or the first one if none before
-        const before = remaining.filter(k => k < key);
-        setCurKey(before.length > 0 ? before[before.length - 1] : remaining[0]);
+      const withData = Object.keys(months).filter(k => k !== key && (months[k]?.income?.length || months[k]?.expenses?.length)).sort();
+      if (withData.length > 0) {
+        const before = withData.filter(k => k < key);
+        setCurKey(before.length > 0 ? before[before.length - 1] : withData[0]);
+      } else {
+        setCurKey(toKey(today.getFullYear(), 1));
       }
     }
     setConfirmDel(null);
@@ -1045,7 +1046,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 Copy data from previous month</button>
+                          >Copy data from previous month</button>
                           <button onClick={() => { setCurKey(key); setShowImport(true); setHovEmpty(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
@@ -1054,7 +1055,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📥 Import data</button>
+                          >Import data</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -1068,7 +1069,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                             border: `1px solid ${T.accent}59`,
                             borderRadius: 8, padding: "4px", zIndex: 999,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", whiteSpace: "nowrap",
                           }}>
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
@@ -1079,7 +1080,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >🗑 Delete month</button>
+                          >Delete month</button>
                         </div>
                       )}
                       </div>
