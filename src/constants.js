@@ -12,25 +12,20 @@ export const INIT_INCOME = [
 ];
 
 export const INIT_EXPENSES = [
-  // Living & Household
   { id: uid(), label: "Rent",               value: 400,  category: "Living & Household"  },
   { id: uid(), label: "Groceries",          value: 140,  category: "Living & Household"  },
   { id: uid(), label: "Electricity",        value: 80,   category: "Living & Household"  },
-  // Education & Kids
   { id: uid(), label: "Childcare",          value: 90,   category: "Education & Kids"    },
   { id: uid(), label: "School Fees",        value: 110,  category: "Education & Kids"    },
   { id: uid(), label: "Tennis classes",     value: 50,   category: "Education & Kids"    },
-  // Healthcare
   { id: uid(), label: "Health Insurance",   value: 200,  category: "Healthcare"          },
   { id: uid(), label: "Medicines",          value: 130,  category: "Healthcare"          },
-  // Transportation
   { id: uid(), label: "Car Insurance",      value: 180,  category: "Transportation"      },
   { id: uid(), label: "Fuel",               value: 90,   category: "Transportation"      },
-  // Subscriptions
   { id: uid(), label: "Streaming Services", value: 50,   category: "Subscriptions"       },
 ];
 
-// Single source of truth for all category names — used by buildLayout, App, editor dropdown
+// Single source of truth for all category names
 export const CATS = [
   "Living & Household",
   "Education & Kids",
@@ -56,6 +51,7 @@ export const CAT_LABELS = {
   "Carryover":             "Deficit Carryover",
 };
 
+// ── Free tier colors ───────────────────────────────────────────────────────
 export const CAT_COLORS = {
   "Living & Household":    "#c4b49a",
   "Education & Kids":      "#cc7a48",
@@ -98,4 +94,49 @@ export const LINK_RIGHT = [
   "#9aa0b4", // Savings & Investments
   "#c4b830", // Debt & Credit
   "#4a7a6a", // Taxes
+];
+
+// ── Pro tier colors (Silver) ───────────────────────────────────────────────
+export const PRO_CAT_COLORS = {
+  "Living & Household":    "#a0a0a0",
+  "Education & Kids":      "#b8b8b8",
+  "Healthcare":            "#787878",
+  "Transportation":        "#686868",
+  "Subscriptions":         "#909090",
+  "Discretionary":         "#585858",
+  "Savings & Investments": "#c8c8c8",
+  "Debt & Credit":         "#989898",
+  "Taxes":                 "#707070",
+  "Carryover":             "#888888",
+};
+
+export const PRO_GROUP_COLORS = {
+  source:            "#c8c8c8",
+  source_active:     "#c8c8c8",
+  source_passive:    "#888888",
+  agg:               "#a8a8a8",
+  agg_active:        "#c8c8c8",
+  agg_passive:       "#888888",
+  total:             "#a8a8a8",
+  category:          "#909090",
+  leaf:              "#b0b0b0",
+  surplus:           "#e8e8e8",
+  deficit:           "#666666",
+  carryover_surplus: "#e8e8e8",
+  carryover_deficit: "#666666",
+};
+
+export const PRO_LINK_LEFT         = ["#c8c8c8", "#a8a8a8"];
+export const PRO_LINK_LEFT_ACTIVE  = ["#c8c8c8", "#c8c8c8"];
+export const PRO_LINK_LEFT_PASSIVE = ["#888888", "#888888"];
+export const PRO_LINK_RIGHT = [
+  "#a0a0a0", // Living & Household
+  "#b8b8b8", // Education & Kids
+  "#787878", // Healthcare
+  "#686868", // Transportation
+  "#909090", // Subscriptions
+  "#585858", // Discretionary
+  "#c8c8c8", // Savings & Investments
+  "#989898", // Debt & Credit
+  "#707070", // Taxes
 ];

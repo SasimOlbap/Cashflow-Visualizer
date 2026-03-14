@@ -3,7 +3,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { buildLayout } from "./buildLayout";
 import { LinkPath, ItemRow, SankeyNode } from "./components";
 import { useDrag } from "./useDrag";
-import { darkTheme, lightTheme } from "./theme";
+import { darkTheme, lightTheme, darkProTheme, lightProTheme } from "./theme";
 import { supabase } from "./supabase";
 import Landing from "./Landing";
 import CheckEmail from "./CheckEmail";
@@ -13,10 +13,11 @@ import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
   GROUP_COLORS, LINK_LEFT, LINK_LEFT_ACTIVE, LINK_LEFT_PASSIVE, LINK_RIGHT,
+  PRO_CAT_COLORS, PRO_GROUP_COLORS, PRO_LINK_LEFT, PRO_LINK_LEFT_ACTIVE, PRO_LINK_LEFT_PASSIVE, PRO_LINK_RIGHT,
 } from "./constants";
 import { translations } from "./i18n";
 import TourOverlay, { shouldShowTour } from "./TourOverlay";
-import { TierContext } from "./TierContext";
+import { TierContext, useTier } from "./TierContext";
 import ImportScreen from "./ImportScreen";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
@@ -398,6 +399,7 @@ const CAT_I18N_KEY = {
 
 function CashFlow({ session, lang, setLang, onSignOut }) {
   const tr = (key) => (translations[lang] || translations.en)[key] || key;
+  const { isPro } = useTier();
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef        = useRef(null);
   const monthStripRef  = useRef(null);
@@ -602,7 +604,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const prevKey = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
   const hasPrev = !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
 
-  const T = darkMode ? darkTheme : lightTheme;
+  const T = isPro ? (darkMode ? darkProTheme : lightProTheme) : (darkMode ? darkTheme : lightTheme);
   const { colOffsets, startDrag } = useDrag(svgRef, svgW);
 
   // ── data handlers ─────────────────────────────────────────────────────────
@@ -828,16 +830,16 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
     if (link.source === "__carryover_deficit") return "#f87171";
     if (col <= 1) {
       const grp = link.sourceNode?.group ?? "";
-      if (grp === "source_active"  || grp === "agg_active")  return LINK_LEFT_ACTIVE[Math.min(col, 1)];
-      if (grp === "source_passive" || grp === "agg_passive") return LINK_LEFT_PASSIVE[Math.min(col, 1)];
-      return LINK_LEFT[Math.min(col, 1)];
+      if (grp === "source_active"  || grp === "agg_active")  return (isPro ? PRO_LINK_LEFT_ACTIVE : LINK_LEFT_ACTIVE)[Math.min(col, 1)];
+      if (grp === "source_passive" || grp === "agg_passive") return (isPro ? PRO_LINK_LEFT_PASSIVE : LINK_LEFT_PASSIVE)[Math.min(col, 1)];
+      return (isPro ? PRO_LINK_LEFT : LINK_LEFT)[Math.min(col, 1)];
     }
     // col3->col4: source is __cat_X — color by source category
     const srcIdx = CATS.findIndex(c => link.source === "__cat_" + c);
-    if (srcIdx >= 0) return LINK_RIGHT[srcIdx];
+    if (srcIdx >= 0) return (isPro ? PRO_LINK_RIGHT : LINK_RIGHT)[srcIdx];
     // col2->col3: source is __total — color by target category
     const tgtIdx = CATS.findIndex(c => link.target === "__cat_" + c);
-    if (tgtIdx >= 0) return LINK_RIGHT[tgtIdx];
+    if (tgtIdx >= 0) return (isPro ? PRO_LINK_RIGHT : LINK_RIGHT)[tgtIdx];
     return "#9575cd";
   };
 
@@ -890,7 +892,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                     { label: tr("app_backup"), onClick: handleSave },
                     { label: tr("app_restore"), onClick: () => importRef.current?.click() },
                     { label: tr("app_share"), onClick: handleShare, active: shareCopied },
-                    { label: "Import Statement", onClick: () => setShowImport(true) },
+                    ...(isPro ? [{ label: "Import Statement", onClick: () => setShowImport(true) }] : []),
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick} style={{
                       background: btn.active ? "#16a34a" : T.bgCard,
@@ -1055,6 +1057,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          style={{ display: isPro ? "flex" : "none" }}
                           >Import data</button>
                         </div>
                       )}
@@ -1071,6 +1074,17 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             borderRadius: 8, padding: "4px", zIndex: 999,
                             boxShadow: "0 8px 24px rgba(0,0,0,0.5)", whiteSpace: "nowrap",
                           }}>
+                          {isPro && (
+                            <button onClick={() => { setCurKey(ctxMenu.key); setShowImport(true); setCtxMenu(null); }} style={{
+                              width: "100%", background: "transparent", border: "none",
+                              borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
+                              cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                            >Import data</button>
+                          )}
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
@@ -1100,7 +1114,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
+                      GROUP_COLORS={isPro ? PRO_GROUP_COLORS : GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
                       labelTotal="Total" labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
                   ))}
                 </svg>
@@ -1224,7 +1238,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
               <div key={cat}>
                 {subHead(tr(CAT_I18N_KEY[cat]) || cat)}
                 {expenses.filter(e => e.category === cat).map(item => (
-                  <ItemRow key={item.id} item={item} accent={CAT_COLORS[cat]} T={T}
+                  <ItemRow key={item.id} item={item} accent={(isPro ? PRO_CAT_COLORS : CAT_COLORS)[cat]} T={T}
                     onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} />
                 ))}
               </div>
