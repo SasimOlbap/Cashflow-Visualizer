@@ -13,19 +13,6 @@ const CATS = [
   "Taxes",
 ];
 
-// ── Hardcoded groups per category ─────────────────────────────────────────────
-export const GROUPS_BY_CAT = {
-  "Living & Household":    ["Rent/Mortgage", "Groceries", "Household Goods", "Utilities", "Internet & TV", "Mobile", "Drugstore", "Home & Garden", "Insurance"],
-  "Education & Kids":      ["Childcare", "School Fees", "Sport Classes", "Allowance", "Books & Supplies"],
-  "Healthcare":            ["Doctor & Hospital", "Pharmacy", "Dentistry", "Gym & Wellness", "Health Insurance"],
-  "Transportation":        ["Fuel", "Public Transport", "Train Tickets", "Parking & Tolls", "Car Insurance", "Car Maintenance"],
-  "Subscriptions":         ["Streaming", "Music", "Software", "News & Magazines", "Real Estate Portals", "Other Subscription"],
-  "Discretionary":         ["Dining Out", "Clothing", "Shopping", "Appliances", "Recreation", "Renovation", "Pets", "Beauty & Care", "Gifts", "Cash Withdrawal"],
-  "Savings & Investments": ["Emergency Fund", "Investments", "Pension", "Savings Transfer"],
-  "Debt & Credit":         ["Loan Repayment", "Credit Card", "Financial Services", "Bank Charges"],
-  "Taxes":                 ["Income Tax", "VAT", "Government Fee", "Consular Services"],
-};
-
 // ── Claude API call (via serverless proxy) ────────────────────────────────────
 async function parseStatementWithClaude(rawText) {
   const response = await fetch("/api/parse-statement", {
@@ -145,14 +132,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
         throw new Error("No transactions found in the statement.");
 
       // Add include flag and auto flag for UI
-      setTransactions(parsed.map(t => ({
-        ...t,
-        id: uid(),
-        include: true,
-        auto: true,
-        incomeType: t.incomeType || "active",
-        group: (GROUPS_BY_CAT[t.category] || []).includes(t.group) ? t.group : "",
-      })));
+      setTransactions(parsed.map(t => ({ ...t, id: uid(), include: true, auto: true })));
       setStep(2);
     } catch (e) {
       setError(e.message || "Something went wrong. Please try again.");
@@ -176,19 +156,9 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
     setTransactions(p => p.map(t => t.id === id ? { ...t, include: false === t.include ? true : false } : t));
 
   const setCategory = (id, cat) =>
-    setTransactions(p => p.map(t => t.id === id ? { ...t, category: cat, group: "", auto: false } : t));
-
-  const setGroup = (id, grp) =>
-    setTransactions(p => p.map(t => t.id === id ? { ...t, group: grp } : t));
-
-  const setIncomeType = (id, incomeType) =>
-    setTransactions(p => p.map(t => t.id === id ? { ...t, incomeType } : t));
-
-  const missingGroup = transactions.filter(t => t.include && t.type === "expense" && !t.group);
-  const canImport = transactions.filter(t => t.include).length > 0 && missingGroup.length === 0;
+    setTransactions(p => p.map(t => t.id === id ? { ...t, category: cat, auto: false } : t));
 
   const handleConfirm = () => {
-    if (!canImport) return;
     const included = transactions.filter(t => t.include);
     onImport(included);
     setStep(3);
@@ -206,7 +176,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
     }}>
       <div style={{
         background: card, border: `1px solid ${border}`, borderRadius: 20,
-        width: "100%", maxWidth: step === 2 ? 980 : 520,
+        width: "100%", maxWidth: step === 2 ? 820 : 520,
         maxHeight: "90vh", overflow: "auto",
         padding: 40, position: "relative",
         boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
@@ -267,10 +237,10 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
         {/* ── Step 1: Processing ── */}
         {step === 1 && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
-            <div style={{ fontSize: 48, marginBottom: 20, animation: "spin 1.5s linear infinite", display: "inline-block" }}>⚙️</div>
+            <div style={{ width: 52, height: 52, border: "3px solid #2d2b55", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ring-spin 0.9s linear infinite", margin: "0 auto 24px" }} />
             <p style={{ fontSize: 16, fontWeight: 600, color: text, marginBottom: 8 }}>Analysing your statement…</p>
             <p style={{ fontSize: 13, color: muted }}>Claude is reading and categorising your transactions.</p>
-            <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            <style>{`@keyframes ring-spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
 
@@ -299,7 +269,7 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
             <div style={{ border: `1px solid ${border}`, borderRadius: 10, overflow: "hidden", marginBottom: 20 }}>
               {/* Header */}
               <div style={{
-                display: "grid", gridTemplateColumns: "32px 90px 1fr 90px 150px 140px 28px",
+                display: "grid", gridTemplateColumns: "32px 90px 1fr 90px 160px 32px",
                 gap: 8, padding: "8px 12px",
                 background: darkMode ? "rgba(255,255,255,0.04)" : "#f9fafb",
                 borderBottom: `1px solid ${border}`,
@@ -309,90 +279,61 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                 <div>Date</div>
                 <div>Description</div>
                 <div style={{ textAlign: "right" }}>Amount</div>
-                <div>Category / Type</div>
-                <div>Group</div>
+                <div>Category</div>
                 <div></div>
               </div>
 
               {/* Rows */}
               <div style={{ maxHeight: 380, overflow: "auto" }}>
-                {transactions.map((t, i) => {
-                  const groupOptions = GROUPS_BY_CAT[t.category] || [];
-                  const isMissingGroup = t.include && t.type === "expense" && !t.group;
-                  return (
-                    <div key={t.id} style={{
-                      display: "grid", gridTemplateColumns: "32px 90px 1fr 90px 150px 140px 28px",
-                      gap: 8, padding: "8px 12px", alignItems: "center",
-                      borderBottom: i < transactions.length - 1 ? `1px solid ${border}` : "none",
-                      background: isMissingGroup
-                        ? (darkMode ? "rgba(239,68,68,0.07)" : "rgba(239,68,68,0.04)")
-                        : !t.include ? (darkMode ? "rgba(0,0,0,0.2)" : "#f9fafb") : "transparent",
-                      opacity: t.include ? 1 : 0.45,
-                      transition: "opacity 0.15s, background 0.15s",
-                    }}>
-                      {/* Include toggle */}
-                      <input type="checkbox" checked={t.include} onChange={() => toggleInclude(t.id)}
-                        style={{ cursor: "pointer", accentColor: accent }} />
+                {transactions.map((t, i) => (
+                  <div key={t.id} style={{
+                    display: "grid", gridTemplateColumns: "32px 90px 1fr 90px 160px 32px",
+                    gap: 8, padding: "8px 12px", alignItems: "center",
+                    borderBottom: i < transactions.length - 1 ? `1px solid ${border}` : "none",
+                    background: !t.include ? (darkMode ? "rgba(0,0,0,0.2)" : "#f9fafb") : "transparent",
+                    opacity: t.include ? 1 : 0.45,
+                    transition: "opacity 0.15s",
+                  }}>
+                    {/* Include toggle */}
+                    <input type="checkbox" checked={t.include} onChange={() => toggleInclude(t.id)}
+                      style={{ cursor: "pointer", accentColor: accent }} />
 
-                      {/* Date */}
-                      <div style={{ fontSize: 12, color: muted }}>{t.date}</div>
+                    {/* Date */}
+                    <div style={{ fontSize: 12, color: muted }}>{t.date}</div>
 
-                      {/* Description */}
-                      <div style={{ fontSize: 13, color: text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {t.description}
-                        {t.auto && (
-                          <span style={{ marginLeft: 6, fontSize: 10, color: accent, background: accentSoft, padding: "1px 5px", borderRadius: 4 }}>AI</span>
-                        )}
-                      </div>
-
-                      {/* Amount */}
-                      <div style={{
-                        fontSize: 13, fontWeight: 600, textAlign: "right",
-                        color: t.type === "income" ? "#86efac" : "#f87171",
-                      }}>
-                        {t.type === "income" ? "+" : "-"}${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </div>
-
-                      {/* Category (expenses) or Income Type (income) */}
-                      {t.type === "expense" ? (
-                        <select value={t.category} onChange={e => setCategory(t.id, e.target.value)} style={{
-                          background: darkMode ? "#0f0f1a" : "#f3f4f6",
-                          border: `1px solid ${border}`, borderRadius: 6,
-                          color: text, fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
-                        }}>
-                          {CATS.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      ) : (
-                        <select value={t.incomeType || "active"} onChange={e => setIncomeType(t.id, e.target.value)} style={{
-                          background: darkMode ? "#0f0f1a" : "#f3f4f6",
-                          border: `1px solid ${border}`, borderRadius: 6,
-                          color: "#86efac", fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
-                        }}>
-                          <option value="active">Active</option>
-                          <option value="passive">Passive</option>
-                        </select>
+                    {/* Description */}
+                    <div style={{ fontSize: 13, color: text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {t.description}
+                      {t.auto && (
+                        <span style={{ marginLeft: 6, fontSize: 10, color: accent, background: accentSoft, padding: "1px 5px", borderRadius: 4 }}>AI</span>
                       )}
-
-                      {/* Group (expenses only) */}
-                      {t.type === "expense" ? (
-                        <select value={t.group || ""} onChange={e => setGroup(t.id, e.target.value)} style={{
-                          background: darkMode ? "#0f0f1a" : "#f3f4f6",
-                          border: `1px solid ${isMissingGroup ? "#f87171" : border}`,
-                          borderRadius: 6, color: t.group ? text : "#f87171",
-                          fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
-                        }}>
-                          <option value="">— pick group —</option>
-                          {groupOptions.map(g => <option key={g} value={g}>{g}</option>)}
-                        </select>
-                      ) : (
-                        <div />
-                      )}
-
-                      {/* Type indicator */}
-                      <div style={{ fontSize: 14, color: muted }}>{t.type === "income" ? "↓" : "↑"}</div>
                     </div>
-                  );
-                })}
+
+                    {/* Amount */}
+                    <div style={{
+                      fontSize: 13, fontWeight: 600, textAlign: "right",
+                      color: t.type === "income" ? "#86efac" : "#f87171",
+                    }}>
+                      {t.type === "income" ? "+" : "-"}${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+
+                    {/* Category */}
+                    {t.type === "expense" ? (
+                      <select value={t.category} onChange={e => setCategory(t.id, e.target.value)} style={{
+                        background: darkMode ? "#0f0f1a" : "#f3f4f6",
+                        border: `1px solid ${border}`, borderRadius: 6,
+                        color: text, fontSize: 11, padding: "3px 6px", outline: "none", width: "100%",
+                      }}>
+                        {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    ) : (
+                      <div style={{ fontSize: 12, color: "#86efac" }}>Income</div>
+                    )}
+
+                    {/* Type indicator */}
+                    <div style={{ fontSize: 14 }}>{t.type === "income" ? "↓" : "↑"}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -402,17 +343,11 @@ export default function ImportScreen({ onClose, onImport, T, darkMode }) {
                 background: "none", border: `1px solid ${border}`, borderRadius: 10,
                 padding: "10px 20px", cursor: "pointer", color: muted, fontSize: 14,
               }}>Cancel</button>
-              {missingGroup.length > 0 && (
-                <span style={{ fontSize: 12, color: "#f87171", marginRight: 8 }}>
-                  Assign a group to all selected rows before importing.
-                </span>
-              )}
-              <button onClick={handleConfirm} disabled={!canImport} style={{
-                background: !canImport ? (darkMode ? "#3d2b6e" : "#c4b5fd") : accent,
+              <button onClick={handleConfirm} disabled={includedCount === 0} style={{
+                background: includedCount === 0 ? "#3d2b6e" : accent,
                 border: "none", borderRadius: 10, padding: "10px 24px",
-                cursor: !canImport ? "not-allowed" : "pointer",
+                cursor: includedCount === 0 ? "not-allowed" : "pointer",
                 color: "#fff", fontSize: 14, fontWeight: 600,
-                opacity: !canImport ? 0.6 : 1,
               }}>
                 Import {includedCount} transaction{includedCount !== 1 ? "s" : ""}
               </button>

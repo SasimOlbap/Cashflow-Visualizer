@@ -473,11 +473,15 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
       return next;
     });
     if (curKey === key) {
-      const remaining = Object.keys(months).filter(k => k !== key).sort();
-      if (remaining.length > 0) {
-        // Go to the nearest previous month, or the first one if none before
-        const before = remaining.filter(k => k < key);
-        setCurKey(before.length > 0 ? before[before.length - 1] : remaining[0]);
+      // Find months that still have data after deletion
+      const withData = Object.keys(months).filter(k => k !== key && (months[k]?.income?.length || months[k]?.expenses?.length)).sort();
+      if (withData.length > 0) {
+        // Go to nearest previous month with data, or the first one with data
+        const before = withData.filter(k => k < key);
+        setCurKey(before.length > 0 ? before[before.length - 1] : withData[0]);
+      } else {
+        // No months with data — fall back to January
+        setCurKey(toKey(today.getFullYear(), 1));
       }
     }
     setConfirmDel(null);
@@ -627,16 +631,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const [importConfirm, setImportConfirm] = useState(null); // holds pending transactions
 
   const applyImport = (transactions) => {
-    // Aggregate income by description — same source gets summed into one node.
-    const incomeMap = {};
-    transactions.filter(t => t.type === "income").forEach(t => {
-      if (incomeMap[t.description]) {
-        incomeMap[t.description].value += t.amount;
-      } else {
-        incomeMap[t.description] = { id: uid(), label: t.description, value: t.amount, type: t.incomeType || "active" };
-      }
-    });
-    const newIncome = Object.values(incomeMap);
+    const newIncome = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
 
     // Aggregate expenses by group+category — each unique group becomes one leaf node,
     // summing amounts of all transactions that share the same group and category.
