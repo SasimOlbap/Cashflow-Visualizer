@@ -3,7 +3,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { buildLayout } from "./buildLayout";
 import { LinkPath, ItemRow, SankeyNode } from "./components";
 import { useDrag } from "./useDrag";
-import { darkTheme, lightTheme } from "./theme";
+import { darkTheme, lightTheme, darkProTheme, lightProTheme } from "./theme";
 import { supabase } from "./supabase";
 import Landing from "./Landing";
 import CheckEmail from "./CheckEmail";
@@ -13,10 +13,12 @@ import {
   uid, fmt, pct,
   INIT_INCOME, INIT_EXPENSES, CATS, CAT_COLORS,
   GROUP_COLORS, LINK_LEFT, LINK_LEFT_ACTIVE, LINK_LEFT_PASSIVE, LINK_RIGHT,
+  PRO_CAT_COLORS, PRO_GROUP_COLORS, PRO_LINK_LEFT, PRO_LINK_LEFT_ACTIVE, PRO_LINK_LEFT_PASSIVE, PRO_LINK_RIGHT,
 } from "./constants";
 import { translations } from "./i18n";
 import TourOverlay, { shouldShowTour } from "./TourOverlay";
-import { TierContext } from "./TierContext";
+import { TierContext, useTier } from "./TierContext";
+import ImportScreen from "./ImportScreen";
 
 // ── DoubleArrow nav icon ──────────────────────────────────────────────────────
 function DoubleArrow({ direction, color }) {
@@ -397,6 +399,7 @@ const CAT_I18N_KEY = {
 
 function CashFlow({ session, lang, setLang, onSignOut }) {
   const tr = (key) => (translations[lang] || translations.en)[key] || key;
+  const { isPro } = useTier();
   // ── refs & size ───────────────────────────────────────────────────────────
   const svgRef        = useRef(null);
   const monthStripRef  = useRef(null);
@@ -435,6 +438,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const [darkMode,  setDarkMode]  = useState(true);
   const [showTour,  setShowTour]  = useState(() => shouldShowTour());
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [hovEmpty,  setHovEmpty]  = useState(null); // key of hovered empty month
   const [hovered,   setHovered]   = useState(null);
   const [months,    setMonths]    = useState(() => {
@@ -471,11 +475,12 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
       return next;
     });
     if (curKey === key) {
-      const remaining = Object.keys(months).filter(k => k !== key).sort();
-      if (remaining.length > 0) {
-        // Go to the nearest previous month, or the first one if none before
-        const before = remaining.filter(k => k < key);
-        setCurKey(before.length > 0 ? before[before.length - 1] : remaining[0]);
+      const withData = Object.keys(months).filter(k => k !== key && (months[k]?.income?.length || months[k]?.expenses?.length)).sort();
+      if (withData.length > 0) {
+        const before = withData.filter(k => k < key);
+        setCurKey(before.length > 0 ? before[before.length - 1] : withData[0]);
+      } else {
+        setCurKey(toKey(today.getFullYear(), 1));
       }
     }
     setConfirmDel(null);
@@ -599,7 +604,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
   const prevKey = m === 1 ? toKey(y - 1, 12) : toKey(y, m - 1);
   const hasPrev = !!(months[prevKey]?.income?.length || months[prevKey]?.expenses?.length);
 
-  const T = darkMode ? darkTheme : lightTheme;
+  const T = isPro ? (darkMode ? darkProTheme : lightProTheme) : (darkMode ? darkTheme : lightTheme);
   const { colOffsets, startDrag } = useDrag(svgRef, svgW);
 
   // ── data handlers ─────────────────────────────────────────────────────────
@@ -619,6 +624,41 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
     if (!neLabel.trim()) return;
     setExpenses(p => [...p, { id: uid(), label: neLabel.trim(), value: 0, category: neCat }]);
     setNeLabel("");
+  };
+
+  // ── import from bank statement ────────────────────────────────────────────
+  const [importConfirm, setImportConfirm] = useState(null); // holds pending transactions
+
+  const applyImport = (transactions) => {
+    const newIncome = transactions.filter(t => t.type === "income").map(t => ({ id: uid(), label: t.description, value: t.amount, type: "active" }));
+
+    // Aggregate expenses by group+category — each unique group becomes one leaf node,
+    // summing amounts of all transactions that share the same group and category.
+    const expenseMap = {};
+    transactions.filter(t => t.type === "expense").forEach(t => {
+      const key = `${t.category}||${t.group || t.description}`;
+      if (expenseMap[key]) {
+        expenseMap[key].value += t.amount;
+      } else {
+        expenseMap[key] = { id: uid(), label: t.group || t.description, value: t.amount, category: t.category };
+      }
+    });
+    const newExpenses = Object.values(expenseMap);
+    setMonths(p => {
+      const updated = { income: newIncome, expenses: newExpenses };
+      saveMonth(curKey, updated);
+      return { ...p, [curKey]: updated };
+    });
+  };
+
+  const handleImportTransactions = (transactions) => {
+    const cur = months[curKey] || { income: [], expenses: [] };
+    const hasData = (cur.income?.length || 0) + (cur.expenses?.length || 0) > 0;
+    if (hasData) {
+      setImportConfirm(transactions);
+      return;
+    }
+    applyImport(transactions);
   };
 
   // ── carryover helpers ─────────────────────────────────────────────────────
@@ -790,16 +830,16 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
     if (link.source === "__carryover_deficit") return "#f87171";
     if (col <= 1) {
       const grp = link.sourceNode?.group ?? "";
-      if (grp === "source_active"  || grp === "agg_active")  return LINK_LEFT_ACTIVE[Math.min(col, 1)];
-      if (grp === "source_passive" || grp === "agg_passive") return LINK_LEFT_PASSIVE[Math.min(col, 1)];
-      return LINK_LEFT[Math.min(col, 1)];
+      if (grp === "source_active"  || grp === "agg_active")  return (isPro ? PRO_LINK_LEFT_ACTIVE : LINK_LEFT_ACTIVE)[Math.min(col, 1)];
+      if (grp === "source_passive" || grp === "agg_passive") return (isPro ? PRO_LINK_LEFT_PASSIVE : LINK_LEFT_PASSIVE)[Math.min(col, 1)];
+      return (isPro ? PRO_LINK_LEFT : LINK_LEFT)[Math.min(col, 1)];
     }
     // col3->col4: source is __cat_X — color by source category
     const srcIdx = CATS.findIndex(c => link.source === "__cat_" + c);
-    if (srcIdx >= 0) return LINK_RIGHT[srcIdx];
+    if (srcIdx >= 0) return (isPro ? PRO_LINK_RIGHT : LINK_RIGHT)[srcIdx];
     // col2->col3: source is __total — color by target category
     const tgtIdx = CATS.findIndex(c => link.target === "__cat_" + c);
-    if (tgtIdx >= 0) return LINK_RIGHT[tgtIdx];
+    if (tgtIdx >= 0) return (isPro ? PRO_LINK_RIGHT : LINK_RIGHT)[tgtIdx];
     return "#9575cd";
   };
 
@@ -852,6 +892,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                     { label: tr("app_backup"), onClick: handleSave },
                     { label: tr("app_restore"), onClick: () => importRef.current?.click() },
                     { label: tr("app_share"), onClick: handleShare, active: shareCopied },
+                    ...(isPro ? [{ label: "Import Statement", onClick: () => setShowImport(true) }] : []),
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick} style={{
                       background: btn.active ? "#16a34a" : T.bgCard,
@@ -974,7 +1015,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           borderRadius: 7,
                           color: isSelected || isHovered ? hlColor : hasData ? T.text : T.textFaint,
                           fontSize: 13, fontWeight: isSelected || isHovered ? 700 : 400,
-                          padding: "5px 2px", cursor: "pointer", textAlign: "center",
+                          padding: "5px 2px", cursor: hasData ? "pointer" : "default", textAlign: "center",
                           opacity: isSelected || isHovered ? 1 : hasData ? 0.85 : 0.45,
                           transition: "all 0.15s", whiteSpace: "nowrap",
                         }}>{name}</button>
@@ -986,7 +1027,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                           border: `1px solid ${T.accent}59`,
                           borderRadius: 8, padding: "4px", zIndex: 999,
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)", whiteSpace: "nowrap",
                         }}>
                           <div style={{ position: "absolute", top: -10, left: 0, right: 0, height: 10 }} />
                           <button onClick={() => {
@@ -1002,13 +1043,21 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                           }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
-                            cursor: "pointer", textAlign: "center", whiteSpace: "nowrap",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 6,
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >📋 {tr("app_copy_prev")} ({(tr("months") || MONTH_NAMES)[i - 1]})</button>
+                          >Copy data from previous month</button>
+                          <button onClick={() => { setCurKey(key); setShowImport(true); setHovEmpty(null); }} style={{
+                            width: "100%", background: "transparent", border: "none",
+                            borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
+                            cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                            fontFamily: "inherit", display: isPro ? "flex" : "none", alignItems: "center", gap: 6,
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(167,139,250,0.15)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                          >Import data</button>
                         </div>
                       )}
                       {ctxMenu?.key === key && (
@@ -1022,8 +1071,19 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
                             border: `1px solid ${T.accent}59`,
                             borderRadius: 8, padding: "4px", zIndex: 999,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", minWidth: 148,
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)", whiteSpace: "nowrap",
                           }}>
+                          {isPro && (
+                            <button onClick={() => { setCurKey(ctxMenu.key); setShowImport(true); setCtxMenu(null); }} style={{
+                              width: "100%", background: "transparent", border: "none",
+                              borderRadius: 6, color: T.textNode, fontSize: 11, padding: "6px 8px",
+                              cursor: "pointer", textAlign: "left", whiteSpace: "nowrap",
+                              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                            >Import data</button>
+                          )}
                           <button onClick={() => { setConfirmDel(ctxMenu.key); setCtxMenu(null); }} style={{
                             width: "100%", background: "transparent", border: "none",
                             borderRadius: 6, color: "#f87171", fontSize: 11, padding: "6px 8px",
@@ -1031,9 +1091,9 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                             fontFamily: "inherit", display: "flex", alignItems: "center",
                             justifyContent: "center", gap: 6,
                           }}
-                          onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.12)"}
+                          onMouseEnter={e => e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
                           onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >🗑 Delete month</button>
+                          >Delete month</button>
                         </div>
                       )}
                       </div>
@@ -1053,7 +1113,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
                   ))}
                   {nodes.map(n => (
                     <SankeyNode key={n.id} n={n} nodeWidth={nodeWidth} T={T}
-                      GROUP_COLORS={GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
+                      GROUP_COLORS={isPro ? PRO_GROUP_COLORS : GROUP_COLORS} grand={grand} earnedIncome={earnedIncome} totalExp={totalExp} fmt={fmt} pct={pct} startDrag={startDrag} isDark={darkMode} hoveredLinks={links.filter(l => l.chainId === hovered || (l.chainIds && l.chainIds.includes(hovered)))}
                       labelTotal="Total" labelIncome={tr("app_income")} labelExpenses={tr("app_expenses")} />
                   ))}
                 </svg>
@@ -1177,7 +1237,7 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
               <div key={cat}>
                 {subHead(tr(CAT_I18N_KEY[cat]) || cat)}
                 {expenses.filter(e => e.category === cat).map(item => (
-                  <ItemRow key={item.id} item={item} accent={CAT_COLORS[cat]} T={T}
+                  <ItemRow key={item.id} item={item} accent={(isPro ? PRO_CAT_COLORS : CAT_COLORS)[cat]} T={T}
                     onLabel={v => updExLabel(item.id, v)} onValue={v => updExValue(item.id, v)} onRemove={() => remEx(item.id)} />
                 ))}
               </div>
@@ -1232,6 +1292,46 @@ function CashFlow({ session, lang, setLang, onSignOut }) {
         </div>
       )}
 
+
+      {/* Import screen */}
+      {showImport && (
+        <ImportScreen
+          onClose={() => setShowImport(false)}
+          onImport={(txns) => { handleImportTransactions(txns); }}
+          T={T}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* Import overwrite confirmation */}
+      {importConfirm && (
+        <div onClick={() => setImportConfirm(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: T.bgCard, border: `1px solid ${T.border}`,
+            borderRadius: 16, padding: "28px 32px", maxWidth: 380, width: "90%",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)", textAlign: "center",
+            fontFamily: "'DM Sans','Segoe UI',sans-serif",
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ color: T.text, fontSize: 17, fontWeight: 700, marginBottom: 10, margin: "0 0 10px" }}>Replace existing data?</h3>
+            <p style={{ color: T.textMuted, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+              This month already has data. Importing will <strong style={{ color: "#f87171" }}>erase all current entries</strong> and replace them with the imported transactions.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setImportConfirm(null)} style={{
+                flex: 1, background: T.btnBg, border: `1px solid ${T.border}`,
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: T.text, fontSize: 14, fontWeight: 600,
+              }}>Cancel</button>
+              <button onClick={() => { applyImport(importConfirm); setImportConfirm(null); setShowImport(false); }} style={{
+                flex: 1, background: "#ef4444", border: "none",
+                borderRadius: 10, padding: "10px", cursor: "pointer",
+                color: "#fff", fontSize: 14, fontWeight: 600,
+              }}>Yes, replace</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tour overlay */}
       {showTour && (

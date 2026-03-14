@@ -37,3 +37,44 @@ export const lightTheme = {
   btnText:     "#5b46c1",
   selText:     "#5b46c1",
 };
+
+// ── Pro themes (Silver) ────────────────────────────────────────────────────
+export const darkProTheme = {
+  bg:          "#0d0d0d",
+  bgCard:      "#111111",
+  bgInput:     "#0a0a0a",
+  border:      "#2a2a2a",
+  borderInput: "#252525",
+  text:        "#f0f0f0",
+  textMuted:   "#888888",
+  textDim:     "#555555",
+  textFaint:   "#333333",
+  textNode:    "#d0d0d0",
+  textVal:     "#e8e8e8",
+  textSub:     "#444444",
+  accent:      "#e8e8e8",
+  accentHead:  "#666666",
+  btnBg:       "#1a1a1a",
+  btnText:     "#c0c0c0",
+  selText:     "#e8e8e8",
+};
+
+export const lightProTheme = {
+  bg:          "#f5f5f5",
+  bgCard:      "#ffffff",
+  bgInput:     "#fafafa",
+  border:      "#e0e0e0",
+  borderInput: "#d8d8d8",
+  text:        "#111111",
+  textMuted:   "#666666",
+  textDim:     "#888888",
+  textFaint:   "#bbbbbb",
+  textNode:    "#222222",
+  textVal:     "#111111",
+  textSub:     "#999999",
+  accent:      "#111111",
+  accentHead:  "#888888",
+  btnBg:       "#efefef",
+  btnText:     "#222222",
+  selText:     "#111111",
+};
